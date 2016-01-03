@@ -19,6 +19,18 @@ static-files:
       - user
       - group
 
+index.html:
+  file.managed:
+    - name: /srv/demo.bokehplots.com/index.html
+    - source: salt://nginx/templates/index.html
+    - user: nginx
+    - group: nginx
+    - makedirs: true
+    - recurse:
+      - user
+      - group
+
+
 nginx-conf:
   file.managed:
     - name: /etc/nginx/conf.d/bokehdemoplots.conf
