@@ -1,11 +1,6 @@
 
-# assumes installed
-#
-# git
-# nginx > 1.3
-
 git clone https://github.com/bokeh/bokeh.git
-git clone https://github.com/bokeh/deploy.git
+git clone https://github.com/bokeh/bokeh-demos.git
 
 MINICONDA_VERSION=latest
 MINICONDA="Miniconda-$MINICONDA_VERSION-Linux-x86_64"
@@ -19,6 +14,3 @@ conda create -y -n bokeh -c bokeh/channel/dev bokeh
 source activate bokeh
 
 conda install -y pandas scikit-learn supervisor
-
-mkdir logs
-mkdir conf
