@@ -1,3 +1,5 @@
+{%- from 'bokeh/settings.sls' import SUPERVISORENV, SUPERVISORD, SUPERVISORCTL, SUPERVISOR_CONF, 
+                              SUPERVISOR_SOCK, SUPERVISOR_PID, SUPERVISOR_BOKEH with context -%}
 
 include: 
   - nginx
@@ -15,7 +17,7 @@ git-bokeh-demos:
 
 supervisor-conf:
   file.managed:
-    - name: /home/ec2-user/miniconda/envs/supervisor/etc/supervisor/supervisor.conf
+    - name: {{ SUPERVISOR_CONF }} 
     - source: salt://bokeh/templates/supervisor.conf
     - makedirs: true
     - user: root
@@ -24,16 +26,16 @@ supervisor-conf:
 
 supervisord-running:
   cmd.run:
-    - name: /home/ec2-user/miniconda/envs/supervisor/bin/supervisord -c /home/ec2-user/miniconda/envs/supervisor/etc/supervisor/supervisor.conf
+    - name: {{ SUPERVISORD }} -c {{ SUPERVISOR_CONF }} 
     - unless: |
-              test -e /home/ec2-user/miniconda/envs/supervisor/var/run/supervisor.sock &&
-              test -e /home/ec2-user/miniconda/envs/supervisor/var/run/supervisord.pid &&
+              test -e {{ SUPERVISOR_SOCK }} &&
+              test -e {{ SUPERVISOR_PID }} &&
               ps cax | grep supervisord > /dev/null
 
 
 bokeh-server-conf:
   file.managed:
-    - name: /home/ec2-user/miniconda/envs/supervisor/etc/supervisor/conf.d/bokeh-server.conf
+    - name: {{ SUPERVISOR_BOKEH }} 
     - source: salt://bokeh/templates/bokeh-server.conf
     - template: jinja
     - makedirs: true
@@ -43,10 +45,10 @@ bokeh-server-conf:
 
 bokeh-update-supervisor:
   cmd.wait:
-    - name: /home/ec2-user/miniconda/envs/supervisor/bin/supervisorctl -c /home/ec2-user/miniconda/envs/supervisor/etc/supervisor/supervisor.conf update && sleep 2
+    - name: {{ SUPERVISORCTL }} -c {{ SUPERVISOR_CONF }} update && sleep 2
     - watch:
       - file: bokeh-server-conf
 
 bokeh-server-running:
   cmd.run:
-    - name: /home/ec2-user/miniconda/envs/supervisor/bin/supervisorctl -c /home/ec2-user/miniconda/envs/supervisor/etc/supervisor/supervisor.conf start 'bokeh_demos:*'
+    - name: {{ SUPERVISORCTL }} -c {{ SUPERVISOR_CONF }} start 'bokeh_demos:*'
