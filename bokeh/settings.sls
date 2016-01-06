@@ -10,7 +10,7 @@
 
 
 {% set BOKEH_DEMOS_LIST = ['bokeh/examples/app/movies',
-+                          'bokeh-demos/weather',
+                           'bokeh-demos/weather',
                            'bokeh/examples/app/random_tiles',
                            'bokeh/examples/app/selection_histogram.py',
                            'bokeh/examples/app/sliders.py',
