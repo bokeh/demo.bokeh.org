@@ -29,7 +29,7 @@ echo "Installing Miniconda, Nginx (with $NUM_SERVERS servers) and Bokeh Server"
 MINICONDA_VERSION=latest
 MINICONDA="Miniconda-$MINICONDA_VERSION-Linux-x86_64"
 MINICONDA_URL="http://repo.continuum.io/miniconda/$MINICONDA.sh"
-wget $MINICONDA_URL
+wget -N $MINICONDA_URL
 bash $MINICONDA.sh -b -p $HOME/miniconda
 
 PATH=~/miniconda/bin/:$PATH
