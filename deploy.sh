@@ -133,7 +133,7 @@ fi
 #sudo cp bokeh_salt_keys.pub $SALT_ENV/etc/salt/pki/master/minions/
 #sudo cp bokeh_salt_keys.pub bokeh_salt_keys.pem $SALT_ENV/etc/salt/pki/minion/
 
-sudo $SALT_ENV/bin/salt-key -y -a $HOSTNAME
+sudo $SALT_ENV/bin/salt-key -y -a $HOSTNAME*
 
 cp -r bokeh nginx $SALT_ENV/srv/salt
 sudo $SALT_ENV/bin/salt '*' state.sls nginx
