@@ -28,8 +28,7 @@ supervisord-running:
   cmd.run:
     - name: {{ SUPERVISORD }} -c {{ SUPERVISOR_CONF }} 
     - unless: |
-              test -e {{ SUPERVISOR_SOCK }} &&
-              test -e {{ SUPERVISOR_PID }} &&
+              test -e {{ SUPERVISOR_SOCK }}
               ps cax | grep supervisord > /dev/null
 
 
