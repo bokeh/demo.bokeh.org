@@ -1,4 +1,4 @@
-#1/bin/bash
+#/bin/bash
 
 NUM_SERVERS=6
 
@@ -34,10 +34,10 @@ bash $MINICONDA.sh -b -p $HOME/miniconda
 
 PATH=~/miniconda/bin/:$PATH
 
-conda create -y -n bokeh -c bokeh/channel/dev bokeh
+conda create -q -y -n bokeh -c bokeh/channel/dev bokeh
 source activate bokeh
 
-conda install -y pandas scikit-learn supervisor
+conda install -q -y pandas scikit-learn supervisor
 
 PREFIX=~/miniconda
 CONDA=$PREFIX/bin/conda
@@ -49,8 +49,8 @@ HOSTNAME=`hostname`
 
 mkdir -p ~/log
 
-$CONDA create -y -n salt python=2.7 salt -c anaconda-cluster
-$CONDA create -y -n supervisor python=2.7 supervisor -c anaconda-cluster
+$CONDA create -q -y -n salt python=2.7 salt -c anaconda-cluster
+$CONDA create -q -y -n supervisor python=2.7 supervisor -c anaconda-cluster
 
 #grab sample data
 $BOKEH_ENV/bin/python -c "import bokeh.sampledata; bokeh.sampledata.download()"
