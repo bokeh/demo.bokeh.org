@@ -6,7 +6,7 @@ install-deps:
 
 copy-static-files:
   cmd.run:
-    - name: cp -r /home/ec2-user/miniconda/envs/bokeh/lib/python2.7/site-packages/bokeh/server/static /srv/static
+    - name: cp -r `bokeh info --static` /srv/static
     - user: root
     - group: root
  
