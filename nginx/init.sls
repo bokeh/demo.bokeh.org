@@ -9,6 +9,8 @@ copy-static-files:
     - name: cp -r `bokeh info --static` /srv/static
     - user: root
     - group: root
+    - env:
+       - PATH: /bin:/usr/bin:/home/ec2-user/miniconda/envs/bokeh/bin
  
 static-files:
   file.directory:
