@@ -6,12 +6,12 @@ install-deps:
 
 copy-static-files:
   cmd.run:
-    - name: cp -r `bokeh info --static` /srv/static
+    - name: cp -r `bokeh info --static` /srv/
     - user: root
     - group: root
     - env:
        - PATH: /bin:/usr/bin:/home/ec2-user/miniconda/envs/bokeh/bin
- 
+
 static-files:
   file.directory:
     - name: /srv/static
