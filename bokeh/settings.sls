@@ -10,10 +10,10 @@
 
 
 {% set BOKEH_DEMOS_LIST = ['bokeh/examples/app/movies',
-                           'bokeh/examples/weather',
-                           'bokeh/examples/crossfilter',
-                           'bokeh/examples/gapminder',
-                           'bokeh/examples/surface3d',
+                           'bokeh/examples/app/weather',
+                           'bokeh/examples/app/crossfilter',
+                           'bokeh/examples/app/gapminder',
+                           'bokeh/examples/app/surface3d',
                            'bokeh/examples/app/selection_histogram.py',
                            'bokeh/examples/app/sliders.py',
                            'bokeh/examples/app/stocks',
