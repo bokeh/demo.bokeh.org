@@ -1,8 +1,9 @@
-#/bin/bash
+#!/bin/bash
 
 NUM_SERVERS=6
+SERVER_NAME=`hostname`
 
-while getopts "hs:" x; do
+while getopts "hsn:" x; do
     case "$x" in
        h)
             echo "usage: $0 [options]
@@ -11,11 +12,15 @@ Installs Miniconda/Nginx/Bokeh Server
 
     -s           Number of Nginx Servers to run with unique ports, default is 6
     -h           print this help message and exit
+    -n		 name of host server
 "
             exit 2
 	    ;;
 	s)
   	    NUM_SERVERS="$OPTARG"
+	    ;;
+	n)
+  	    SERVER_NAME="$OPTARG"
 	    ;;
         ?)
             echo "Error: did not recognize option, please try -h"
@@ -24,7 +29,7 @@ Installs Miniconda/Nginx/Bokeh Server
    esac
 done
 
-echo "Installing Miniconda, Nginx (with $NUM_SERVERS servers) and Bokeh Server"
+echo "Installing Miniconda, Nginx (with $NUM_SERVERS servers) and Bokeh Server with host: $SERVER_NAME"
 
 MINICONDA_VERSION=latest
 MINICONDA="Miniconda-$MINICONDA_VERSION-Linux-x86_64"
@@ -34,10 +39,10 @@ bash $MINICONDA.sh -b -p $HOME/miniconda
 
 PATH=~/miniconda/bin/:$PATH
 
-conda create -q -y -n bokeh -c bokeh/channel/dev bokeh
-source activate bokeh
+conda create -q -y -n bokeh python
+conda install -c bokeh nodejs -q -y -n bokeh
 
-conda install -q -y pandas scikit-learn supervisor
+conda install -q -y pandas scikit-learn supervisor -n bokeh
 
 PREFIX=~/miniconda
 CONDA=$PREFIX/bin/conda
@@ -91,7 +96,7 @@ mine_functions:
 mine_interval: 2
 
 log_level: debug
-log_file: /opt/anaconda/envs/salt/var/log/salt/minion
+log_file: $SALT_ENV/var/log/salt/minion
 EOF
 
 
@@ -100,6 +105,7 @@ mkdir -p $SALT_ENV/srv/pillar/bokeh
 cat << EOF > $SALT_ENV/srv/pillar/bokeh/init.sls
 bokeh:
   num_servers: $NUM_SERVERS
+  server_name: $SERVER_NAME
 EOF
 
 
@@ -138,3 +144,6 @@ sudo $SALT_ENV/bin/salt-key -y -a $HOSTNAME*
 cp -r bokeh nginx $SALT_ENV/srv/salt
 sudo $SALT_ENV/bin/salt '*' state.sls nginx
 sudo $SALT_ENV/bin/salt '*' state.sls bokeh
+
+# Download Stock Data after git checkout
+ sudo $BOKEH_ENV/bin/python /home/ec2-user/bokeh/examples/app/stocks/download_sample_data.py

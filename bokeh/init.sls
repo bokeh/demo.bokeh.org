@@ -7,13 +7,8 @@ include:
 git-bokeh:
   git.latest:
     - name: https://github.com/bokeh/bokeh.git
+    - rev: 0.12.3
     - target: /home/ec2-user/bokeh
-
-git-bokeh-demos:
-  git.latest:
-    - name: https://github.com/bokeh/bokeh-demos.git
-    - target: /home/ec2-user/bokeh-demos
-
 
 supervisor-conf:
   file.managed:
