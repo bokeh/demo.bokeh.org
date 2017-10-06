@@ -32,30 +32,46 @@ done
 echo "Installing Miniconda, Nginx (with $NUM_SERVERS servers) and Bokeh Server with host: $SERVER_NAME"
 
 MINICONDA_VERSION=latest
-MINICONDA="Miniconda-$MINICONDA_VERSION-Linux-x86_64"
-MINICONDA_URL="http://repo.continuum.io/miniconda/$MINICONDA.sh"
+MINICONDA="Miniconda3-$MINICONDA_VERSION-Linux-x86_64"
+MINICONDA_URL="https://repo.continuum.io/miniconda/$MINICONDA.sh"
+MINICONDA_DIR=$HOME/miniconda3
 wget -N $MINICONDA_URL
-bash $MINICONDA.sh -b -p $HOME/miniconda
+if [ -d  $MINICONDA_DIR ]; then 
+ echo "miniconda3 already installed"
+else
+ bash $MINICONDA.sh -b -p $MINICONDA_DIR 
+fi
 
-PATH=~/miniconda/bin/:$PATH
+PATH=~/miniconda3/bin/:$PATH
 
-conda create -q -y -n bokeh python
-conda install -c bokeh nodejs -q -y -n bokeh
+if [ -d  $MINICONDA_DIR/envs/bokeh ]; then
+  echo "bokeh env exists"
+else
+  conda create -q -y -n bokeh python
+  conda install -c bokeh nodejs bokeh -q -y -n bokeh
+  conda install -q -y numba pandas scikit-learn -n bokeh
+fi
 
-conda install -q -y pandas scikit-learn supervisor -n bokeh
-
-PREFIX=~/miniconda
-CONDA=$PREFIX/bin/conda
+CONDA=$MINICONDA_DIR/bin/conda
 IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
-SALT_ENV=$PREFIX/envs/salt
-SUPERVISOR_ENV=$PREFIX/envs/supervisor
-BOKEH_ENV=$PREFIX/envs/bokeh
+SALT_ENV=$MINICONDA_DIR/envs/salt
+SUPERVISOR_ENV=$MINICONDA_DIR/envs/supervisor
+BOKEH_ENV=$MINICONDA_DIR/envs/bokeh
 HOSTNAME=`hostname`
 
 mkdir -p ~/log
 
-$CONDA create -q -y -n salt python=2.7 salt -c anaconda-cluster
-$CONDA create -q -y -n supervisor python=2.7 supervisor -c anaconda-cluster
+if [ -d  $MINICONDA_DIR/envs/salt ]; then
+  echo "salt env exists"
+else
+  $CONDA create -q -y -n salt python=2.7 salt -c conda-forge
+fi
+
+if [ -d  $MINICONDA_DIR/envs/supervisor ]; then
+  echo "supervisor env exists"
+else
+  $CONDA create -q -y -n supervisor python=2.7 supervisor
+fi
 
 #grab sample data
 $BOKEH_ENV/bin/python -c "import bokeh.sampledata; bokeh.sampledata.download()"
