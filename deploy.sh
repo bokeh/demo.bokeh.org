@@ -48,7 +48,8 @@ if [ -d  $MINICONDA_DIR/envs/bokeh ]; then
   echo "bokeh env exists"
 else
   conda create -q -y -n bokeh python
-  conda install -c bokeh nodejs bokeh -q -y -n bokeh
+  conda install -c bokeh/c/dev bokeh -q -y -n bokeh
+  conda install -c conda-forge nodejs -q -y -n bokeh
   conda install -q -y numba pandas scikit-learn -n bokeh
 fi
 
@@ -57,14 +58,14 @@ IP=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
 SALT_ENV=$MINICONDA_DIR/envs/salt
 SUPERVISOR_ENV=$MINICONDA_DIR/envs/supervisor
 BOKEH_ENV=$MINICONDA_DIR/envs/bokeh
-HOSTNAME=`hostname`
+HOSTNAME=`curl http://169.254.169.254/latest/meta-data/hostname`
 
 mkdir -p ~/log
 
 if [ -d  $MINICONDA_DIR/envs/salt ]; then
   echo "salt env exists"
 else
-  $CONDA create -q -y -n salt python=2.7 salt -c conda-forge
+  $CONDA create -q -y -n salt python=2.7 tornado=4.5.3 pyzmq=16.0.2 salt=2016.3.0 -c conda-forge
 fi
 
 if [ -d  $MINICONDA_DIR/envs/supervisor ]; then
@@ -88,7 +89,7 @@ cat << EOF > $SALT_ENV/etc/salt/master
 
 interface: $IP
 
-log_level: debug
+log_level: info 
 log_file: $SALT_ENV/var/log/salt/master
 
 file_roots:
@@ -111,7 +112,7 @@ mine_functions:
   network.ip_addrs: []
 mine_interval: 2
 
-log_level: debug
+log_level: info
 log_file: $SALT_ENV/var/log/salt/minion
 EOF
 
@@ -140,6 +141,16 @@ else
     sudo $SALT_ENV/bin/salt-master -d
 fi
 
+sudo mkdir -p $SALT_ENV/etc/salt/pki/master/minions/
+sudo mkdir -p $SALT_ENV/etc/salt/pki/minion/
+
+## auto generate master/minion keys
+sudo $SALT_ENV/bin/salt-key --gen-keys=$HOSTNAME
+sudo cp $HOSTNAME.pub $SALT_ENV/etc/salt/pki/master/minions/$HOSTNAME
+sudo cp $HOSTNAME.pem $SALT_ENV/etc/salt/pki/minion/minion.pem
+sudo cp $HOSTNAME.pub $SALT_ENV/etc/salt/pki/minion/minion.pub
+
+
 # wait for master to come online
 if pgrep "salt-minion" > /dev/null
 then 
@@ -150,14 +161,12 @@ else
     sudo $SALT_ENV/bin/salt-minion -d
 fi
 
-## auto generate master/minion keys
-#sudo $SALT_ENV/bin/salt-key --gen-keys=bokeh_salt_keys
-#sudo cp bokeh_salt_keys.pub $SALT_ENV/etc/salt/pki/master/minions/
-#sudo cp bokeh_salt_keys.pub bokeh_salt_keys.pem $SALT_ENV/etc/salt/pki/minion/
-
-sudo $SALT_ENV/bin/salt-key -y -a $HOSTNAME*
-
+# sudo $SALT_ENV/bin/salt-key -y -a $HOSTNAME*
+echo "Copy Salt States"
 cp -r bokeh nginx $SALT_ENV/srv/salt
+
+
+echo "Execute Salt States"
 sudo $SALT_ENV/bin/salt '*' state.sls nginx
 sudo $SALT_ENV/bin/salt '*' state.sls bokeh
 

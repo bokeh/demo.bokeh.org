@@ -7,7 +7,7 @@ include:
 git-bokeh:
   git.latest:
     - name: https://github.com/bokeh/bokeh.git
-    - rev: 0.12.9
+    - rev: 1.0.0
     - target: /home/ec2-user/bokeh
 
 supervisor-conf:
