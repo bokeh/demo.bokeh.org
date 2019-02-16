@@ -31,7 +31,7 @@ Now navigate to ``http://localhost:5006`` to interact with the demo site.
 
 ## Deploying to AWS
 
-The published [demo.bokeh.org](https://demo.bokeh.org) site is deployed using [Ealstic Beanstalk with Docker Containers](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.html). 
+The published [demo.bokeh.org](https://demo.bokeh.org) site is deployed using [Elastic Beanstalk with Docker Containers](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.html). 
 
 Random notes for future reference:
 
