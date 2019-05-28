@@ -1,11 +1,11 @@
 FROM frolvlad/alpine-miniconda3
 LABEL org.bokeh.demo.maintainer="Bokeh <bokehplots@gmail.com>"
 
-ENV BK_VERSION=1.1.0dev4
+ENV BK_VERSION=1.2.0
 ENV PY_VERSION=3.7
 ENV NUM_PROCS=4
 
-RUN apk add --no-cache  git
+RUN apk add --no-cache  git bash
 
 RUN git clone --branch $BK_VERSION https://github.com/bokeh/bokeh.git /bokeh
 
