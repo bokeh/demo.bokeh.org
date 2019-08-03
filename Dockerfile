@@ -1,7 +1,6 @@
-FROM continuumio/miniconda
+FROM continuumio/miniconda3
 LABEL org.bokeh.demo.maintainer="Bokeh <info@bokeh.org>"
 
-ENV CONDA_VERSION=4.7.10
 ENV BK_VERSION=1.3.0
 ENV PY_VERSION=3.7
 ENV NUM_PROCS=4
@@ -13,10 +12,8 @@ RUN git clone --branch $BK_VERSION https://github.com/bokeh/bokeh.git /bokeh
 
 RUN mkdir -p /examples && cp -r /bokeh/examples/app /examples/ && rm -rf /bokeh
 
-RUN conda install conda=${CONDA_VERSION}
-RUN conda install --yes --quiet python=${PY_VERSION} pyyaml jinja2 numpy numba scipy sympy "nodejs>=8.8" pandas scikit-learn
-RUN conda install --yes --quiet -c bokeh bokeh=${BK_VERSION}
-RUN conda clean -ay
+
+RUN pip install --quiet bokeh==${BK_VERSION} pyyaml jinja2 numpy numba scipy sympy nodejs>=8.8 pandas scikit-learn
 
 RUN python -c 'import bokeh; bokeh.sampledata.download(progress=False)'
 RUN cd /examples/app/stocks && python download_sample_data.py && cd /
