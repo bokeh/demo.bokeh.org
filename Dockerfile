@@ -1,5 +1,5 @@
 FROM frolvlad/alpine-miniconda3
-LABEL org.bokeh.demo.maintainer="Bokeh <bokehplots@gmail.com>"
+LABEL org.bokeh.demo.maintainer="Bokeh <info@bokeh.org>"
 
 ENV BK_VERSION=1.3.0
 ENV PY_VERSION=3.7
@@ -12,7 +12,7 @@ RUN git clone --branch $BK_VERSION https://github.com/bokeh/bokeh.git /bokeh
 
 RUN mkdir -p /examples && cp -r /bokeh/examples/app /examples/ && rm -rf /bokeh
 
-RUN conda config --set auto_update_conda off && conda config --append channels bokeh --append channels bokeh/c/dev
+RUN conda config --append channels bokeh
 RUN conda install --yes --quiet python=${PY_VERSION} pyyaml jinja2 bokeh=${BK_VERSION} numpy numba scipy sympy nodejs>=8.8 pandas scikit-learn
 RUN conda clean -ay
 
