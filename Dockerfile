@@ -4,6 +4,7 @@ LABEL org.bokeh.demo.maintainer="Bokeh <bokehplots@gmail.com>"
 ENV BK_VERSION=1.3.0
 ENV PY_VERSION=3.7
 ENV NUM_PROCS=4
+ENV BOKEH_RESOURCES=cdn
 
 RUN apk add --no-cache  git bash
 
