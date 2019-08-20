@@ -1,5 +1,5 @@
 {
-  "AWSEBDockerrunVersion": "2",
+  "AWSEBDockerrunVersion": "1",
   "Image": {
     "Name": "bokeh/demo.bokeh.org",
     "Update": "true"
