@@ -1,0 +1,13 @@
+{
+  "AWSEBDockerrunVersion": "2",
+  "Image": {
+    "Name": "bokeh/demo.bokeh.org",
+    "Update": "true"
+  },
+  "Ports": [
+    {
+      "ContainerPort": "5006",
+      "HostPort": "80"
+    }
+  ]
+}
