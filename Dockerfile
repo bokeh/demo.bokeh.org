@@ -1,8 +1,8 @@
 FROM continuumio/miniconda
 LABEL org.bokeh.demo.maintainer="Bokeh <info@bokeh.org>"
 
-ENV BK_VERSION=1.4.0
-ENV PY_VERSION=3.7
+ENV BK_VERSION=2.0.1
+ENV PY_VERSION=3.8
 ENV NUM_PROCS=4
 ENV BOKEH_RESOURCES=cdn
 
