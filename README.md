@@ -18,14 +18,14 @@ and [install Docker](https://docs.docker.com/install/) on your platform
 
 In the top level of this repository, execute the command
 ```
-docker build --tag demo.bokeh.org .
+docker build --tag bokeh/demo.bokeh.org .
 ```
 
 ### Running
 
 Execute the command to start the Docker container:
 ```
-docker run --rm -p 5006:5006 -it demo.bokeh.org
+docker run --rm -p 5006:5006 -it bokeh/demo.bokeh.org
 ```
 Now navigate to ``http://localhost:5006`` to interact with the demo site. 
 
