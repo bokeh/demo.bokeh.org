@@ -2,9 +2,7 @@
 
 Hosted Bokeh App Demos
 
-***NOTE***: *The [demo.bokeh.org](https://demo.bokeh.org) site has moved to a simpler deployment based on Docker and Elastic AWS Beanstalk. To see the old Nginx/Salt based deployment code, look at the ``nginx_salt_deploy`` branch.*
-
-## Using Locally
+## Running Locally
 
 ### Setup
 
