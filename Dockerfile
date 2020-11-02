@@ -19,7 +19,7 @@ RUN conda clean -ay
 RUN python -c 'import bokeh; bokeh.sampledata.download(progress=False)'
 RUN cd /examples/app/stocks && python download_sample_data.py && cd /
 
-ADD https://raw.githubusercontent.com/bokeh/demo.bokeh.org/master/index.html /index.html
+ADD https://raw.githubusercontent.com/bokeh/demo.bokeh.org/main/index.html /index.html
 
 EXPOSE 5006
 EXPOSE 80
