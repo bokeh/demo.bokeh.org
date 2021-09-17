@@ -1,10 +1,11 @@
 FROM continuumio/miniconda
 LABEL org.bokeh.demo.maintainer="Bokeh <info@bokeh.org>"
 
-ENV BK_VERSION=2.2.0
-ENV PY_VERSION=3.8
-ENV NUM_PROCS=4
+ENV BK_VERSION=2.4.0
+ENV PY_VERSION=3.9
+ENV NUM_PROCS=2
 ENV BOKEH_RESOURCES=cdn
+ENV BOKEH_LOG_LEVEL=debug
 
 RUN apt-get install git bash
 
@@ -13,7 +14,7 @@ RUN git clone --branch $BK_VERSION https://github.com/bokeh/bokeh.git /bokeh
 RUN mkdir -p /examples && cp -r /bokeh/examples/app /examples/ && rm -rf /bokeh
 
 RUN conda config --append channels bokeh
-RUN conda install --yes --quiet python=${PY_VERSION} pyyaml jinja2 bokeh=${BK_VERSION} numpy numba scipy sympy "nodejs>=8.8" pandas scikit-learn
+RUN conda install --yes --quiet python=${PY_VERSION} pyyaml jinja2 bokeh=${BK_VERSION} numpy "nodejs>=8.8" pandas scipy
 RUN conda clean -ay
 
 RUN python -c 'import bokeh; bokeh.sampledata.download(progress=False)'
@@ -27,21 +28,14 @@ EXPOSE 80
 CMD bokeh serve \
     --allow-websocket-origin="*" \
     --index=/index.html \
+    --log-level=${BOKEH_LOG_LEVEL} \
     --num-procs=${NUM_PROCS} \
-    /examples/app/clustering \
     /examples/app/crossfilter \
-    /examples/app/dash \
     /examples/app/export_csv \
-    /examples/app/fourier_animated.py \
     /examples/app/gapminder \
-    /examples/app/image_blur.py \
     /examples/app/movies \
-    /examples/app/ohlc \
-    /examples/app/population.py \
     /examples/app/selection_histogram.py \
     /examples/app/sliders.py \
-    /examples/app/spectrogram \
     /examples/app/surface3d \
     /examples/app/stocks \
-    /examples/app/taylor.py \
     /examples/app/weather
