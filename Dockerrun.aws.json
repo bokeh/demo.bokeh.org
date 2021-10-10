@@ -1,12 +1,12 @@
 {
   "AWSEBDockerrunVersion": "1",
   "Image": {
-    "Name": "bokeh/demo.bokeh.org",
+    "Name": "562605262404.dkr.ecr.us-east-1.amazonaws.com/bokeh",
     "Update": "true"
   },
   "Ports": [
     {
-      "ContainerPort": "5006",
+      "ContainerPort": "80",
       "HostPort": "80"
     }
   ]
