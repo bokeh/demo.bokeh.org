@@ -13,7 +13,7 @@ locals {
         hostPort      = 5006
         protocol      = "tcp"
         containerPort = 5006
-        }
+      }
     ]
   }
 }

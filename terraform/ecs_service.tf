@@ -10,8 +10,8 @@ resource "aws_ecs_service" "worker" {
   }
 
   network_configuration {
-    security_groups  = [aws_security_group.sg_demo_bokeh_org.id]
-    subnets          = [aws_subnet.pub_subnet.id, aws_subnet.pub_subnet2.id]
+    security_groups = [aws_security_group.sg_demo_bokeh_org.id]
+    subnets         = [aws_subnet.pub_subnet.id, aws_subnet.pub_subnet2.id]
   }
 
   load_balancer {
