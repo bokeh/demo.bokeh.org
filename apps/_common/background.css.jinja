@@ -1,0 +1,22 @@
+:host {
+  background: {{ background }};
+  color: {{ ink }};
+  color-scheme: light;
+}
+
+{% if control == "input" %}
+.bk-input {
+  background-color: {{ background }} !important;
+  color: {{ ink }};
+}
+{% elif control == "button" %}
+.bk-btn.bk-btn-default {
+  background: {{ background }} !important;
+  color: {{ ink }};
+}
+
+.bk-btn.bk-btn-primary {
+  background: {{ teal }} !important;
+  border-color: #3e6667 !important;
+}
+{% endif %}

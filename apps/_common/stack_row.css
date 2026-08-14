@@ -1,0 +1,16 @@
+@media (max-width: 700px) {
+  :host {
+    flex-direction: column !important;
+    gap: 16px !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+
+  :host > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+    align-self: stretch !important;
+  }
+}

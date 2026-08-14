@@ -1,0 +1,23 @@
+.metric-card {
+  width: 100%;
+  min-height: 74px;
+  padding: 13px 15px;
+  border: 1px solid #ded7ce;
+  border-top: 3px solid var(--metric-accent);
+  background: #fffdf9;
+  color: #211f20;
+}
+
+.metric-label {
+  display: block;
+  color: #6f686c;
+  font: 10px Arial, sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  display: block;
+  margin-top: 4px;
+  font: 400 24px Georgia, serif;
+}

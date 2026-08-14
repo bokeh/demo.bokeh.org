@@ -1,0 +1,12 @@
+"""Define the shared color palette for the demo applications."""
+
+INK = "#211f20"
+MUTED = "#6f686c"
+PAPER = "#fffdf9"
+WARM = "#f7f3ec"
+PLUM = "#2a1723"
+CORAL = "#d95b43"
+TEAL = "#4f7b7c"
+GOLD = "#d6a72e"
+VIOLET = "#7c4b78"
+GRID = "#ded7ce"

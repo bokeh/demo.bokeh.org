@@ -1,0 +1,11 @@
+@media (max-width: 700px) {
+  :host {
+    flex-wrap: wrap !important;
+  }
+
+  :host > * {
+    min-width: min(100%, 140px) !important;
+    max-width: 100% !important;
+    flex: 1 1 140px !important;
+  }
+}
