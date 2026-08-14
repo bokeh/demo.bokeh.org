@@ -1,0 +1,110 @@
+:host(.scheduler-controls) {
+  padding: 14px 16px;
+  border: 1px solid #ded7ce;
+  background: #f7f3ec;
+}
+
+:host(.scheduler-console) {
+  border: 1px solid #66525f;
+  background: #2a1723;
+}
+
+:host(.scheduler-run-status) {
+  box-sizing: border-box;
+  border-bottom: 1px solid #66525f;
+}
+
+:host(.scheduler-task-details) {
+  padding: 2px 14px 12px;
+  border-bottom: 1px solid #66525f;
+  background: #2a1723;
+  color: #f4ede5;
+}
+
+:host(.scheduler-introduction) h2 {
+  margin: 0 0 5px;
+}
+
+:host(.scheduler-introduction) p {
+  margin: 0;
+}
+
+.scheduler-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px 22px;
+  flex-wrap: wrap;
+  padding: 8px 14px 2px;
+  background: #2a1723;
+  color: #f4ede5;
+}
+
+.scheduler-legend span,
+.scheduler-summary > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.scheduler-dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  border-radius: 50%;
+  background: var(--swatch);
+}
+
+.scheduler-stage-swatch {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
+  background: var(--swatch);
+}
+
+.scheduler-event-heading {
+  margin-left: 8px;
+}
+
+.scheduler-interruption {
+  color: #d95b43;
+}
+
+.scheduler-summary {
+  display: grid;
+  width: 100%;
+  box-sizing: border-box;
+  grid-template-columns: minmax(250px, 1.8fr) repeat(5, minmax(112px, 1fr));
+  gap: 16px;
+  align-items: center;
+  padding: 12px 14px;
+  background: #2a1723;
+  color: #f4ede5;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.scheduler-run {
+  font: 400 22px Georgia, serif;
+}
+
+.scheduler-summary b,
+.scheduler-run-number,
+.scheduler-complete-count {
+  display: inline-block;
+  min-width: 2ch;
+  text-align: right;
+}
+
+.scheduler-complete-count {
+  min-width: 5ch;
+}
+
+.scheduler-throughput {
+  min-width: 4.5ch !important;
+}
+
+.scheduler-task-copy {
+  color: #f4ede5;
+}

@@ -1,0 +1,10 @@
+<p class="scheduler-task-copy">
+  {% if task %}
+    <strong>{{ task.name }}</strong> · {{ task.stage }} · {{ task.status }} ·
+    {{ "%.1f" | format(task.duration) }} s nominal work<br>
+    Worker: {{ worker }}<br>
+    Dependencies: {{ dependencies }}{% if task.injected_delay %}<br>Injected delay: {{ "%.0f" | format(task.injected_delay) }} s{% endif %}
+  {% else %}
+    <strong>Task inspector</strong> · Select a node to see its dependencies and current assignment.
+  {% endif %}
+</p>
