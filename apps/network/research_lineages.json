@@ -1,0 +1,4614 @@
+{
+  "source": "OpenAlex",
+  "snapshot_date": "2026-08-08",
+  "lineages": {
+    "Gravitational waves": {
+      "description": "The first direct detection of gravitational waves, its experimental foundations, and influential follow-on work.",
+      "seed": "W2252795400",
+      "nodes": [
+        {
+          "id": "W2252795400",
+          "title": "Observation of Gravitational Waves from a Binary Black Hole Merger",
+          "year": 2016,
+          "citations": 14422,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Landmark",
+          "doi": "https://doi.org/10.1103/physrevlett.116.061102",
+          "type": "Article"
+        },
+        {
+          "id": "W1994870116",
+          "title": "Advanced Virgo: a second-generation interferometric gravitational wave detector",
+          "year": 2014,
+          "citations": 4169,
+          "authors": "F. Acernese et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1088/0264-9381/32/2/024001",
+          "type": "Article"
+        },
+        {
+          "id": "W2073862476",
+          "title": "Gravitational Field of a Spinning Mass as an Example of Algebraically Special Metrics",
+          "year": 1963,
+          "citations": 3568,
+          "authors": "R. P. Kerr",
+          "topic": "Relativity and Gravitational Theory",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevlett.11.237",
+          "type": "Article"
+        },
+        {
+          "id": "W4234856688",
+          "title": "Advanced LIGO",
+          "year": 2015,
+          "citations": 3449,
+          "authors": "J. Aasi et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1088/0264-9381/32/7/074001",
+          "type": "Article"
+        },
+        {
+          "id": "W2565472021",
+          "title": "LIGO: The Laser Interferometer Gravitational-Wave Observatory",
+          "year": 1992,
+          "citations": 2275,
+          "authors": "Alex Abramovici et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.256.5055.325",
+          "type": "Article"
+        },
+        {
+          "id": "W2153135464",
+          "title": "Gravitational Radiation from Post-Newtonian Sources and Inspiralling Compact Binaries",
+          "year": 2014,
+          "citations": 2258,
+          "authors": "Luc Blanchet",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.12942/lrr-2014-2",
+          "type": "Article"
+        },
+        {
+          "id": "W2019709661",
+          "title": "Discovery of a pulsar in a binary system",
+          "year": 1975,
+          "citations": 1908,
+          "authors": "R. Hülse and J. H. Taylor",
+          "topic": "Astro and Planetary Science",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1086/181708",
+          "type": "Article"
+        },
+        {
+          "id": "W1989170879",
+          "title": "Evolution of Binary Black-Hole Spacetimes",
+          "year": 2005,
+          "citations": 1524,
+          "authors": "Frans Pretorius",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevlett.95.121101",
+          "type": "Article"
+        },
+        {
+          "id": "W1997367763",
+          "title": "Accurate Evolutions of Orbiting Black-Hole Binaries without Excision",
+          "year": 2006,
+          "citations": 1438,
+          "authors": "Manuela Campanelli et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevlett.96.111101",
+          "type": "Article"
+        },
+        {
+          "id": "W2158293236",
+          "title": "Characterization of the LIGO detectors during their sixth science run",
+          "year": 2015,
+          "citations": 1325,
+          "authors": "J. Aasi et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1088/0264-9381/32/11/115012",
+          "type": "Article"
+        },
+        {
+          "id": "W2148994792",
+          "title": "Effective one-body approach to general relativistic two-body dynamics",
+          "year": 1999,
+          "citations": 1320,
+          "authors": "Alessandra Buonanno and Thibault Damour",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevd.59.084006",
+          "type": "Article"
+        },
+        {
+          "id": "W1971068715",
+          "title": "Gravitational-Wave Extraction from an Inspiraling Configuration of Merging Black Holes",
+          "year": 2006,
+          "citations": 1293,
+          "authors": "John G. Baker et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevlett.96.111102",
+          "type": "Article"
+        },
+        {
+          "id": "W1978916504",
+          "title": "Predictions for the rates of compact binary coalescences observable by ground-based gravitational-wave detectors",
+          "year": 2010,
+          "citations": 1156,
+          "authors": "J. Abadie et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1088/0264-9381/27/17/173001",
+          "type": "Article"
+        },
+        {
+          "id": "W1134494461",
+          "title": "Frequency-domain gravitational waves from nonprecessing black-hole binaries. II. A phenomenological model for the advanced detector era",
+          "year": 2016,
+          "citations": 1103,
+          "authors": "S. Khan et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevd.93.044007",
+          "type": "Article"
+        },
+        {
+          "id": "W2051449498",
+          "title": "Interferometer design of the KAGRA gravitational wave detector",
+          "year": 2013,
+          "citations": 1066,
+          "authors": "Y. Aso et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevd.88.043007",
+          "type": "Article"
+        },
+        {
+          "id": "W2060745302",
+          "title": "Maximal Extension of Schwarzschild Metric",
+          "year": 1960,
+          "citations": 986,
+          "authors": "Martin D. Kruskal",
+          "topic": "Relativity and Gravitational Theory",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrev.119.1743",
+          "type": "Article"
+        },
+        {
+          "id": "W2037939815",
+          "title": "Parameter estimation for compact binaries with ground-based gravitational-wave observations using the LALInference software library",
+          "year": 2015,
+          "citations": 974,
+          "authors": "J. Veitch et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1103/physrevd.91.042003",
+          "type": "Article"
+        },
+        {
+          "id": "W2765081049",
+          "title": "GW170817: Observation of Gravitational Waves from a Binary Neutron Star Inspiral",
+          "year": 2017,
+          "citations": 9732,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.119.161101",
+          "type": "Article"
+        },
+        {
+          "id": "W2936349953",
+          "title": "First M87 Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole",
+          "year": 2019,
+          "citations": 4234,
+          "authors": "Kazunori Akiyama et al.",
+          "topic": "Astrophysical Phenomena and Observations",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/ab0ec7",
+          "type": "Article"
+        },
+        {
+          "id": "W2766840380",
+          "title": "Multi-messenger Observations of a Binary Neutron Star Merger*",
+          "year": 2017,
+          "citations": 3704,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Gamma-ray bursts and supernovae",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/aa91c9",
+          "type": "Article"
+        },
+        {
+          "id": "W2971836485",
+          "title": "GWTC-1: A Gravitational-Wave Transient Catalog of Compact Binary Mergers Observed by LIGO and Virgo during the First and Second Observing Runs",
+          "year": 2019,
+          "citations": 3637,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevx.9.031040",
+          "type": "Article"
+        },
+        {
+          "id": "W2766754978",
+          "title": "Gravitational Waves and Gamma-Rays from a Binary Neutron Star Merger: GW170817 and GRB 170817A",
+          "year": 2017,
+          "citations": 3564,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Gamma-ray bursts and supernovae",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/aa920c",
+          "type": "Article"
+        },
+        {
+          "id": "W2437571239",
+          "title": "GW151226: Observation of Gravitational Waves from a 22-Solar-Mass Binary Black Hole Coalescence",
+          "year": 2016,
+          "citations": 3506,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.116.241103",
+          "type": "Article"
+        },
+        {
+          "id": "W2621266390",
+          "title": "GW170104: Observation of a 50-Solar-Mass Binary Black Hole Coalescence at Redshift 0.2",
+          "year": 2017,
+          "citations": 2523,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.118.221101",
+          "type": "Article"
+        },
+        {
+          "id": "W2807309204",
+          "title": "GW170817: Measurements of Neutron Star Radii and Equation of State",
+          "year": 2018,
+          "citations": 2488,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.121.161101",
+          "type": "Article"
+        },
+        {
+          "id": "W2756512191",
+          "title": "GW170814: A Three-Detector Observation of Gravitational Waves from a Binary Black Hole Coalescence",
+          "year": 2017,
+          "citations": 2184,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.119.141101",
+          "type": "Article"
+        },
+        {
+          "id": "W3094812309",
+          "title": "GWTC-2: Compact Binary Coalescences Observed by LIGO and Virgo during the First Half of the Third Observing Run",
+          "year": 2021,
+          "citations": 2044,
+          "authors": "R. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevx.11.021053",
+          "type": "Article"
+        },
+        {
+          "id": "W4280589633",
+          "title": "First Sagittarius A* Event Horizon Telescope Results. I. The Shadow of the Supermassive Black Hole in the Center of the Milky Way",
+          "year": 2022,
+          "citations": 1840,
+          "authors": "Kazunori Akiyama et al.",
+          "topic": "Astrophysical Phenomena and Observations",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/ac6674",
+          "type": "Article"
+        },
+        {
+          "id": "W2273892807",
+          "title": "Tests of General Relativity with GW150914",
+          "year": 2016,
+          "citations": 1821,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.116.221101",
+          "type": "Article"
+        },
+        {
+          "id": "W3036761016",
+          "title": "GW190814: Gravitational Waves from the Coalescence of a 23 Solar Mass Black Hole with a 2.6 Solar Mass Compact Object",
+          "year": 2020,
+          "citations": 1808,
+          "authors": "R. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/ab960f",
+          "type": "Article"
+        },
+        {
+          "id": "W4307082099",
+          "title": "GWTC-3: Compact Binary Coalescences Observed by LIGO and Virgo during the Second Part of the Third Observing Run",
+          "year": 2023,
+          "citations": 1729,
+          "authors": "R. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevx.13.041039",
+          "type": "Article"
+        },
+        {
+          "id": "W4382358570",
+          "title": "The NANOGrav 15 yr Data Set: Evidence for a Gravitational-wave Background",
+          "year": 2023,
+          "citations": 1509,
+          "authors": "Gabriella Agazie et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/acdac6",
+          "type": "Article"
+        },
+        {
+          "id": "W2938000962",
+          "title": "First M87 Event Horizon Telescope Results. V. Physical Origin of the Asymmetric Ring",
+          "year": 2019,
+          "citations": 1452,
+          "authors": "Kazunori Akiyama et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.3847/2041-8213/ab0f43",
+          "type": "Article"
+        },
+        {
+          "id": "W4302773822",
+          "title": "Multi-messenger Observations of a Binary Neutron Star Merger",
+          "year": 2017,
+          "citations": 1398,
+          "authors": "Abbott, BP et al.",
+          "topic": "Gamma-ray bursts and supernovae",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.13016/m2dmyl-ejkq",
+          "type": "Article"
+        },
+        {
+          "id": "W3081939279",
+          "title": "GW190521: A Binary Black Hole Merger with a Total Mass of 150  M⊙",
+          "year": 2020,
+          "citations": 1333,
+          "authors": "R. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevlett.125.101102",
+          "type": "Article"
+        },
+        {
+          "id": "W2805726701",
+          "title": "Properties of the Binary Neutron Star Merger GW170817",
+          "year": 2019,
+          "citations": 1323,
+          "authors": "B. P. Abbott et al.",
+          "topic": "Pulsars and Gravitational Waves Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1103/physrevx.9.011001",
+          "type": "Article"
+        }
+      ],
+      "edges": [
+        {
+          "source": "W2252795400",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2051449498"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2060745302"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2073862476"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2158293236"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W2565472021"
+        },
+        {
+          "source": "W2252795400",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W1994870116",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W4234856688",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2153135464",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W1997367763",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2158293236",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2158293236",
+          "target": "W2565472021"
+        },
+        {
+          "source": "W1971068715",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W1978916504",
+          "target": "W2565472021"
+        },
+        {
+          "source": "W1134494461",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W1134494461",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2037939815",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2765081049",
+          "target": "W4302773822"
+        },
+        {
+          "source": "W2936349953",
+          "target": "W2073862476"
+        },
+        {
+          "source": "W2936349953",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2936349953",
+          "target": "W2938000962"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W2766840380",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2051449498"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2805726701"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W2807309204"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2971836485",
+          "target": "W4302773822"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2158293236"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W2766754978",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2437571239",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2621266390",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2807309204",
+          "target": "W4302773822"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2756512191",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2807309204"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W2971836485"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W3036761016"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W3081939279"
+        },
+        {
+          "source": "W3094812309",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W4280589633",
+          "target": "W2073862476"
+        },
+        {
+          "source": "W4280589633",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W4280589633",
+          "target": "W2936349953"
+        },
+        {
+          "source": "W4280589633",
+          "target": "W2938000962"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2051449498"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2073862476"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2273892807",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2158293236"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2805726701"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2807309204"
+        },
+        {
+          "source": "W3036761016",
+          "target": "W2971836485"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2805726701"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W2971836485"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W3036761016"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W3081939279"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W3094812309"
+        },
+        {
+          "source": "W4307082099",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W4382358570",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W4382358570",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2938000962",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W1971068715"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W1978916504"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W1989170879"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W1997367763"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2019709661"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2148994792"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2437571239"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W4302773822",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W2971836485"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W3036761016"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W3081939279"
+        },
+        {
+          "source": "W3081939279",
+          "target": "W4234856688"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W1134494461"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W1994870116"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2037939815"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2153135464"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2158293236"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2252795400"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2273892807"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2621266390"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2756512191"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2765081049"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2766754978"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2766840380"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W2807309204"
+        },
+        {
+          "source": "W2805726701",
+          "target": "W4302773822"
+        }
+      ],
+      "year_counts": [
+        {
+          "year": 2016,
+          "count": 998
+        },
+        {
+          "year": 2017,
+          "count": 1385
+        },
+        {
+          "year": 2018,
+          "count": 1435
+        },
+        {
+          "year": 2019,
+          "count": 1368
+        },
+        {
+          "year": 2020,
+          "count": 1286
+        },
+        {
+          "year": 2021,
+          "count": 1512
+        },
+        {
+          "year": 2022,
+          "count": 1269
+        },
+        {
+          "year": 2023,
+          "count": 1512
+        },
+        {
+          "year": 2024,
+          "count": 1483
+        },
+        {
+          "year": 2025,
+          "count": 1477
+        },
+        {
+          "year": 2026,
+          "count": 757
+        }
+      ]
+    },
+    "CRISPR genome editing": {
+      "description": "The programmable Cas9 result, the work it built on, and later research that carried the method into new domains.",
+      "seed": "W2045435533",
+      "nodes": [
+        {
+          "id": "W2045435533",
+          "title": "A Programmable Dual-RNA–Guided DNA Endonuclease in Adaptive Bacterial Immunity",
+          "year": 2012,
+          "citations": 17467,
+          "authors": "Martin Jínek et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Landmark",
+          "doi": "https://doi.org/10.1126/science.1225829",
+          "type": "Article"
+        },
+        {
+          "id": "W2144634347",
+          "title": "Molecular Cloning: A Laboratory Manual",
+          "year": 1989,
+          "citations": 130003,
+          "authors": "Joseph Sambrook et al.",
+          "topic": "Genetics, Bioinformatics, and Biomedical Research",
+          "relation": "Foundation",
+          "doi": null,
+          "type": "Article"
+        },
+        {
+          "id": "W2083381199",
+          "title": "Conserved Seed Pairing, Often Flanked by Adenosines, Indicates that Thousands of Human Genes are MicroRNA Targets",
+          "year": 2005,
+          "citations": 11994,
+          "authors": "Benjamin P. Lewis et al.",
+          "topic": "Plant Molecular Biology Research",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1016/j.cell.2004.12.035",
+          "type": "Article"
+        },
+        {
+          "id": "W2169244146",
+          "title": "CRISPR Provides Acquired Resistance Against Viruses in Prokaryotes",
+          "year": 2007,
+          "citations": 6348,
+          "authors": "Rodolphe Barrangou et al.",
+          "topic": "Bacteriophages and microbial interactions",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.1138140",
+          "type": "Article"
+        },
+        {
+          "id": "W2010986636",
+          "title": "Small CRISPR RNAs Guide Antiviral Defense in Prokaryotes",
+          "year": 2008,
+          "citations": 2644,
+          "authors": "Stan J. J. Brouns et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.1159689",
+          "type": "Article"
+        },
+        {
+          "id": "W2120503144",
+          "title": "CRISPR RNA maturation by trans-encoded small RNA and host factor RNase III",
+          "year": 2011,
+          "citations": 2575,
+          "authors": "Elitza Deltcheva et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nature09886",
+          "type": "Article"
+        },
+        {
+          "id": "W2163241233",
+          "title": "Evolution and classification of the CRISPR–Cas systems",
+          "year": 2011,
+          "citations": 2517,
+          "authors": "Kira S. Makarova et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nrmicro2577",
+          "type": "Article"
+        },
+        {
+          "id": "W1978094899",
+          "title": "The CRISPR/Cas bacterial immune system cleaves bacteriophage and plasmid DNA",
+          "year": 2010,
+          "citations": 2364,
+          "authors": "Josiane E. Garneau et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nature09523",
+          "type": "Article"
+        },
+        {
+          "id": "W1982969769",
+          "title": "Genome editing with engineered zinc finger nucleases",
+          "year": 2010,
+          "citations": 2280,
+          "authors": "Fyodor D. Urnov et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nrg2842",
+          "type": "Article"
+        },
+        {
+          "id": "W2025074364",
+          "title": "A TALE nuclease architecture for efficient genome editing",
+          "year": 2010,
+          "citations": 2106,
+          "authors": "Jeffrey C. Miller et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nbt.1755",
+          "type": "Article"
+        },
+        {
+          "id": "W2112006537",
+          "title": "Targeting DNA Double-Strand Breaks with TAL Effector Nucleases",
+          "year": 2010,
+          "citations": 2008,
+          "authors": "Michelle Christian et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1534/genetics.110.120717",
+          "type": "Article"
+        },
+        {
+          "id": "W2063148079",
+          "title": "RNA-guided genetic silencing systems in bacteria and archaea",
+          "year": 2012,
+          "citations": 1869,
+          "authors": "Blake Wiedenheft et al.",
+          "topic": "Bacteriophages and microbial interactions",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nature10886",
+          "type": "Article"
+        },
+        {
+          "id": "W2149751339",
+          "title": "Short motif sequences determine the targets of the prokaryotic CRISPR defence system",
+          "year": 2009,
+          "citations": 1578,
+          "authors": "Francisco J. M. Mojica et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1099/mic.0.023960-0",
+          "type": "Article"
+        },
+        {
+          "id": "W2143407915",
+          "title": "VARNA: Interactive drawing and editing of the RNA secondary structure",
+          "year": 2009,
+          "citations": 1429,
+          "authors": "Kévin Darty et al.",
+          "topic": "RNA and protein synthesis mechanisms",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1093/bioinformatics/btp250",
+          "type": "Article"
+        },
+        {
+          "id": "W2082997857",
+          "title": "Argonaute proteins: key players in RNA silencing",
+          "year": 2007,
+          "citations": 1372,
+          "authors": "György Hutvágner and Martin J. Simard",
+          "topic": "RNA and protein synthesis mechanisms",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nrm2321",
+          "type": "Article"
+        },
+        {
+          "id": "W2079458003",
+          "title": "Single-copy insertion of transgenes in Caenorhabditis elegans",
+          "year": 2008,
+          "citations": 1307,
+          "authors": "Christian Frøkjær‐Jensen et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/ng.248",
+          "type": "Article"
+        },
+        {
+          "id": "W2135598273",
+          "title": "Phage Response to CRISPR-Encoded Resistance in Streptococcus thermophilus",
+          "year": 2007,
+          "citations": 1247,
+          "authors": "Hélène Deveau et al.",
+          "topic": "Bacteriophages and microbial interactions",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1128/jb.01412-07",
+          "type": "Article"
+        },
+        {
+          "id": "W2064815984",
+          "title": "Multiplex Genome Engineering Using CRISPR/Cas Systems",
+          "year": 2013,
+          "citations": 15872,
+          "authors": "Le Cong et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1231143",
+          "type": "Article"
+        },
+        {
+          "id": "W1977709885",
+          "title": "Genome engineering using the CRISPR-Cas9 system",
+          "year": 2013,
+          "citations": 11839,
+          "authors": "F. Ann Ran et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nprot.2013.143",
+          "type": "Article"
+        },
+        {
+          "id": "W2003171404",
+          "title": "RNA-Guided Human Genome Engineering via Cas9",
+          "year": 2013,
+          "citations": 9461,
+          "authors": "Prashant Mali et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1232033",
+          "type": "Article"
+        },
+        {
+          "id": "W2050480410",
+          "title": "The new frontier of genome engineering with CRISPR-Cas9",
+          "year": 2014,
+          "citations": 7045,
+          "authors": "Jennifer A. Doudna and Emmanuelle Charpentier",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1258096",
+          "type": "Article"
+        },
+        {
+          "id": "W2096261947",
+          "title": "Development and Applications of CRISPR-Cas9 for Genome Engineering",
+          "year": 2014,
+          "citations": 5929,
+          "authors": "Patrick D. Hsu et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2014.05.010",
+          "type": "Article"
+        },
+        {
+          "id": "W1973260880",
+          "title": "Genome-Scale CRISPR-Cas9 Knockout Screening in Human Cells",
+          "year": 2013,
+          "citations": 5587,
+          "authors": "Ophir Shalem et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1247005",
+          "type": "Article"
+        },
+        {
+          "id": "W2336828812",
+          "title": "Programmable editing of a target base in genomic DNA without double-stranded DNA cleavage",
+          "year": 2016,
+          "citations": 5549,
+          "authors": "Alexis C. Komor et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nature17946",
+          "type": "Article"
+        },
+        {
+          "id": "W2160051211",
+          "title": "Repurposing CRISPR as an RNA-Guided Platform for Sequence-Specific Control of Gene Expression",
+          "year": 2013,
+          "citations": 5238,
+          "authors": "Lei S. Qi et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2013.02.022",
+          "type": "Article"
+        },
+        {
+          "id": "W2252568502",
+          "title": "Optimized sgRNA design to maximize activity and minimize off-target effects of CRISPR-Cas9",
+          "year": 2016,
+          "citations": 5075,
+          "authors": "John G. Doench et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nbt.3437",
+          "type": "Article"
+        },
+        {
+          "id": "W2036176224",
+          "title": "DNA targeting specificity of RNA-guided Cas9 nucleases",
+          "year": 2013,
+          "citations": 4970,
+          "authors": "Patrick D. Hsu et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nbt.2647",
+          "type": "Article"
+        },
+        {
+          "id": "W2165869860",
+          "title": "Cpf1 Is a Single RNA-Guided Endonuclease of a Class 2 CRISPR-Cas System",
+          "year": 2015,
+          "citations": 4953,
+          "authors": "Bernd Zetsche et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2015.09.038",
+          "type": "Article"
+        },
+        {
+          "id": "W2981137429",
+          "title": "Search-and-replace genome editing without double-strand breaks or donor DNA",
+          "year": 2019,
+          "citations": 4787,
+          "authors": "Andrew V. Anzalone et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41586-019-1711-4",
+          "type": "Article"
+        },
+        {
+          "id": "W2787024379",
+          "title": "CRISPR-Cas12a target binding unleashes indiscriminate single-stranded DNase activity",
+          "year": 2018,
+          "citations": 4488,
+          "authors": "Janice S. Chen et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.aar6245",
+          "type": "Article"
+        },
+        {
+          "id": "W2101749257",
+          "title": "CRISPR-Mediated Modular RNA-Guided Regulation of Transcription in Eukaryotes",
+          "year": 2013,
+          "citations": 3850,
+          "authors": "Luke A. Gilbert et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2013.06.044",
+          "type": "Article"
+        },
+        {
+          "id": "W2112444085",
+          "title": "ZFN, TALEN, and CRISPR/Cas-based methods for genome engineering",
+          "year": 2013,
+          "citations": 3795,
+          "authors": "Thomas Gaj et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.tibtech.2013.04.004",
+          "type": "Article"
+        },
+        {
+          "id": "W2170039745",
+          "title": "One-Step Generation of Mice Carrying Mutations in Multiple Genes by CRISPR/Cas-Mediated Genome Engineering",
+          "year": 2013,
+          "citations": 3581,
+          "authors": "Haoyi Wang et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2013.04.025",
+          "type": "Article"
+        },
+        {
+          "id": "W2167380395",
+          "title": "Double Nicking by RNA-Guided CRISPR Cas9 for Enhanced Genome Editing Specificity",
+          "year": 2013,
+          "citations": 3384,
+          "authors": "F. Ann Ran et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.cell.2013.08.021",
+          "type": "Article"
+        },
+        {
+          "id": "W2077659966",
+          "title": "High-frequency off-target mutagenesis induced by CRISPR-Cas nucleases in human cells",
+          "year": 2013,
+          "citations": 3357,
+          "authors": "Yanfang Fu et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nbt.2623",
+          "type": "Article"
+        },
+        {
+          "id": "W2039705224",
+          "title": "CRISPR-Cas systems for editing, regulating and targeting genomes",
+          "year": 2014,
+          "citations": 3194,
+          "authors": "Jeffry D. Sander and J. Keith Joung",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nbt.2842",
+          "type": "Article"
+        },
+        {
+          "id": "W1976391205",
+          "title": "Efficient genome editing in zebrafish using a CRISPR-Cas system",
+          "year": 2013,
+          "citations": 3024,
+          "authors": "Woong Y. Hwang et al.",
+          "topic": "CRISPR and Genetic Engineering",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nbt.2501",
+          "type": "Article"
+        }
+      ],
+      "edges": [
+        {
+          "source": "W2045435533",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2079458003"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2082997857"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2083381199"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2143407915"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2144634347"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2045435533",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2010986636",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2010986636",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W2143407915"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W2144634347"
+        },
+        {
+          "source": "W2120503144",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W2163241233",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W1978094899",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W1978094899",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W1978094899",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W1978094899",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2025074364",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2025074364",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2063148079",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2149751339",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2149751339",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2149751339",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2135598273",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W2064815984",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2101749257"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W1977709885",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2003171404",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W1973260880"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2039705224"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2096261947"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2101749257"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2050480410",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W1973260880"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2039705224"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2101749257"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2135598273"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2096261947",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2101749257"
+        },
+        {
+          "source": "W1973260880",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W2336828812",
+          "target": "W1977709885"
+        },
+        {
+          "source": "W2336828812",
+          "target": "W2039705224"
+        },
+        {
+          "source": "W2336828812",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2336828812",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2160051211",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W1973260880"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2252568502",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W2036176224",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W1978094899"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2096261947"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2149751339"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2163241233"
+        },
+        {
+          "source": "W2165869860",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2981137429",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2981137429",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2981137429",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2981137429",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2981137429",
+          "target": "W2336828812"
+        },
+        {
+          "source": "W2787024379",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2787024379",
+          "target": "W2050480410"
+        },
+        {
+          "source": "W2787024379",
+          "target": "W2165869860"
+        },
+        {
+          "source": "W2787024379",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W2101749257",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2112444085",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2170039745",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2112006537"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2167380395",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2077659966",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W1973260880"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W1976391205"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W1977709885"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2025074364"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2036176224"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2077659966"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2101749257"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2120503144"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2160051211"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2167380395"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2169244146"
+        },
+        {
+          "source": "W2039705224",
+          "target": "W2170039745"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W1982969769"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2003171404"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2010986636"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2045435533"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2063148079"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2064815984"
+        },
+        {
+          "source": "W1976391205",
+          "target": "W2169244146"
+        }
+      ],
+      "year_counts": [
+        {
+          "year": 2012,
+          "count": 33
+        },
+        {
+          "year": 2013,
+          "count": 233
+        },
+        {
+          "year": 2014,
+          "count": 477
+        },
+        {
+          "year": 2015,
+          "count": 683
+        },
+        {
+          "year": 2016,
+          "count": 1037
+        },
+        {
+          "year": 2017,
+          "count": 1169
+        },
+        {
+          "year": 2018,
+          "count": 1311
+        },
+        {
+          "year": 2019,
+          "count": 1386
+        },
+        {
+          "year": 2020,
+          "count": 1624
+        },
+        {
+          "year": 2021,
+          "count": 1803
+        },
+        {
+          "year": 2022,
+          "count": 1840
+        },
+        {
+          "year": 2023,
+          "count": 1650
+        },
+        {
+          "year": 2024,
+          "count": 1645
+        },
+        {
+          "year": 2025,
+          "count": 1536
+        },
+        {
+          "year": 2026,
+          "count": 788
+        }
+      ]
+    },
+    "Protein structure prediction": {
+      "description": "AlphaFold's highly accurate protein-structure prediction result in the context of earlier methods and subsequent applications.",
+      "seed": "W3177828909",
+      "nodes": [
+        {
+          "id": "W3177828909",
+          "title": "Highly accurate protein structure prediction with AlphaFold",
+          "year": 2021,
+          "citations": 46306,
+          "authors": "John Jumper et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Landmark",
+          "doi": "https://doi.org/10.1038/s41586-021-03819-2",
+          "type": "Article"
+        },
+        {
+          "id": "W2194775991",
+          "title": "Deep Residual Learning for Image Recognition",
+          "year": 2016,
+          "citations": 224889,
+          "authors": "Kaiming He et al.",
+          "topic": "Advanced Neural Network Applications",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1109/cvpr.2016.90",
+          "type": "Conference Paper"
+        },
+        {
+          "id": "W2963341956",
+          "title": "",
+          "year": 2019,
+          "citations": 33107,
+          "authors": "Jacob Devlin et al.",
+          "topic": "Topic Modeling",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.18653/v1/n19-1423",
+          "type": "Conference Paper"
+        },
+        {
+          "id": "W3035965352",
+          "title": "Array programming with NumPy",
+          "year": 2020,
+          "citations": 23042,
+          "authors": "Charles R. Harris et al.",
+          "topic": "Computational Physics and Python Applications",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/s41586-020-2649-2",
+          "type": "Article"
+        },
+        {
+          "id": "W3099878876",
+          "title": "Array programming with NumPy",
+          "year": 2020,
+          "citations": 18812,
+          "authors": "Cr Harris et al.",
+          "topic": "Algorithms and Data Compression",
+          "relation": "Foundation",
+          "doi": null,
+          "type": "Review"
+        },
+        {
+          "id": "W2065283382",
+          "title": "Comparative Protein Modelling by Satisfaction of Spatial Restraints",
+          "year": 1993,
+          "citations": 13273,
+          "authors": "Andrej Šali and Tom L. Blundell",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1006/jmbi.1993.1626",
+          "type": "Article"
+        },
+        {
+          "id": "W2271840356",
+          "title": "TensorFlow: Large-Scale Machine Learning on Heterogeneous Distributed Systems",
+          "year": 2016,
+          "citations": 9801,
+          "authors": "Martı́n Abadi et al.",
+          "topic": "Parallel Computing and Optimization Techniques",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.48550/arxiv.1603.04467",
+          "type": "Preprint"
+        },
+        {
+          "id": "W2138122982",
+          "title": "Accelerated Profile HMM Searches",
+          "year": 2011,
+          "citations": 7627,
+          "authors": "Sean R. Eddy",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1371/journal.pcbi.1002195",
+          "type": "Article"
+        },
+        {
+          "id": "W2045777307",
+          "title": "Principles that Govern the Folding of Protein Chains",
+          "year": 1973,
+          "citations": 7156,
+          "authors": "Christian B. Anfinsen",
+          "topic": "Chemical Synthesis and Analysis",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.181.4096.223",
+          "type": "Article"
+        },
+        {
+          "id": "W2144288821",
+          "title": "Comparison of multiple Amber force fields and development of improved protein backbone parameters",
+          "year": 2006,
+          "citations": 7124,
+          "authors": "Viktor Horn̆ák et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1002/prot.21123",
+          "type": "Article"
+        },
+        {
+          "id": "W3112376646",
+          "title": "UniProt: the universal protein knowledgebase in 2021",
+          "year": 2020,
+          "citations": 7096,
+          "authors": "Alex Bateman et al.",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1093/nar/gkaa1100",
+          "type": "Article"
+        },
+        {
+          "id": "W2037312364",
+          "title": "I-TASSER: a unified platform for automated protein structure and function prediction",
+          "year": 2010,
+          "citations": 6374,
+          "authors": "Ambrish Roy et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nprot.2010.5",
+          "type": "Article"
+        },
+        {
+          "id": "W2950954328",
+          "title": "MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets",
+          "year": 2017,
+          "citations": 5308,
+          "authors": "Martin Steinegger and Johannes Söding",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/nbt.3988",
+          "type": "Article"
+        },
+        {
+          "id": "W2999044305",
+          "title": "Improved protein structure prediction using potentials from deep learning",
+          "year": 2020,
+          "citations": 3576,
+          "authors": "Andrew Senior et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/s41586-019-1923-7",
+          "type": "Article"
+        },
+        {
+          "id": "W3183475563",
+          "title": "Highly accurate protein structure prediction for the human proteome",
+          "year": 2021,
+          "citations": 3274,
+          "authors": "Kathryn Tunyasuvunakool et al.",
+          "topic": "Machine Learning in Bioinformatics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41586-021-03828-1",
+          "type": "Article"
+        },
+        {
+          "id": "W3146944767",
+          "title": "Biological structure and function emerge from scaling unsupervised learning to 250 million protein sequences",
+          "year": 2021,
+          "citations": 3272,
+          "authors": "Alexander Rives et al.",
+          "topic": "Machine Learning in Bioinformatics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1073/pnas.2016239118",
+          "type": "Article"
+        },
+        {
+          "id": "W4396721167",
+          "title": "Accurate structure prediction of biomolecular interactions with AlphaFold 3",
+          "year": 2024,
+          "citations": 14877,
+          "authors": "Josh Abramson et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41586-024-07487-w",
+          "type": "Article"
+        },
+        {
+          "id": "W4281790889",
+          "title": "ColabFold: making protein folding accessible to all",
+          "year": 2022,
+          "citations": 9904,
+          "authors": "Milot Mirdita et al.",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41592-022-01488-1",
+          "type": "Article"
+        },
+        {
+          "id": "W3211795435",
+          "title": "AlphaFold Protein Structure Database: massively expanding the structural coverage of protein-sequence space with high-accuracy models",
+          "year": 2021,
+          "citations": 8432,
+          "authors": "Mihály Váradi et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkab1061",
+          "type": "Article"
+        },
+        {
+          "id": "W4387164156",
+          "title": "UCSF ChimeraX: Tools for structure building and analysis",
+          "year": 2023,
+          "citations": 4438,
+          "authors": "Elaine C. Meng et al.",
+          "topic": "Model-Driven Software Engineering Techniques",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1002/pro.4792",
+          "type": "Article"
+        },
+        {
+          "id": "W3202105508",
+          "title": "Protein complex prediction with AlphaFold-Multimer",
+          "year": 2021,
+          "citations": 4125,
+          "authors": "Richard Evans et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1101/2021.10.04.463034",
+          "type": "Preprint"
+        },
+        {
+          "id": "W4308616064",
+          "title": "InterPro in 2022",
+          "year": 2022,
+          "citations": 2625,
+          "authors": "Typhaine Paysan‐Lafosse et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkac993",
+          "type": "Article"
+        },
+        {
+          "id": "W4375858802",
+          "title": "Fast and accurate protein structure search with Foldseek",
+          "year": 2023,
+          "citations": 2489,
+          "authors": "Michel van Kempen et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41587-023-01773-0",
+          "type": "Article"
+        },
+        {
+          "id": "W4383957026",
+          "title": "De novo design of protein structure and function with RFdiffusion",
+          "year": 2023,
+          "citations": 2100,
+          "authors": "Joseph L. Watson et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41586-023-06415-8",
+          "type": "Article"
+        },
+        {
+          "id": "W4388464011",
+          "title": "AlphaFold Protein Structure Database in 2024: providing structure coverage for over 214 million protein sequences",
+          "year": 2023,
+          "citations": 2034,
+          "authors": "Mihály Váradi et al.",
+          "topic": "Enzyme Structure and Function",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkad1011",
+          "type": "Article"
+        },
+        {
+          "id": "W4296032638",
+          "title": "Robust deep learning–based protein sequence design using ProteinMPNN",
+          "year": 2022,
+          "citations": 1975,
+          "authors": "Justas Dauparas et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.add2187",
+          "type": "Article"
+        },
+        {
+          "id": "W4367049415",
+          "title": "Computational approaches streamlining drug discovery",
+          "year": 2023,
+          "citations": 1219,
+          "authors": "Anastasiia Sadybekov and Vsevolod Katritch",
+          "topic": "Computational Drug Discovery Methods",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41586-023-05905-z",
+          "type": "Article"
+        },
+        {
+          "id": "W4318071656",
+          "title": "Large language models generate functional protein sequences across diverse families",
+          "year": 2023,
+          "citations": 1104,
+          "authors": "Ali Madani et al.",
+          "topic": "RNA and protein synthesis mechanisms",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41587-022-01618-2",
+          "type": "Article"
+        },
+        {
+          "id": "W4220824576",
+          "title": "Improved prediction of protein-protein interactions using AlphaFold2",
+          "year": 2022,
+          "citations": 1033,
+          "authors": "Patrick Bryant et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41467-022-28865-w",
+          "type": "Article"
+        },
+        {
+          "id": "W4282922306",
+          "title": "Dali server: structural unification of protein families",
+          "year": 2022,
+          "citations": 1018,
+          "authors": "Liisa Holm",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkac387",
+          "type": "Article"
+        },
+        {
+          "id": "W4404531735",
+          "title": "InterPro: the protein sequence classification resource in 2025",
+          "year": 2024,
+          "citations": 986,
+          "authors": "Matthias Blum et al.",
+          "topic": "Genomics and Phylogenetic Studies",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkae1082",
+          "type": "Article"
+        },
+        {
+          "id": "W4392544734",
+          "title": "Generalized biomolecular modeling and design with RoseTTAFold All-Atom",
+          "year": 2024,
+          "citations": 903,
+          "authors": "Rohith Krishna et al.",
+          "topic": "Protein Structure and Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.adl2528",
+          "type": "Article"
+        },
+        {
+          "id": "W4378952892",
+          "title": "The CCP 4 suite: integrative software for macromolecular crystallography",
+          "year": 2023,
+          "citations": 901,
+          "authors": "Jon Agirre et al.",
+          "topic": "Enzyme Structure and Function",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1107/s2059798323003595",
+          "type": "Article"
+        },
+        {
+          "id": "W4309908854",
+          "title": "RCSB Protein Data Bank (RCSB.org): delivery of experimentally-determined PDB structures alongside one million computed structure models of proteins from artificial intelligence/machine learning",
+          "year": 2022,
+          "citations": 899,
+          "authors": "S.K. Burley et al.",
+          "topic": "Enzyme Structure and Function",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1093/nar/gkac1077",
+          "type": "Article"
+        }
+      ],
+      "edges": [
+        {
+          "source": "W3177828909",
+          "target": "W2037312364"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2045777307"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2065283382"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2144288821"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2194775991"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2271840356"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2963341956"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W2999044305"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3035965352"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3099878876"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3146944767"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W3177828909",
+          "target": "W4388464011"
+        },
+        {
+          "source": "W3099878876",
+          "target": "W2271840356"
+        },
+        {
+          "source": "W2037312364",
+          "target": "W2065283382"
+        },
+        {
+          "source": "W2950954328",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W2999044305",
+          "target": "W2194775991"
+        },
+        {
+          "source": "W3183475563",
+          "target": "W2999044305"
+        },
+        {
+          "source": "W3183475563",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W3183475563",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W3146944767",
+          "target": "W2963341956"
+        },
+        {
+          "source": "W3146944767",
+          "target": "W2999044305"
+        },
+        {
+          "source": "W3146944767",
+          "target": "W3146944767"
+        },
+        {
+          "source": "W4396721167",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4396721167",
+          "target": "W3202105508"
+        },
+        {
+          "source": "W4396721167",
+          "target": "W4220824576"
+        },
+        {
+          "source": "W4396721167",
+          "target": "W4392544734"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W3202105508"
+        },
+        {
+          "source": "W4281790889",
+          "target": "W4220824576"
+        },
+        {
+          "source": "W3211795435",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W3211795435",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W3211795435",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W4387164156",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4387164156",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4387164156",
+          "target": "W4281790889"
+        },
+        {
+          "source": "W4387164156",
+          "target": "W4387164156"
+        },
+        {
+          "source": "W3202105508",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W3202105508",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4308616064",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4308616064",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4308616064",
+          "target": "W4308616064"
+        },
+        {
+          "source": "W4375858802",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W4375858802",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W4375858802",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4375858802",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4383957026",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4383957026",
+          "target": "W4296032638"
+        },
+        {
+          "source": "W4388464011",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4388464011",
+          "target": "W4308616064"
+        },
+        {
+          "source": "W4296032638",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W4296032638",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4367049415",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4367049415",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W4318071656",
+          "target": "W3146944767"
+        },
+        {
+          "source": "W4318071656",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4318071656",
+          "target": "W4281790889"
+        },
+        {
+          "source": "W4220824576",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W4220824576",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W4220824576",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4220824576",
+          "target": "W3202105508"
+        },
+        {
+          "source": "W4282922306",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4282922306",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W4282922306",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4282922306",
+          "target": "W4375858802"
+        },
+        {
+          "source": "W4404531735",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4404531735",
+          "target": "W4308616064"
+        },
+        {
+          "source": "W4404531735",
+          "target": "W4375858802"
+        },
+        {
+          "source": "W4404531735",
+          "target": "W4388464011"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W3202105508"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W4296032638"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W4383957026"
+        },
+        {
+          "source": "W4392544734",
+          "target": "W4392544734"
+        },
+        {
+          "source": "W4378952892",
+          "target": "W2138122982"
+        },
+        {
+          "source": "W4378952892",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4378952892",
+          "target": "W3211795435"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W2045777307"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W2950954328"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W2999044305"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W3112376646"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W3177828909"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W3183475563"
+        },
+        {
+          "source": "W4309908854",
+          "target": "W3211795435"
+        }
+      ],
+      "year_counts": [
+        {
+          "year": 2021,
+          "count": 1119
+        },
+        {
+          "year": 2022,
+          "count": 6408
+        },
+        {
+          "year": 2023,
+          "count": 9846
+        },
+        {
+          "year": 2024,
+          "count": 11347
+        },
+        {
+          "year": 2025,
+          "count": 10988
+        },
+        {
+          "year": 2026,
+          "count": 5654
+        }
+      ]
+    },
+    "Climate attribution": {
+      "description": "A landmark detection-and-attribution study connected to the climate research it drew from and later work it influenced.",
+      "seed": "W1976150853",
+      "nodes": [
+        {
+          "id": "W1976150853",
+          "title": "External Control of 20th Century Temperature by Natural and Anthropogenic Forcings",
+          "year": 2000,
+          "citations": 684,
+          "authors": "Peter A. Stott et al.",
+          "topic": "Climate variability and models",
+          "relation": "Landmark",
+          "doi": "https://doi.org/10.1126/science.290.5499.2133",
+          "type": "Article"
+        },
+        {
+          "id": "W2064943738",
+          "title": "Aerosols, Cloud Microphysics, and Fractional Cloudiness",
+          "year": 1989,
+          "citations": 4992,
+          "authors": "Bruce Albrecht",
+          "topic": "Atmospheric aerosols and clouds",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.245.4923.1227",
+          "type": "Article"
+        },
+        {
+          "id": "W1587057093",
+          "title": "Climate Change 1995: The Science of Climate Change",
+          "year": 1996,
+          "citations": 3517,
+          "authors": "J. T. Houghton et al.",
+          "topic": "Air Quality Monitoring and Forecasting",
+          "relation": "Foundation",
+          "doi": null,
+          "type": "Book"
+        },
+        {
+          "id": "W1966396962",
+          "title": "The simulation of SST, sea ice extents and ocean heat transports in a version of the Hadley Centre coupled model without flux adjustments",
+          "year": 2000,
+          "citations": 2698,
+          "authors": "Chris Gordon et al.",
+          "topic": "Arctic and Antarctic ice dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1007/s003820050010",
+          "type": "Article"
+        },
+        {
+          "id": "W1975196041",
+          "title": "Pollution and the planetary albedo",
+          "year": 1974,
+          "citations": 2305,
+          "authors": "S. Twomey",
+          "topic": "Solar and Space Plasma Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1016/0004-6981(74)90004-3",
+          "type": "Article"
+        },
+        {
+          "id": "W2130256070",
+          "title": "Causes of Climate Change Over the Past 1000 Years",
+          "year": 2000,
+          "citations": 2135,
+          "authors": "Thomas J. Crowley",
+          "topic": "Tree-ring climate responses",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.289.5477.270",
+          "type": "Article"
+        },
+        {
+          "id": "W2131532072",
+          "title": "Northern hemisphere temperatures during the past millennium: Inferences, uncertainties, and limitations",
+          "year": 1999,
+          "citations": 1873,
+          "authors": "Michael Mann et al.",
+          "topic": "Tree-ring climate responses",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1029/1999gl900070",
+          "type": "Article"
+        },
+        {
+          "id": "W1977212456",
+          "title": "The impact of new physical parametrizations in the Hadley Centre climate model: HadAM3",
+          "year": 2000,
+          "citations": 1605,
+          "authors": "V. D. Pope et al.",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1007/s003820050009",
+          "type": "Article"
+        },
+        {
+          "id": "W2080002323",
+          "title": "Reconstruction of solar irradiance since 1610: Implications for climate change",
+          "year": 1995,
+          "citations": 1107,
+          "authors": "J. Lean et al.",
+          "topic": "Solar and Space Plasma Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1029/95gl03093",
+          "type": "Article"
+        },
+        {
+          "id": "W2171248599",
+          "title": "Stratospheric aerosol optical depths, 1850–1990",
+          "year": 1993,
+          "citations": 994,
+          "authors": "Makiko Sato et al.",
+          "topic": "Atmospheric Ozone and Climate",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1029/93jd02553",
+          "type": "Article"
+        },
+        {
+          "id": "W2111481946",
+          "title": "Climate response to increasing levels of greenhouse gases and sulphate aerosols",
+          "year": 1995,
+          "citations": 757,
+          "authors": "J. F. B. Mitchell et al.",
+          "topic": "Atmospheric chemistry and aerosols",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/376501a0",
+          "type": "Article"
+        },
+        {
+          "id": "W1605483703",
+          "title": "Quantifying the uncertainty in forecasts of anthropogenic climate change",
+          "year": 2000,
+          "citations": 666,
+          "authors": "Myles Allen et al.",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/35036559",
+          "type": "Article"
+        },
+        {
+          "id": "W1674452535",
+          "title": "A doubling of the Sun's coronal magnetic field during the past 100 years",
+          "year": 1999,
+          "citations": 556,
+          "authors": "M. Lockwood et al.",
+          "topic": "Solar and Space Plasma Dynamics",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/20867",
+          "type": "Article"
+        },
+        {
+          "id": "W1547067099",
+          "title": "Simulation of recent northern winter climate trends by greenhouse-gas forcing",
+          "year": 1999,
+          "citations": 548,
+          "authors": "Drew Shindell et al.",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/20905",
+          "type": "Article"
+        },
+        {
+          "id": "W2136350156",
+          "title": "Causes of twentieth-century temperature change near the Earth's surface",
+          "year": 1999,
+          "citations": 512,
+          "authors": "Simon F. B. Tett et al.",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1038/21164",
+          "type": "Article"
+        },
+        {
+          "id": "W2079753076",
+          "title": "Twentieth-Century Sea Surface Temperature Trends",
+          "year": 1997,
+          "citations": 496,
+          "authors": "Mark A. Cane et al.",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1126/science.275.5302.957",
+          "type": "Article"
+        },
+        {
+          "id": "W1978891160",
+          "title": "Checking for model consistency in optimal fingerprinting",
+          "year": 1999,
+          "citations": 448,
+          "authors": "Myles Allen and Simon F. B. Tett",
+          "topic": "Climate variability and models",
+          "relation": "Foundation",
+          "doi": "https://doi.org/10.1007/s003820050291",
+          "type": "Article"
+        },
+        {
+          "id": "W1972946703",
+          "title": "Constraints on future changes in climate and the hydrologic cycle",
+          "year": 2002,
+          "citations": 3060,
+          "authors": "Myles Allen and William Ingram",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nature01092",
+          "type": "Article"
+        },
+        {
+          "id": "W2044387082",
+          "title": "Human contribution to the European heatwave of 2003",
+          "year": 2004,
+          "citations": 1739,
+          "authors": "Peter A. Stott et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nature03089",
+          "type": "Article"
+        },
+        {
+          "id": "W2128349082",
+          "title": "SOLAR INFLUENCES ON CLIMATE",
+          "year": 2010,
+          "citations": 1393,
+          "authors": "Lesley J. Gray et al.",
+          "topic": "Solar and Space Plasma Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1029/2009rg000282",
+          "type": "Article"
+        },
+        {
+          "id": "W2146487757",
+          "title": "Recent intensification of wind-driven circulation in the Pacific and the ongoing warming hiatus",
+          "year": 2014,
+          "citations": 1378,
+          "authors": "Matthew H. England et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/nclimate2106",
+          "type": "Article"
+        },
+        {
+          "id": "W2080120903",
+          "title": "A signature of persistent natural thermohaline circulation cycles in observed climate",
+          "year": 2005,
+          "citations": 1255,
+          "authors": "Jeff Knight et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1029/2005gl024233",
+          "type": "Article"
+        },
+        {
+          "id": "W2164094029",
+          "title": "Atmospheric circulation as a source of uncertainty in climate change projections",
+          "year": 2014,
+          "citations": 1086,
+          "authors": "Theodore G. Shepherd",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/ngeo2253",
+          "type": "Article"
+        },
+        {
+          "id": "W2010690624",
+          "title": "Atlantic hurricanes and natural variability in 2005",
+          "year": 2006,
+          "citations": 1069,
+          "authors": "Kevin E. Trenberth and Dennis J. Shea",
+          "topic": "Tropical and Extratropical Cyclones Research",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1029/2006gl026894",
+          "type": "Article"
+        },
+        {
+          "id": "W2110534701",
+          "title": "The HadGEM2-ES implementation of CMIP5 centennial simulations",
+          "year": 2011,
+          "citations": 953,
+          "authors": "Chris Jones et al.",
+          "topic": "Atmospheric and Environmental Gas Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.5194/gmd-4-543-2011",
+          "type": "Article"
+        },
+        {
+          "id": "W1982140334",
+          "title": "Improved Surface Temperature Prediction for the Coming Decade from a Global Climate Model",
+          "year": 2007,
+          "citations": 780,
+          "authors": "Doug Smith et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1139540",
+          "type": "Article"
+        },
+        {
+          "id": "W136266997",
+          "title": "Understanding and Attributing Climate Change",
+          "year": 2007,
+          "citations": 641,
+          "authors": "Gabriele C. Hegerl et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": null,
+          "type": "Book Chapter"
+        },
+        {
+          "id": "W2025313426",
+          "title": "Evidence for global runoff increase related to climate warming",
+          "year": 2004,
+          "citations": 617,
+          "authors": "David Labat et al.",
+          "topic": "Hydrology and Watershed Management Studies",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1016/j.advwatres.2004.02.020",
+          "type": "Article"
+        },
+        {
+          "id": "W2156351447",
+          "title": "Climate change scenarios for the California region",
+          "year": 2008,
+          "citations": 617,
+          "authors": "Daniel R. Cayan et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1007/s10584-007-9377-6",
+          "type": "Article"
+        },
+        {
+          "id": "W2083292835",
+          "title": "Contributions of External Forcings to Southern Annular Mode Trends",
+          "year": 2006,
+          "citations": 591,
+          "authors": "Julie M. Arblaster and Gerald A. Meehl",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1175/jcli3774.1",
+          "type": "Article"
+        },
+        {
+          "id": "W2039903648",
+          "title": "Estimating signal amplitudes in optimal fingerprinting, part I: theory",
+          "year": 2003,
+          "citations": 548,
+          "authors": "M. R. Allen and Peter A. Stott",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1007/s00382-003-0313-9",
+          "type": "Article"
+        },
+        {
+          "id": "W2027543152",
+          "title": "Anthropogenic Warming of Earth's Climate System",
+          "year": 2001,
+          "citations": 547,
+          "authors": "Sydney Levitus et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1126/science.1058154",
+          "type": "Article"
+        },
+        {
+          "id": "W2173786974",
+          "title": "Mechanisms of Global Warming Impacts on Regional Tropical Precipitation*",
+          "year": 2004,
+          "citations": 487,
+          "authors": "Chia Chou and J. David Neelin",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1175/1520-0442(2004)017<2688:mogwio>2.0.co;2",
+          "type": "Article"
+        },
+        {
+          "id": "W2141098380",
+          "title": "Detection and Attribution of Twentieth-Century Northern and Southern African Rainfall Change",
+          "year": 2006,
+          "citations": 479,
+          "authors": "Martin P. Hoerling et al.",
+          "topic": "Climate variability and models",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1175/jcli3842.1",
+          "type": "Article"
+        },
+        {
+          "id": "W2966446996",
+          "title": "Consistent multidecadal variability in global temperature reconstructions and simulations over the Common Era",
+          "year": 2019,
+          "citations": 453,
+          "authors": "Raphael Neukom et al.",
+          "topic": "Tree-ring climate responses",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1038/s41561-019-0400-0",
+          "type": "Article"
+        },
+        {
+          "id": "W2012578957",
+          "title": "Summer Temperature Variations in the European Alps, a.d. 755–2004",
+          "year": 2006,
+          "citations": 452,
+          "authors": "Ulf Büntgen et al.",
+          "topic": "Tree-ring climate responses",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1175/jcli3917.1",
+          "type": "Article"
+        },
+        {
+          "id": "W2164897769",
+          "title": "Constraints on the temperature sensitivity of global soil respiration from the observed interannual variability in atmospheric CO2",
+          "year": 2001,
+          "citations": 444,
+          "authors": "Chris D. Jones and Peter M. Cox",
+          "topic": "Atmospheric and Environmental Gas Dynamics",
+          "relation": "Follow-on",
+          "doi": "https://doi.org/10.1006/asle.2001.0044",
+          "type": "Article"
+        }
+      ],
+      "edges": [
+        {
+          "source": "W1976150853",
+          "target": "W1547067099"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1587057093"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1605483703"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1674452535"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1966396962"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1975196041"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1977212456"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2064943738"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2079753076"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2131532072"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W1976150853",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W1966396962",
+          "target": "W1587057093"
+        },
+        {
+          "source": "W1966396962",
+          "target": "W1977212456"
+        },
+        {
+          "source": "W2130256070",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W2130256070",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2130256070",
+          "target": "W2131532072"
+        },
+        {
+          "source": "W2130256070",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2130256070",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W2131532072",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2111481946",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W1605483703",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W1605483703",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W1605483703",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W1674452535",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W1587057093"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W1975196041"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W2064943738"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W2136350156",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W2079753076",
+          "target": "W1587057093"
+        },
+        {
+          "source": "W2079753076",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W1978891160",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W1972946703",
+          "target": "W1605483703"
+        },
+        {
+          "source": "W1972946703",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2044387082",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2044387082",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W2044387082",
+          "target": "W2039903648"
+        },
+        {
+          "source": "W2044387082",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W1674452535"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W2131532072"
+        },
+        {
+          "source": "W2128349082",
+          "target": "W2164897769"
+        },
+        {
+          "source": "W2146487757",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2080120903",
+          "target": "W1966396962"
+        },
+        {
+          "source": "W2080120903",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2080120903",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W2164094029",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2010690624",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2010690624",
+          "target": "W2080120903"
+        },
+        {
+          "source": "W2110534701",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2110534701",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2110534701",
+          "target": "W2080120903"
+        },
+        {
+          "source": "W2110534701",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W1982140334",
+          "target": "W1966396962"
+        },
+        {
+          "source": "W1982140334",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1547067099"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1587057093"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1605483703"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1972946703"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W136266997",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2010690624"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2044387082"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2080120903"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2141098380"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2164897769"
+        },
+        {
+          "source": "W136266997",
+          "target": "W2171248599"
+        },
+        {
+          "source": "W2025313426",
+          "target": "W1972946703"
+        },
+        {
+          "source": "W2025313426",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2025313426",
+          "target": "W2027543152"
+        },
+        {
+          "source": "W2156351447",
+          "target": "W1966396962"
+        },
+        {
+          "source": "W2156351447",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2156351447",
+          "target": "W1977212456"
+        },
+        {
+          "source": "W2156351447",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2083292835",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2039903648",
+          "target": "W1605483703"
+        },
+        {
+          "source": "W2039903648",
+          "target": "W1972946703"
+        },
+        {
+          "source": "W2039903648",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2039903648",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W2039903648",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2027543152",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2027543152",
+          "target": "W2111481946"
+        },
+        {
+          "source": "W2027543152",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W2027543152",
+          "target": "W2131532072"
+        },
+        {
+          "source": "W2027543152",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2173786974",
+          "target": "W1972946703"
+        },
+        {
+          "source": "W2173786974",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2173786974",
+          "target": "W2027543152"
+        },
+        {
+          "source": "W2173786974",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2141098380",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2966446996",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2966446996",
+          "target": "W2039903648"
+        },
+        {
+          "source": "W2012578957",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2012578957",
+          "target": "W2044387082"
+        },
+        {
+          "source": "W2012578957",
+          "target": "W2130256070"
+        },
+        {
+          "source": "W2012578957",
+          "target": "W2131532072"
+        },
+        {
+          "source": "W2012578957",
+          "target": "W2164897769"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W1966396962"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W1976150853"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W1977212456"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W1978891160"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W2080002323"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W2136350156"
+        },
+        {
+          "source": "W2164897769",
+          "target": "W2171248599"
+        }
+      ],
+      "year_counts": [
+        {
+          "year": 2000,
+          "count": 2
+        },
+        {
+          "year": 2001,
+          "count": 20
+        },
+        {
+          "year": 2002,
+          "count": 47
+        },
+        {
+          "year": 2003,
+          "count": 47
+        },
+        {
+          "year": 2004,
+          "count": 50
+        },
+        {
+          "year": 2005,
+          "count": 57
+        },
+        {
+          "year": 2006,
+          "count": 54
+        },
+        {
+          "year": 2007,
+          "count": 51
+        },
+        {
+          "year": 2008,
+          "count": 33
+        },
+        {
+          "year": 2009,
+          "count": 33
+        },
+        {
+          "year": 2010,
+          "count": 26
+        },
+        {
+          "year": 2011,
+          "count": 34
+        },
+        {
+          "year": 2012,
+          "count": 30
+        },
+        {
+          "year": 2013,
+          "count": 25
+        },
+        {
+          "year": 2014,
+          "count": 17
+        },
+        {
+          "year": 2015,
+          "count": 11
+        },
+        {
+          "year": 2016,
+          "count": 12
+        },
+        {
+          "year": 2017,
+          "count": 19
+        },
+        {
+          "year": 2018,
+          "count": 17
+        },
+        {
+          "year": 2019,
+          "count": 20
+        },
+        {
+          "year": 2020,
+          "count": 17
+        },
+        {
+          "year": 2021,
+          "count": 14
+        },
+        {
+          "year": 2022,
+          "count": 12
+        },
+        {
+          "year": 2023,
+          "count": 9
+        },
+        {
+          "year": 2024,
+          "count": 11
+        },
+        {
+          "year": 2025,
+          "count": 11
+        },
+        {
+          "year": 2026,
+          "count": 3
+        }
+      ]
+    }
+  }
+}
