@@ -1,0 +1,54 @@
+{
+  "family": "demo-bokeh-org",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::562605262404:role/demo-bokeh-org-task-execution",
+  "runtimePlatform": {
+    "cpuArchitecture": "ARM64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "worker",
+      "image": "IMAGE_URI",
+      "essential": true,
+      "user": "10001:10001",
+      "readonlyRootFilesystem": true,
+      "linuxParameters": {
+        "initProcessEnabled": true
+      },
+      "stopTimeout": 30,
+      "portMappings": [
+        {
+          "name": "bokeh-http",
+          "containerPort": 5006,
+          "hostPort": 5006,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {"name": "BOKEH_ALLOW_WS_ORIGIN", "value": "demo.bokeh.org"},
+        {"name": "BOKEH_RESOURCES", "value": "cdn"},
+        {"name": "PORT", "value": "5006"},
+        {"name": "PYTHONDONTWRITEBYTECODE", "value": "1"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/demo-bokeh-org",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "worker"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5006/healthz', timeout=4)\" || exit 1"],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

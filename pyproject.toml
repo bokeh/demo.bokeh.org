@@ -1,0 +1,75 @@
+[project]
+name = "bokeh-demo-site"
+version = "0.1.0"
+description = "The interactive application gallery for demo.bokeh.org"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "bokeh[extra,sampledata]==3.10.0.dev10",
+    "networkx>=3.5,<4",
+    "numba>=0.61,<1",
+    "numpy>=2.0,<3",
+    "pandas>=2.2,<3",
+    "scikit-image>=0.25,<1",
+    "scipy>=1.11.4,<2",
+    "uvicorn[standard]>=0.35,<1",
+    "vega-datasets>=0.9,<1",
+    "xarray>=2025.1,<2027",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4,<5",
+    "pyright>=1.1.411,<2",
+    "pytest>=9,<10",
+    "ruff>=0.15,<1",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+allowed-confusables = ["−", "×"]
+select = ["B", "D100", "E4", "E7", "E9", "F", "NPY", "RUF", "UP"]
+extend-select = [
+    "A",
+    "ARG",
+    "ASYNC",
+    "BLE",
+    "C4",
+    "DTZ",
+    "FURB",
+    "I",
+    "LOG",
+    "PERF",
+    "PIE",
+    "PLC",
+    "PLE",
+    "PLW",
+    "PT",
+    "RET",
+    "RSE",
+    "SIM",
+    "T20",
+]
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+split-on-trailing-comma = false
+
+[tool.pyright]
+include = ["apps", "asgi.py", "catalog.py", "presentation.py"]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
