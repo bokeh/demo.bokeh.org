@@ -74,6 +74,13 @@ def test_landing_page_comes_from_catalog() -> None:
     assert '<link rel="icon" href="/favicon.ico?v=2" type="image/png" sizes="16x16">' in html
     assert '<section class="asgi-band"' in html
     assert 'id="run-locally"' in html
+    assert "Bokeh in action" in html
+    assert "Clone, uv run, done." in html
+    assert "Uvicorn / Hypercorn / etc." in html
+    assert html.count("↔") == 2
+    assert "section-kicker" not in html
+    assert "Planned additions" not in html
+    assert "runtime-section" not in html
     assert "uv run --locked uvicorn asgi:application" in html
     assert 'class="demo-card featured' not in html
     for demo in DEMOS:
@@ -109,6 +116,7 @@ def test_configure_document_installs_shared_application_chrome() -> None:
 
     assert document.title == f"{demo.title} · Bokeh demos"
     assert document.template == APP_TEMPLATE
+    assert "View demo source code" in document.template
     assert document.template_variables == {
         "demo": demo,
         "site_header": SITE_HEADER,

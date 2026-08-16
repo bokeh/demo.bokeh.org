@@ -8,7 +8,7 @@ import pytest
 from bokeh.document import Document
 
 import catalog
-from catalog import DEMOS, RoadmapItem, demo_from, load_applications, load_manifest
+from catalog import DEMOS, demo_from, load_applications, load_manifest
 
 ROOT = Path(__file__).parents[1]
 
@@ -109,27 +109,17 @@ def test_demo_from_normalizes_tags_without_mutating_input() -> None:
     assert demo.source_url.endswith("/apps/example.py")
 
 
-def test_load_manifest_parses_demos_and_roadmap(monkeypatch, tmp_path: Path) -> None:
+def test_load_manifest_parses_demos(monkeypatch, tmp_path: Path) -> None:
     source = tmp_path / "apps" / "example.py"
     source.parent.mkdir()
     source.write_text("def modify_document(document): pass")
-    contents = (
-        DEMO_TEMPLATE.format(route="/example", source="apps/example.py")
-        + """
-[[roadmap]]
-state = "Planned"
-title = "More examples"
-description = "Add more runtimes."
-accent = "teal"
-"""
-    )
+    contents = DEMO_TEMPLATE.format(route="/example", source="apps/example.py")
     configure_manifest(monkeypatch, tmp_path, contents)
 
-    demos, roadmap = load_manifest()
+    demos = load_manifest()
 
     assert [demo.route for demo in demos] == ["/example"]
     assert demos[0].tags == ("one", "two", "three", "four")
-    assert roadmap == (RoadmapItem("Planned", "More examples", "Add more runtimes.", "teal"),)
 
 
 def test_load_manifest_requires_at_least_one_demo(monkeypatch, tmp_path: Path) -> None:

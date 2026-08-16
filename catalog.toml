@@ -153,21 +153,3 @@ runtime = "Python / ASGI"
 tags = ["Game of Life", "rule comparison", "pattern editing", "cycle detection"]
 accent = "coral"
 preview = "automata-preview.jpg"
-
-[[roadmap]]
-state = "Current"
-title = "Python applications"
-description = "The first examples use stateful Python callbacks through Bokeh's ASGI adapter."
-accent = "coral"
-
-[[roadmap]]
-state = "Planned"
-title = "BokehJS + frameworks"
-description = "React, Vue, Svelte, and plain BokehJS examples can use the same catalog."
-accent = "teal"
-
-[[roadmap]]
-state = "Planned"
-title = "Python in the browser"
-description = "Pyodide and PyScript examples can have their own runtime label and build process."
-accent = "gold"

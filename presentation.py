@@ -8,7 +8,7 @@ from typing import Any, cast
 from bokeh.document import Document
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from catalog import DEMOS, RUNTIME_ROADMAP, Demo
+from catalog import DEMOS, Demo
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
@@ -28,7 +28,6 @@ APP_TEMPLATE = (SITE / "application.html.jinja").read_text()
 def render_index(*, show_legacy_notice: bool = False) -> bytes:
     return INDEX_TEMPLATE.render(
         demos=DEMOS,
-        runtime_roadmap=RUNTIME_ROADMAP,
         site_header=SITE_HEADER,
         site_footer=SITE_FOOTER,
         show_legacy_notice=show_legacy_notice,

@@ -15,8 +15,7 @@
     <section class="hero">
       <div class="hero-inner">
         <div class="hero-copy">
-          <p class="hero-label">Bokeh example gallery</p>
-          <h1>See what Bokeh can do.</h1>
+          <h1>Bokeh in action</h1>
           <p class="hero-lede">These examples use Bokeh for data exploration, scientific models, financial analysis, image processing, and network science. Each one has working source code.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#demos">Browse the gallery</a>
@@ -48,7 +47,7 @@
       </aside>
       {% endif %}
       <div class="section-heading">
-        <div><p class="section-kicker"><span></span>Current collection</p><h2>Examples by topic</h2></div>
+        <div><h2>Examples by topic</h2></div>
         <p>The gallery uses public datasets and computed models. Several examples also show how Bokeh works with NetworkX, Xarray, Numba, pandas, and scikit-image.</p>
       </div>
       <div class="demo-grid">
@@ -72,17 +71,16 @@
     <section class="asgi-band" aria-label="Current runtime">
       <div class="asgi-band-inner">
         <div>
-          <p class="section-kicker"><span></span>Current runtime</p>
           <h2>Python callbacks on ASGI</h2>
         </div>
         <div class="asgi-diagram" aria-label="Browser connects through an ASGI server to Bokeh and Python callbacks">
-          <span><b>Browser</b><small>Document + WebSocket</small></span><i>→</i><span><b>ASGI server</b><small>Uvicorn today</small></span><i>→</i><span><b>Bokeh</b><small>Session + callbacks</small></span>
+          <span><b>Browser</b><small>Document + WebSocket</small></span><i>↔</i><span><b>ASGI server</b><small>Uvicorn / Hypercorn / etc.</small></span><i>↔</i><span><b>Bokeh</b><small>Session + callbacks</small></span>
         </div>
         <p>Bokeh's ASGI adapter handles documents, static resources, sessions, and WebSockets. These examples run on Uvicorn, but the adapter can also sit inside another ASGI application.</p>
         <div class="run-local" id="run-locally">
           <div>
             <p class="run-local-label">Run locally</p>
-            <h3>Clone it, then let uv do the rest.</h3>
+            <h3>Clone, uv run, done.</h3>
             <p>With Git and <a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a> installed, these commands create the locked environment and start the complete gallery.</p>
           </div>
           <div>
@@ -95,24 +93,6 @@ uv run --locked uvicorn asgi:application</code></pre>
       </div>
     </section>
 
-    <section class="runtime-section">
-      <div class="runtime-heading">
-        <p class="section-kicker"><span></span>Planned additions</p>
-        <h2>The catalog also supports browser-only examples.</h2>
-        <p>Each entry records both its domain and runtime. BokehJS, framework integrations, and browser-based Python examples can use the same gallery with accurate labels.</p>
-      </div>
-      <div class="runtime-grid">
-        {% for runtime in runtime_roadmap %}
-        <article class="runtime-card runtime-{{ runtime.accent }}">
-          <span>{{ "%02d" | format(loop.index) }}</span>
-          <p>{{ runtime.state }}</p>
-          <h3>{{ runtime.title }}</h3>
-          <div></div>
-          <p>{{ runtime.description }}</p>
-        </article>
-        {% endfor %}
-      </div>
-    </section>
   </main>
   {{ site_footer | safe }}
 </body>

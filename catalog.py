@@ -38,28 +38,17 @@ class Demo:
         return f"{SOURCE_BASE_URL}/{self.source}"
 
 
-@dataclass(frozen=True)
-class RoadmapItem:
-    state: str
-    title: str
-    description: str
-    accent: str
-
-
 def demo_from(data: dict[str, Any]) -> Demo:
     values = dict(data)
     values["tags"] = tuple(cast(list[str], values["tags"]))
     return Demo(**values)
 
 
-def load_manifest() -> tuple[tuple[Demo, ...], tuple[RoadmapItem, ...]]:
+def load_manifest() -> tuple[Demo, ...]:
     with MANIFEST.open("rb") as manifest:
         data = load(manifest)
 
     demos = tuple(demo_from(item) for item in cast(list[dict[str, Any]], data.get("demos", [])))
-    roadmap = tuple(
-        RoadmapItem(**item) for item in cast(list[dict[str, Any]], data.get("roadmap", []))
-    )
     if not demos:
         raise ValueError(f"{MANIFEST} does not define any demos")
 
@@ -73,10 +62,10 @@ def load_manifest() -> tuple[tuple[Demo, ...], tuple[RoadmapItem, ...]]:
     if missing_sources:
         raise ValueError(f"{MANIFEST} references missing sources: {missing_sources}")
 
-    return demos, roadmap
+    return demos
 
 
-DEMOS, RUNTIME_ROADMAP = load_manifest()
+DEMOS = load_manifest()
 
 
 def load_applications() -> Mapping[str, Callable[[Document], None]]:
