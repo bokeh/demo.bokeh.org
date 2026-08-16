@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import Any, cast
+from typing import Any
 
 import numpy as np
 from bokeh.layouts import column
 from bokeh.models import (
+    BasicTicker,
     Button,
     ColumnDataSource,
+    CustomJSTickFormatter,
     Div,
-    FixedTicker,
     Range1d,
     Slider,
     TabPanel,
@@ -28,15 +29,6 @@ from apps._common.colors import CORAL, GOLD, PAPER, PLUM, TEAL, VIOLET
 Acceleration = Callable[[float, float, float], float]
 STATE_BACKGROUND = "#e5ddd4"
 STATE_GRID = "#2a1723"
-PENDULUM_TICKS = tuple(multiple * np.pi for multiple in range(-8, 9))
-PENDULUM_TICK_LABELS = {
-    tick: (
-        "0"
-        if multiple == 0
-        else f"{'−' if multiple < 0 else ''}{'' if abs(multiple) == 1 else abs(multiple)}π"
-    )
-    for multiple, tick in zip(range(-8, 9), PENDULUM_TICKS, strict=True)
-}
 
 NARROW_CONTENT_CSS = """
 @media (max-width: 700px) {
@@ -85,6 +77,12 @@ def modify_document(document) -> None:
         trace_history_limit = 1800
         phase_history_limit = 3600
         phase_focus_limit = 1800
+        phase_position_scale = np.pi if key == "pendulum" else 1.0
+        initial_phase_position = initial_position / phase_position_scale
+        display_phase_x_range = (
+            phase_x_range[0] / phase_position_scale,
+            phase_x_range[1] / phase_position_scale,
+        )
 
         running = Toggle(label="Pause integration", active=True, button_type="primary")
         reset = Button(label="Reset initial state")
@@ -93,10 +91,11 @@ def modify_document(document) -> None:
             data={"time": [0.0], "cycles": [0.0], "x": [initial_position]}, name=f"{key}-trace"
         )
         phase_source = ColumnDataSource(
-            data={"x": [initial_position], "velocity": [initial_velocity]}, name=f"{key}-phase"
+            data={"x": [initial_phase_position], "velocity": [initial_velocity]},
+            name=f"{key}-phase",
         )
         phase_focus_source = ColumnDataSource(
-            data={"x": [initial_position], "velocity": [initial_velocity]},
+            data={"x": [initial_phase_position], "velocity": [initial_velocity]},
             name=f"{key}-phase-focus",
         )
         sample_source = ColumnDataSource(
@@ -115,7 +114,7 @@ def modify_document(document) -> None:
 
         phase_name = "chaotic-phase-plot" if key == "duffing" else f"{key}-phase-plot"
         path_name = "chaotic-phase-path" if key == "duffing" else f"{key}-phase-path"
-        phase_x_model = Range1d(start=phase_x_range[0], end=phase_x_range[1])
+        phase_x_model = Range1d(start=display_phase_x_range[0], end=display_phase_x_range[1])
         phase_y_model = Range1d(start=phase_y_range[0], end=phase_y_range[1])
         phase_title = Title(text="Phase path", text_font_size="16px")
         phase = figure(
@@ -155,7 +154,7 @@ def modify_document(document) -> None:
         phase.grid.grid_line_width = 0.5
 
         def reset_phase_range() -> None:
-            phase_x_model.start, phase_x_model.end = phase_x_range
+            phase_x_model.start, phase_x_model.end = display_phase_x_range
             phase_y_model.start, phase_y_model.end = phase_y_range
 
         def expand_phase_range() -> None:
@@ -181,7 +180,7 @@ def modify_document(document) -> None:
                 if high > end - edge_margin:
                     axis_range.end = max(end, high + padding)
 
-            expand(phase_source.data["x"], phase_x_model, phase_x_range)
+            expand(phase_source.data["x"], phase_x_model, display_phase_x_range)
             expand(phase_source.data["velocity"], phase_y_model, phase_y_range)
 
         diagnostic_title = "Peak convergence" if diagnostic == "peaks" else "Stroboscopic section"
@@ -235,9 +234,22 @@ def modify_document(document) -> None:
         diagnostic_plot.grid.grid_line_alpha = 0.12
         diagnostic_plot.grid.grid_line_width = 0.5
         if key == "pendulum":
+            ticker = BasicTicker(desired_num_ticks=7, min_interval=1)
+            formatter = CustomJSTickFormatter(
+                code="""
+                    const multiple = Math.round(tick)
+                    if (multiple == 0)
+                        return "0"
+                    if (multiple == 1)
+                        return "π"
+                    if (multiple == -1)
+                        return "−π"
+                    return `${multiple < 0 ? "−" : ""}${Math.abs(multiple)}π`
+                """
+            )
             for plot in (phase, diagnostic_plot):
-                plot.xaxis.ticker = FixedTicker(ticks=list(PENDULUM_TICKS))
-                plot.xaxis[0].major_label_overrides = cast(Any, PENDULUM_TICK_LABELS)
+                plot.xaxis.ticker = ticker
+                plot.xaxis.formatter = formatter
 
         def restart() -> None:
             state.update(
@@ -249,8 +261,11 @@ def modify_document(document) -> None:
                 sample=0,
             )
             trace_source.data = {"time": [0.0], "cycles": [0.0], "x": [initial_position]}
-            phase_source.data = {"x": [initial_position], "velocity": [initial_velocity]}
-            phase_focus_source.data = {"x": [initial_position], "velocity": [initial_velocity]}
+            phase_source.data = {"x": [initial_phase_position], "velocity": [initial_velocity]}
+            phase_focus_source.data = {
+                "x": [initial_phase_position],
+                "velocity": [initial_velocity],
+            }
             sample_source.data = {"index": [], "x": [], "velocity": []}
             reset_phase_range()
             status.text = "<p>Ready from the initial state.</p>"
@@ -286,6 +301,7 @@ def modify_document(document) -> None:
 
             positions = solution.y[0].tolist()
             velocities = solution.y[1].tolist()
+            phase_positions = [position / phase_position_scale for position in positions]
             sample_indices: list[int] = []
             sample_positions: list[float] = []
             sample_velocities: list[float] = []
@@ -297,12 +313,12 @@ def modify_document(document) -> None:
                     if state["previous_velocity"] > 0 and velocity <= 0:
                         state["sample"] += 1
                         sample_indices.append(state["sample"])
-                        sample_positions.append(position)
+                        sample_positions.append(position / phase_position_scale)
                         sample_velocities.append(velocity)
                 elif state["n"] % steps_per_period == 0:
                     state["sample"] += 1
                     sample_indices.append(state["sample"])
-                    sample_positions.append(position)
+                    sample_positions.append(position / phase_position_scale)
                     sample_velocities.append(velocity)
                 state["previous_velocity"] = velocity
 
@@ -316,10 +332,10 @@ def modify_document(document) -> None:
                 rollover=trace_history_limit,
             )
             phase_source.stream(
-                {"x": positions, "velocity": velocities}, rollover=phase_history_limit
+                {"x": phase_positions, "velocity": velocities}, rollover=phase_history_limit
             )
             phase_focus_source.stream(
-                {"x": positions, "velocity": velocities}, rollover=phase_focus_limit
+                {"x": phase_positions, "velocity": velocities}, rollover=phase_focus_limit
             )
             expand_phase_range()
             if sample_positions:

@@ -60,7 +60,7 @@ def modify_document(document) -> None:
         styles={"color": MUTED, "font-size": "12px", "line-height": "1.5"},
     )
     volatility = Slider(title="Volatility multiplier", start=0.5, end=2.5, value=1.0, step=0.1)
-    speed = Select(title="Replay pace", value="Medium", options=list(UPDATE_TICKS))
+    speed = Select(title="Replay pace", value="Fast", options=list(UPDATE_TICKS))
     playing = Toggle(label="Pause simulation", active=True, button_type="primary")
     selloff = Button(label="Inject an 8% selloff")
     restart = Button(label="Restart seeded run")

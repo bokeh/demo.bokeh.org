@@ -173,7 +173,7 @@ def build_controls() -> Controls:
         sizing_mode="stretch_width",
         name="spectrum-noise",
     )
-    update_rate = Select(title="Update rate", value="Live", options=list(UPDATE_TICKS), width=120)
+    update_rate = Select(title="Update rate", value="Fast", options=list(UPDATE_TICKS), width=120)
     playing = Toggle(label="Pause", active=True, button_type="primary")
     inject_transient = Button(label="Inject transient")
     restart = Button(label="Restart")

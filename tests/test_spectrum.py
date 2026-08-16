@@ -95,6 +95,7 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     update_rate = next(
         select for select in document.select({"type": Select}) if select.title == "Update rate"
     )
+    assert update_rate.value == "Fast"
     assert update_rate in primary_controls.children
     assert (noise_control.max_width, noise_control.sizing_mode) == (420, "stretch_width")
     receiver_filter.value = "Dual band-pass"

@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import numpy as np
 from bokeh.document import Document
-from bokeh.models import Button, ColumnDataSource, Div, FixedTicker, Slider, Tabs, Toggle
+from bokeh.models import (
+    BasicTicker,
+    Button,
+    ColumnDataSource,
+    CustomJSTickFormatter,
+    Div,
+    Slider,
+    Tabs,
+    Toggle,
+)
 
 from catalog import load_applications
 
@@ -69,11 +78,13 @@ def test_oscillator_phase_plots_share_the_light_preview_treatment() -> None:
         assert "margin-bottom:18px" in explanation.text
     pendulum = document.select_one({"name": "pendulum-phase-plot"})
     assert pendulum.xaxis[0].axis_label == r"$$\theta$$"
-    assert isinstance(pendulum.xaxis[0].ticker, FixedTicker)
-    assert pendulum.xaxis[0].major_label_overrides[np.pi] == "π"
-    assert pendulum.xaxis[0].major_label_overrides[-np.pi] == "−π"
+    assert isinstance(pendulum.xaxis[0].ticker, BasicTicker)
+    assert pendulum.xaxis[0].ticker.min_interval == 1
+    assert isinstance(pendulum.xaxis[0].formatter, CustomJSTickFormatter)
+    assert "π" in pendulum.xaxis[0].formatter.code
     pendulum_diagnostic = document.select_one({"name": "pendulum-diagnostic-plot"})
-    assert pendulum_diagnostic.xaxis[0].ticker.ticks == pendulum.xaxis[0].ticker.ticks
+    assert pendulum_diagnostic.xaxis[0].ticker is pendulum.xaxis[0].ticker
+    assert pendulum_diagnostic.xaxis[0].formatter is pendulum.xaxis[0].formatter
     peak_convergence = document.select_one({"name": "van-der-pol-diagnostic-plot"})
     assert peak_convergence.min_border_left == 65
 
@@ -98,6 +109,31 @@ def test_oscillator_phase_range_expands_to_contain_the_orbit() -> None:
     assert phase.x_range.end > max(source.data["x"])
     assert phase.y_range.start < min(source.data["velocity"])
     assert phase.y_range.end > max(source.data["velocity"])
+
+
+def test_pendulum_ticks_remain_readable_across_multiple_rotations() -> None:
+    document = Document()
+    load_applications()["/chaotic-motion"](document)
+    tabs = document.select_one({"type": Tabs, "name": "oscillator-tabs"})
+    tabs.active = 2
+    damping = next(
+        slider
+        for slider in tabs.tabs[2].child.select({"type": Slider})
+        if "damping" in slider.title
+    )
+    damping.value = damping.start
+    for _ in range(40):
+        document.session_callbacks[0].callback()
+
+    phase = document.select_one({"name": "pendulum-phase-plot"})
+    phase_source = document.select_one({"name": "pendulum-phase"})
+    trace_source = document.select_one({"name": "pendulum-trace"})
+    diagnostic = document.select_one({"name": "pendulum-diagnostic-plot"})
+    assert np.isclose(phase_source.data["x"][-1], trace_source.data["x"][-1] / np.pi)
+    assert max(abs(np.asarray(phase_source.data["x"]))) > 8
+    assert phase.x_range.start < min(phase_source.data["x"])
+    assert phase.x_range.end > max(phase_source.data["x"])
+    assert diagnostic.xaxis[0].ticker is phase.xaxis[0].ticker
 
 
 def test_mathieu_oscillator_streams_a_finite_stroboscopic_section() -> None:

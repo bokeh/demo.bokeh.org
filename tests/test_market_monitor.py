@@ -65,6 +65,7 @@ def test_market_streams_one_intraday_bar_at_each_update() -> None:
     speed = next(
         select for select in document.select({"type": Select}) if select.title == "Replay pace"
     )
+    assert speed.value == "Fast"
     assert len(source.data["date"]) == 64
     assert len(indicator.data["date"]) == 64
     assert np.equal(np.diff(source.data["index"]), 1).all()
