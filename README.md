@@ -71,6 +71,9 @@ Bokeh session state is local to the process, ECS tasks provide horizontal
 concurrency. ALB cookie affinity keeps each browser on the same task for the
 life of its session.
 
+The production image runs free-threaded Python 3.14 with the GIL disabled. The
+deployment workflow builds that image for ARM64 Fargate tasks.
+
 The public endpoints are:
 
 - `/`: generated gallery
@@ -89,9 +92,9 @@ this page, with status 404, for missing application routes and assets.
 
 ### Docker
 
-The image uses the checked-in uv lockfile and Bokeh `3.10.0.dev10`. It loads the
-matching BokehJS bundles from Bokeh's development CDN. Change the pin to
-`3.10.0` when the final release is available.
+The image uses free-threaded Python 3.14, the checked-in uv lockfile, and Bokeh
+`3.10.0.dev10`. It loads the matching BokehJS bundles from Bokeh's development
+CDN. Change the pin to `3.10.0` when the final release is available.
 
 ```sh
 docker build --tag bokeh-demo .

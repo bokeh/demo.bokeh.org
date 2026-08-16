@@ -1,4 +1,4 @@
-FROM python:3.13-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /uvx /bin/
 
@@ -12,7 +12,10 @@ ENV BOKEH_LOG_LEVEL=info \
     UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_NO_DEV=1 \
-    UV_PYTHON_DOWNLOADS=0
+    UV_PYTHON=3.14t \
+    UV_PYTHON_INSTALL_DIR=/opt/python
+
+RUN uv python install --no-bin "$UV_PYTHON"
 
 RUN groupadd --gid 10001 bokeh \
     && useradd --create-home --gid bokeh --uid 10001 bokeh
@@ -20,17 +23,21 @@ RUN groupadd --gid 10001 bokeh \
 WORKDIR /app
 
 COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv uv sync --locked
+RUN --mount=type=cache,target=/root/.cache/uv UV_PYTHON_DOWNLOADS=never uv sync --locked
 
 COPY apps ./apps
 COPY site ./site
-COPY asgi.py catalog.py presentation.py ./
+COPY asgi.py catalog.py catalog.toml presentation.py ./
 
 RUN chown -R bokeh:bokeh /app
 
 USER 10001:10001
 
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHON_GIL=0 \
+    UV_PYTHON_DOWNLOADS=never
+
+RUN python -c "import sys, sysconfig; assert sysconfig.get_config_var('Py_GIL_DISABLED') == 1 and not sys._is_gil_enabled()"
 
 EXPOSE 5006
 

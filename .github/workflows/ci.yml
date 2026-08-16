@@ -11,6 +11,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      PYTHON_GIL: "0"
+      UV_PYTHON: 3.14t
     steps:
       - uses: actions/checkout@v6
       - name: Install uv
@@ -19,9 +22,13 @@ jobs:
           version: "0.12.1"
           enable-cache: true
       - name: Install Python
-        run: uv python install 3.13
+        run: uv python install "$UV_PYTHON"
       - name: Install dependencies
-        run: uv sync --locked
+        run: uv sync --locked --python "$UV_PYTHON"
+      - name: Verify free-threaded runtime
+        run: >-
+          uv run --locked python -c "import sys, sysconfig;
+          assert sysconfig.get_config_var('Py_GIL_DISABLED') == 1 and not sys._is_gil_enabled()"
       - name: Check Python code
         run: |
           uv run --locked ruff format --no-cache --check .
