@@ -4,12 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      publish_only:
-        description: "Push the image without updating ECS (initial bootstrap)"
-        required: true
-        default: false
-        type: boolean
 
 concurrency:
   group: demo-bokeh-org-production
@@ -53,15 +47,30 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push immutable image
+      - name: Build or reuse immutable image
         id: image
         env:
           ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
           IMAGE_TAG: sha-${{ github.sha }}
         run: |
           image_tag="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-          docker buildx build --platform linux/arm64 --tag "$image_tag" --push .
-          digest="$(aws ecr describe-images --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$IMAGE_TAG" --query 'imageDetails[0].imageDigest' --output text)"
+          digest="$(
+            aws ecr describe-images \
+              --repository-name "$ECR_REPOSITORY" \
+              --image-ids imageTag="$IMAGE_TAG" \
+              --query 'imageDetails[0].imageDigest' \
+              --output text 2>/dev/null || true
+          )"
+          if [[ "$digest" != sha256:* ]]; then
+            docker buildx build --platform linux/arm64 --tag "$image_tag" --push .
+            digest="$(
+              aws ecr describe-images \
+                --repository-name "$ECR_REPOSITORY" \
+                --image-ids imageTag="$IMAGE_TAG" \
+                --query 'imageDetails[0].imageDigest' \
+                --output text
+            )"
+          fi
           test "${digest#sha256:}" != "$digest"
           image="$ECR_REGISTRY/$ECR_REPOSITORY@$digest"
           echo "image=$image" >> "$GITHUB_OUTPUT"
@@ -69,7 +78,6 @@ jobs:
           echo "\`$image\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Render ECS task definition
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.publish_only }}
         id: task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -78,7 +86,6 @@ jobs:
           image: ${{ steps.image.outputs.image }}
 
       - name: Deploy to ECS
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.publish_only }}
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-definition.outputs.task-definition }}
@@ -89,5 +96,4 @@ jobs:
           propagate-tags: SERVICE
 
       - name: Verify production health
-        if: ${{ github.event_name != 'workflow_dispatch' || !inputs.publish_only }}
         run: curl --fail --retry 8 --retry-delay 5 --retry-all-errors https://demo.bokeh.org/healthz

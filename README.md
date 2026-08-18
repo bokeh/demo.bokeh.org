@@ -150,25 +150,13 @@ document, exercises static ASGI responses, and checks the container build.
 The `bokeh/infra` repository owns the AWS resources under
 `terraform/stacks/aws-demo`. This repository contains no Terraform.
 
-The production workflow uses GitHub OIDC and immutable ECR images. It runs for
-pushes to `main` and may also be started manually:
+The **Publish and deploy** workflow runs for every push to `main` and may also
+be started manually. It uses GitHub OIDC to cross-build a Linux ARM64 image,
+push it to ECR under an immutable `sha-*` tag, register a new ECS task
+definition, update the `worker` service, wait for stability, and verify the
+production health endpoint.
 
-The workflow cross-builds a Linux ARM64 image, matching the Fargate runtime
-platform declared here and in the infrastructure repository.
-
-1. Apply the infra commit **Prepare Fargate demo deployment**.
-2. Create and protect the GitHub environment `production`.
-3. Run **Publish and deploy** manually with `publish_only` enabled. Record the
-   digest written to the job summary.
-4. Apply the infra commit **Move demo service to Fargate** with that digest.
-5. Run **Publish and deploy** normally and verify every route.
-6. Apply the two EC2 cleanup commits from the infra repository separately.
-
-Publish-only mode handles the initial bootstrap by filling the new ECR
-repository without updating the EC2 service. A normal deployment renders the
-committed task definition with the new digest, registers a revision, updates
-the `worker` service, and waits for stability.
-
-To roll back an application release, rerun the workflow at the desired Git
-commit. ECR retains the most recent immutable `sha-*` images. Infrastructure
-rollback and migration gates are documented in the infra stack README.
+To roll back an application release, rerun the workflow for the desired commit
+or revert the change on `main`. ECR retains the twenty most recent immutable
+release images. Infrastructure operations are documented in the `bokeh/infra`
+AWS demo stack README.
