@@ -24,6 +24,8 @@ from catalog import DEMOS
 from presentation import SITE, configure_document
 
 from . import colors
+from .performance import monitor_document
+from .streaming import PeriodicCoalescer as PeriodicCoalescer
 
 REMOVE_LOADING_JS = (SITE / "remove_loading.js").read_text()
 ASSETS = Path(__file__).parent
@@ -59,6 +61,7 @@ def prepare_document(document, route: str) -> None:
     document.theme = "light_minimal"
     for root in document.roots:
         match_background(root, colors.PAPER)
+    monitor_document(document, route).start(document)
 
 
 def match_background(model, background: str) -> None:
