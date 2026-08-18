@@ -1,0 +1,6 @@
+<div class="scheduler-legend">
+  <strong>Dependency state</strong>
+  {% for status, color in statuses %}
+    <span><i class="scheduler-dot" style="--swatch: {{ color }}"></i>{{ status | lower }}</span>
+  {% endfor %}
+</div>

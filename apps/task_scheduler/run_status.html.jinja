@@ -1,0 +1,11 @@
+<div class="scheduler-summary">
+  <strong class="scheduler-run">
+    Run <span class="scheduler-run-number">{{ run }}</span> ·
+    <span class="scheduler-complete-count">{{ complete }}/{{ total }}</span> complete
+  </strong>
+  <span><i class="scheduler-dot" style="--swatch: {{ coral }}"></i><b>{{ running }}</b> running</span>
+  <span><i class="scheduler-dot" style="--swatch: {{ gold }}"></i><b>{{ ready }}</b> ready</span>
+  <span><i class="scheduler-dot" style="--swatch: #9b8f95"></i><b>{{ waiting }}</b> waiting</span>
+  <span><b class="scheduler-throughput">{{ "%.2f" | format(throughput) }}</b> tasks/s</span>
+  <span><b>{{ offline }}</b> worker{{ "s" if offline != 1 else "" }} offline</span>
+</div>

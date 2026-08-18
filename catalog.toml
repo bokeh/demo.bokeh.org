@@ -1,0 +1,155 @@
+[[demos]]
+route = "/mobility"
+module = "apps.mobility"
+source = "apps/mobility.py"
+title = "Vehicle efficiency explorer"
+eyebrow = "Real vehicle data"
+description = "Compare decades of vehicle design, then select any group to recompute its fuel-economy distribution and summary values."
+domain = "Transportation"
+runtime = "Python / ASGI"
+tags = ["linked selection", "histogram", "filters", "hover"]
+accent = "gold"
+preview = "mobility-preview.jpg"
+
+[[demos]]
+route = "/terrain-contours"
+module = "apps.terrain"
+source = "apps/terrain/__init__.py"
+title = "Terrain contour explorer"
+eyebrow = "Synthetic elevation model"
+description = "Compare ten dramatic modeled landforms, position an angled transect across filled contours, and read the linked elevation profile and terrain statistics."
+domain = "Geospatial analysis"
+runtime = "Python / ASGI"
+tags = ["filled contours", "draggable transect", "linked profile", "NumPy"]
+accent = "teal"
+preview = "terrain-preview.jpg"
+
+[[demos]]
+route = "/airport-access"
+module = "apps.airport_map"
+source = "apps/airport_map.py"
+title = "Regional airport access"
+eyebrow = "Vega airport locations"
+description = "Move among U.S. states and territories without filtering the national airport network, then compare an anchor's closest alternatives and regional reach."
+domain = "Infrastructure planning"
+runtime = "Python / ASGI"
+tags = ["tile map", "tap selection", "nearest neighbors", "cumulative reach", "real data"]
+accent = "gold"
+preview = "airport-preview.jpg"
+
+[[demos]]
+route = "/climate"
+module = "apps.climate"
+source = "apps/climate.py"
+title = "Seattle weather comparison"
+eyebrow = "NOAA observations"
+description = "Compare one year with Seattle observations from 2012 to 2015, including temperatures, rolling rainfall, wet days, and monthly totals."
+domain = "Climate science"
+runtime = "Python / ASGI"
+tags = ["daily comparison", "rolling rainfall", "monthly heatmap", "event thresholds"]
+accent = "coral"
+preview = "weather-preview.jpg"
+
+[[demos]]
+route = "/market-monitor"
+module = "apps.market_monitor"
+source = "apps/market_monitor.py"
+title = "Streaming market simulator"
+eyebrow = "Synthetic OHLC model"
+description = "Generate an unlimited intraday OHLC stream, change its market regime, and watch volatility, drawdown, and MACD react to new bars and sudden shocks."
+domain = "Finance"
+runtime = "Python / ASGI"
+tags = ["OHLC", "streaming", "MACD", "session state"]
+accent = "violet"
+preview = "market-preview.jpg"
+
+[[demos]]
+route = "/task-scheduler"
+module = "apps.task_scheduler"
+source = "apps/task_scheduler/__init__.py"
+title = "Task scheduling simulator"
+eyebrow = "Synthetic workload"
+description = "Follow a dependency graph as tasks become runnable, occupy workers, encounter delays, and stream into a compact execution timeline."
+domain = "Distributed computing"
+runtime = "Python / ASGI"
+tags = ["dynamic graph", "task stream", "WebGL", "incremental updates", "session state"]
+accent = "gold"
+preview = "scheduler-preview.jpg"
+
+[[demos]]
+route = "/chaotic-motion"
+module = "apps.signal_studio"
+source = "apps/signal_studio.py"
+title = "Nonlinear oscillator studio"
+eyebrow = "Nonlinear dynamics"
+description = "Compare Duffing, van der Pol, driven pendulum, and Mathieu dynamics through traces, phase paths, and model-specific diagnostics."
+domain = "Applied mathematics"
+runtime = "Python / ASGI"
+tags = ["MathText", "simulation", "streaming", "session state"]
+accent = "coral"
+preview = "chaos-preview.jpg"
+
+[[demos]]
+route = "/wave-field"
+module = "apps.heatmap"
+source = "apps/heatmap.py"
+title = "Wave field explorer"
+eyebrow = "Computed field"
+description = "Recompute a two-dimensional field, inspect local values, and follow a movable cross-section through it."
+domain = "Scientific computing"
+runtime = "Python / ASGI"
+tags = ["heatmap", "cross-section", "color mapping", "NumPy", "SciPy"]
+accent = "teal"
+preview = "wave-preview.jpg"
+
+[[demos]]
+route = "/spectrum-monitor"
+module = "apps.spectrum"
+source = "apps/spectrum/__init__.py"
+title = "Radio spectrum lab"
+eyebrow = "Synthetic signals"
+description = "Tune a receiver across generated telemetry, chirps, hopping channels, and crowded bands while Python streams filtered spectra and a scrolling spectrogram."
+domain = "Signal processing"
+runtime = "Python / ASGI"
+tags = ["spectrogram", "FFT", "streaming image", "NumPy", "SciPy"]
+accent = "violet"
+preview = "spectrum-preview.jpg"
+
+[[demos]]
+route = "/research-lineage"
+module = "apps.network"
+source = "apps/network/__init__.py"
+title = "Research lineage explorer"
+eyebrow = "OpenAlex citation graph"
+description = "Trace four landmark results back to their foundations and forward through the research they influenced."
+domain = "Scholarly research"
+runtime = "Python / ASGI"
+tags = ["OpenAlex", "NetworkX", "citation paths", "linked timeline", "real data"]
+accent = "violet"
+preview = "network-preview.jpg"
+
+[[demos]]
+route = "/image-processing"
+module = "apps.image_lab"
+source = "apps/image_lab/__init__.py"
+title = "Hubble image processing"
+eyebrow = "Xarray + Numba"
+description = "Crop a coordinate-aware Hubble image and run compiled color, contrast, blur, edge, and sharpening filters."
+domain = "Image science"
+runtime = "Python / ASGI"
+tags = ["Xarray", "Numba", "image_rgba", "compiled filters"]
+accent = "teal"
+preview = "hubble-preview.jpg"
+
+[[demos]]
+route = "/cellular-automata"
+module = "apps.cellular_automata"
+source = "apps/cellular_automata/__init__.py"
+title = "Cellular automata simulator"
+eyebrow = "Emergent computation"
+description = "Seed and edit a colony, compare two Life-like rules from the same state, and detect still lifes and repeating oscillators."
+domain = "Complex systems"
+runtime = "Python / ASGI"
+tags = ["Game of Life", "rule comparison", "pattern editing", "cycle detection"]
+accent = "coral"
+preview = "automata-preview.jpg"

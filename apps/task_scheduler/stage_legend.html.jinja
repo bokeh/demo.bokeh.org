@@ -1,0 +1,9 @@
+<div class="scheduler-legend">
+  <strong>Worker stages</strong>
+  {% for stage, color in stages %}
+    <span><i class="scheduler-stage-swatch" style="--swatch: {{ color }}"></i>{{ stage }}</span>
+  {% endfor %}
+  <strong class="scheduler-event-heading">Injected events</strong>
+  <span>◆ delayed task</span>
+  <span class="scheduler-interruption">× interrupted worker</span>
+</div>
