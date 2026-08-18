@@ -9,9 +9,8 @@ const send_request = () => {
   throttle.timeout = null
 }
 
-const finished = cb_obj.value == cb_obj.value_throttled
 const remaining = wait - (Date.now() - throttle.last_sent)
-if (finished || remaining <= 0) {
+if (flush || remaining <= 0) {
   clearTimeout(throttle.timeout)
   send_request()
 } else {

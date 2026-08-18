@@ -31,7 +31,7 @@ from apps.spectrum.view import (
     SpectrumView,
 )
 
-type HistoryUpdate = Literal["append", "refresh", "replace"]
+type HistoryUpdate = Literal["append", "replace"]
 type FilterSignature = tuple[str, float, float, float, float]
 
 
@@ -171,11 +171,11 @@ class Receiver:
             "dh": [HISTORY_SECONDS],
         }
 
-    def update_waterfall_row(self, response: np.ndarray, *, advance: bool) -> None:
+    def append_waterfall_row(self, response: np.ndarray) -> None:
         latest = apply_response_db(self.state.raw_history[-1], response).astype(np.float32)[
             np.newaxis, :
         ]
-        self.view.sources.latest.data = {"image": [latest], "advance": [advance]}
+        self.view.sources.latest.data = {"image": [latest]}
 
     def update_filter_view(self, *, history_update: HistoryUpdate) -> None:
         controls = self.view.controls
@@ -214,9 +214,7 @@ class Receiver:
             case "replace":
                 self.replace_waterfall(response)
             case "append":
-                self.update_waterfall_row(response, advance=True)
-            case "refresh":
-                self.update_waterfall_row(response, advance=False)
+                self.append_waterfall_row(response)
             case _:
                 raise ValueError(history_update)
 
@@ -386,12 +384,11 @@ class Receiver:
                 controls.bandwidth.title = "Notch spacing (Hz)"
 
     def filter_settings_changed(self, _attr: str, _old: object, _new: object) -> None:
-        # A filter change updates the newest measurement without rewriting recorded history.
-        self.update_filter_view(history_update="refresh")
+        self.update_filter_view(history_update="replace")
 
     def filter_mode_changed(self, _attr: str, _old: object, _new: object) -> None:
         self.configure_filter_controls()
-        self.update_filter_view(history_update="refresh")
+        self.update_filter_view(history_update="replace")
 
     def playback_changed(self, _attr: str, _old: bool, active: bool) -> None:
         self.view.controls.playing.label = "Pause" if active else "Resume"

@@ -35,7 +35,6 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     periodic.callback()
     assert np.array_equal(history.data["image"][0], previous_history)
     assert not np.array_equal(latest.data["image"][0], previous_latest)
-    assert latest.data["advance"] == [True]
     assert np.array_equal(response.data["gain"], previous_response)
     signal_scene = next(
         select for select in document.select({"type": Select}) if select.title == "Signal scene"
@@ -68,23 +67,23 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
         "Comb reject",
     } <= set(receiver_filter.options)
     band_pass_history = history.data["image"][0].copy()
-    band_pass_latest = latest.data["image"][0].copy()
     receiver_filter.value = "Notch"
-    assert np.array_equal(history.data["image"][0], band_pass_history)
-    assert not np.array_equal(latest.data["image"][0], band_pass_latest)
-    assert latest.data["advance"] == [False]
+    assert not np.array_equal(history.data["image"][0], band_pass_history)
     assert not np.array_equal(response.data["gain"], previous_response)
+    notch_history = history.data["image"][0].copy()
     receiver_filter.value = "No filter"
-    assert np.array_equal(history.data["image"][0], band_pass_history)
+    assert not np.array_equal(history.data["image"][0], notch_history)
     receiver_filter.value = "Notch"
     periodic = min(document.session_callbacks, key=lambda callback: callback.period)
     periodic.callback()
     periodic.callback()
     assert not np.array_equal(power.data["raw"], power.data["filtered"])
+    filter_histories = {}
     for option in receiver_filter.options:
         receiver_filter.value = option
-        assert np.array_equal(history.data["image"][0], band_pass_history)
-        assert latest.data["advance"] == [False]
+        filter_histories[option] = history.data["image"][0].copy()
+    for first, second in zip(receiver_filter.options, receiver_filter.options[1:], strict=False):
+        assert not np.array_equal(filter_histories[first], filter_histories[second])
     spectrum = document.select_one({"name": "spectrum-power-plot"})
     assert spectrum.output_backend == "canvas"
     center = document.select_one({"type": Slider, "name": "spectrum-center-frequency"})
@@ -129,14 +128,11 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     receiver_filter.value = "Adaptive notch"
     assert not center.visible
     adaptive_history = history.data["image"][0].copy()
-    adaptive_latest = latest.data["image"][0].copy()
     adaptive_response = response.data["gain"].copy()
     bandwidth_request.data = {"value": [bandwidth.value + 10]}
-    assert np.array_equal(history.data["image"][0], adaptive_history)
-    assert not np.array_equal(latest.data["image"][0], adaptive_latest)
-    assert latest.data["advance"] == [False]
+    assert not np.array_equal(history.data["image"][0], adaptive_history)
     assert not np.array_equal(response.data["gain"], adaptive_response)
     receiver_filter.value = "No filter"
-    assert np.array_equal(history.data["image"][0], adaptive_history)
+    assert not np.array_equal(history.data["image"][0], adaptive_history)
     console = document.select_one({"name": "spectrum-console"})
     assert console.styles["background"] == PLUM
