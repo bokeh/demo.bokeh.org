@@ -16,7 +16,7 @@ wheels = [
 
 [[package]]
 name = "bokeh"
-version = "3.10.0.dev10"
+version = "3.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jinja2" },
@@ -28,9 +28,9 @@ dependencies = [
     { name = "tornado", marker = "sys_platform != 'emscripten'" },
     { name = "xyzservices" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/43/b1/54a29b4e6b1c57bdf56a24191a8f471736f5c507efd7cb188771fa9f0082/bokeh-3.10.0.dev10.tar.gz", hash = "sha256:7fa8f5923519539e39dfcda5fe49ed0eba40de85d1771927d7a9bb9201a3c9fe", size = 5976245, upload-time = "2026-08-13T17:26:10.257Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4c/e8/93d270023eb987348f9b5a2aef0103f903511b934519cd2bbefde451868d/bokeh-3.10.0.tar.gz", hash = "sha256:73f0b0c06d7925ca2b6d52b2dc51c2533a11f667cc6944f1f06c039ccc57c5ce", size = 5982193, upload-time = "2026-08-18T17:47:09.943Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/89/29d4b6ae5e95dbea9e569c79661b59d81ab0ed3927aaabdad02b64a85ecb/bokeh-3.10.0.dev10-py3-none-any.whl", hash = "sha256:ca6d80a79b03b8cf9fb700b06c0cab48984be23f5de66d07ffc3e7648b33db94", size = 6642618, upload-time = "2026-08-13T17:26:08.486Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/0a/1423bb61b5f06376fe6ccf79c8781e2bb5e36c78c1814c78913b7425950f/bokeh-3.10.0-py3-none-any.whl", hash = "sha256:6bb8dbd4a555f71a921be5bd45c3bfaa15b390257fbadae76901927bd58629b7", size = 6649702, upload-time = "2026-08-18T17:47:07.287Z" },
 ]
 
 [package.optional-dependencies]
@@ -69,7 +69,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "bokeh", extras = ["extra", "sampledata"], specifier = "==3.10.0.dev10" },
+    { name = "bokeh", extras = ["extra", "sampledata"], specifier = "==3.10.0" },
     { name = "networkx", specifier = ">=3.5,<4" },
     { name = "numba", specifier = ">=0.61,<1" },
     { name = "numpy", specifier = ">=2.0,<3" },

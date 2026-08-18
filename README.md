@@ -93,8 +93,7 @@ this page, with status 404, for missing application routes and assets.
 ### Docker
 
 The image uses free-threaded Python 3.14, the checked-in uv lockfile, and Bokeh
-`3.10.0.dev10`. It loads the matching BokehJS bundles from Bokeh's development
-CDN. Change the pin to `3.10.0` when the final release is available.
+`3.10.0`. It loads the matching BokehJS bundles from Bokeh's CDN.
 
 ```sh
 docker build --tag bokeh-demo .
