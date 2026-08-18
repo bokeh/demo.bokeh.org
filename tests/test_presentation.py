@@ -67,6 +67,7 @@ def test_text_and_control_surfaces_do_not_fall_back_to_bright_white() -> None:
 def test_landing_page_comes_from_catalog() -> None:
     html = render_index().decode()
     assert SITE_HEADER.strip() in html
+    assert 'href="https://github.com/bokeh/tutorial"' not in SITE_HEADER
     assert (
         '<link rel="icon" href="/assets/bokeh-icon.svg?v=2" type="image/svg+xml" sizes="any">'
         in html

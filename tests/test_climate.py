@@ -32,7 +32,6 @@ def test_weather_compares_year_with_full_record() -> None:
     assert monthly.data["outline_width"].count(1.5) == 12
     initial_heavy_days = selected.data["rain_color"].tolist().count(CORAL)
     threshold.value = 5
-    threshold.trigger("value_throttled", threshold.value_throttled, threshold.value)
     assert selected.data["rain_color"].tolist().count(CORAL) > initial_heavy_days
     assert threshold_span.location == 5
     assert "5 mm threshold" in summary.text

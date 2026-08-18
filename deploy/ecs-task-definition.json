@@ -31,6 +31,8 @@
       "environment": [
         {"name": "BOKEH_ALLOW_WS_ORIGIN", "value": "demo.bokeh.org"},
         {"name": "BOKEH_RESOURCES", "value": "cdn"},
+        {"name": "DEMO_MONITOR_TASK_CPU_LIMIT", "value": "1"},
+        {"name": "DEMO_MONITOR_TASK_MEMORY_LIMIT_MIB", "value": "2048"},
         {"name": "PORT", "value": "5006"},
         {"name": "PYTHONDONTWRITEBYTECODE", "value": "1"}
       ],

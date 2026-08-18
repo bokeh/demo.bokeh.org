@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import sys
 
-from asgi import LEGACY_DEMO_ROUTES, application
+from asgi import LEGACY_DEMO_ROUTES, _runtime_health, application
 from catalog import DEMOS
 
 
@@ -62,7 +64,20 @@ def test_health() -> None:
     status, headers, body = asyncio.run(request("/healthz"))
     assert status == 200
     assert headers["cache-control"] == "no-store"
-    assert body == b'{"status":"ok"}\n'
+    assert json.loads(body) == {
+        "status": "ok",
+        "python_gil": "enabled" if sys._is_gil_enabled() else "disabled",
+    }
+
+
+def test_health_reports_an_unexpected_enabled_gil_as_degraded() -> None:
+    health = _runtime_health({"PYTHON_GIL": "0"}, gil_enabled=lambda: True)
+
+    assert json.loads(health) == {
+        "status": "degraded",
+        "reason": "python_gil_enabled",
+        "python_gil": "enabled",
+    }
 
 
 def test_index_head_has_no_body() -> None:

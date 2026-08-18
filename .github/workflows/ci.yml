@@ -27,7 +27,7 @@ jobs:
         run: uv sync --locked --python "$UV_PYTHON"
       - name: Verify free-threaded runtime
         run: >-
-          uv run --locked python -c "import sys, sysconfig;
+          uv run --locked python -c "import asgi, sys, sysconfig;
           assert sysconfig.get_config_var('Py_GIL_DISABLED') == 1 and not sys._is_gil_enabled()"
       - name: Check Python code
         run: |

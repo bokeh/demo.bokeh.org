@@ -63,16 +63,19 @@ def modify_document(document) -> None:
         .interpolate(limit_direction="both"),
     )
     normal["rolling_rain"] = normal["normal_rain"].rolling(30, min_periods=1).sum()
-    annual_rain = frame.groupby("year")["precipitation"].sum()
+    annual_rain = cast(pd.Series, frame.groupby("year")["precipitation"].sum())
 
-    monthly = (
-        frame.groupby(["year", "month"])
-        .agg(
-            rain=("precipitation", "sum"),
-            mean_high=("temp_max", "mean"),
-            wet_days=("precipitation", lambda values: int(np.sum(values > 0))),
-        )
-        .reset_index()
+    monthly = cast(
+        pd.DataFrame,
+        (
+            frame.groupby(["year", "month"])
+            .agg(
+                rain=("precipitation", "sum"),
+                mean_high=("temp_max", "mean"),
+                wet_days=("precipitation", lambda values: int(np.sum(values > 0))),
+            )
+            .reset_index()
+        ),
     )
     monthly["month_name"] = [MONTHS[index - 1] for index in monthly["month"]]
     monthly["year_name"] = monthly["year"].astype(str)
@@ -200,7 +203,9 @@ def modify_document(document) -> None:
         height=285,
         sizing_mode="stretch_width",
         x_range=temperature.x_range,
-        y_range=Range1d(start=0, end=max(30, float(frame["precipitation"].max()) * 1.12)),
+        y_range=Range1d(
+            start=0, end=max(30, float(np.max(frame["precipitation"].to_numpy(dtype=float))) * 1.12)
+        ),
         extra_y_ranges={"rolling": Range1d(start=0, end=float(max_rolling_rain) * 1.12)},
         toolbar_location=None,
     )
@@ -266,7 +271,10 @@ def modify_document(document) -> None:
     style_figure(precipitation)
 
     mapper = LinearColorMapper(
-        palette=RAIN_PALETTE, low=0, high=float(monthly["rain"].max()), nan_color=PAPER
+        palette=RAIN_PALETTE,
+        low=0,
+        high=float(np.max(monthly["rain"].to_numpy(dtype=float))),
+        nan_color=PAPER,
     )
     monthly_plot = figure(
         name="weather-monthly-plot",
@@ -359,7 +367,7 @@ def modify_document(document) -> None:
         )
 
         total_rain = float(selected["precipitation"].sum())
-        rain_delta = total_rain / float(annual_rain.mean()) - 1
+        rain_delta = total_rain / float(np.mean(annual_rain.to_numpy(dtype=float))) - 1
         heavy_days = int(np.sum(precipitation_values >= threshold))
         average_heavy_days = (
             frame.groupby("year")["precipitation"]
@@ -390,8 +398,8 @@ def modify_document(document) -> None:
         calculate()
 
     year.on_change("value", update)
-    smoothing.on_change("value_throttled", update)
-    heavy_rain.on_change("value_throttled", update)
+    smoothing.on_change("value", update)
+    heavy_rain.on_change("value", update)
     calculate()
 
     attribution = Div(

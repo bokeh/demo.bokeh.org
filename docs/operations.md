@@ -31,6 +31,12 @@ After the workflow succeeds, open the landing page and at least one streaming
 application. A useful smoke test is `/spectrum-monitor`: let the waterfall run,
 change a filter, and confirm that the page continues updating over its WebSocket.
 
+The expected health response is
+`{"status":"ok","python_gil":"disabled"}`. The endpoint still returns HTTP 200
+when the application can serve traffic but the requested free-threaded mode was
+lost. In that case it reports `status` as `degraded`, `reason` as
+`python_gil_enabled`, and the active `python_gil` state as `enabled`.
+
 To roll back, revert the change on `main`. For a faster emergency rollback,
 rerun a previously successful **Publish and deploy** workflow; its immutable
 commit image can be reused without rebuilding.

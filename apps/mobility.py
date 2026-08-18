@@ -207,7 +207,7 @@ def modify_document(document) -> None:
 
     for control in (origin_filter, cylinder_filter, x_axis, y_axis):
         control.on_change("value", update_filter)
-    year_filter.on_change("value_throttled", update_filter)
+    year_filter.on_change("value", update_filter)
     vehicle_source.selected.on_change("indices", update_selection)
     calculate_filter()
 
