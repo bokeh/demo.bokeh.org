@@ -231,10 +231,9 @@ def build_sources() -> Sources:
         name="spectrum-history",
     )
     latest = ColumnDataSource(
-        data={"image": [empty_history[-1][np.newaxis, :].copy()], "advance": [False]},
-        name="spectrum-latest-row",
+        data={"image": [empty_history[-1][np.newaxis, :].copy()]}, name="spectrum-latest-row"
     )
-    # Send one row per update; BokehJS either refreshes the top row or advances the buffer.
+    # Send one row per update; BokehJS shifts it into the existing waterfall buffer.
     latest.js_on_change(
         "data",
         CustomJS(args={"history": history}, code=load_javascript(__file__, "shift_history.js")),
@@ -344,7 +343,7 @@ def build_plots(sources: Sources) -> Plots:
     style_instrument(response)
 
     spectrogram = figure(
-        title=f"Filtered waterfall · newest signal at top, {HISTORY_SECONDS:.0f} seconds of history",
+        title=f"Filtered waterfall · newest signal at top, {HISTORY_SECONDS:.0f}-second window",
         height=475,
         sizing_mode="stretch_width",
         x_range=frequency_range,
@@ -404,8 +403,8 @@ def build_layout(controls: Controls, plots: Plots, status: Div) -> Column:
         Div(
             text=(
                 '<h2 style="margin:0 0 5px">Tune the receiver</h2>'
-                '<p style="margin:0">All three displays share the same frequency axis. Filter changes update '
-                "the current measurement; recorded rows keep the settings used when they arrived.</p>"
+                '<p style="margin:0">All three displays share the same frequency axis. Filter changes reprocess '
+                "the entire visible window so their effect is immediately comparable.</p>"
             )
         ),
         controls.primary,
@@ -430,8 +429,8 @@ def build_layout(controls: Controls, plots: Plots, status: Div) -> Column:
         text=(
             f"<p><strong>Simulation:</strong> every signal is generated from a reproducible model with seed "
             f"<code>{SEED}</code>. Each update streams one filtered <code>float32</code> spectrum row through "
-            "Bokeh's binary transport. Filter changes refresh only the newest row, so the waterfall remains "
-            "a faithful history of settings over time. The display contains no captured or licensed radio traffic.</p>"
+            "Bokeh's binary transport. Filter changes reprocess the visible window from the retained raw signal. "
+            "The display contains no captured or licensed radio traffic.</p>"
         )
     )
     return column(controls_layout, console, note, sizing_mode="stretch_width", spacing=10)

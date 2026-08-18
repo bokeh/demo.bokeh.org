@@ -23,11 +23,17 @@ def on_throttled_value(
 
     slider.syncable = False
     request = ColumnDataSource(data={"value": [slider.value]}, name=name)
-    browser_callback = CustomJS(
-        args={"request": request}, code=f"const wait = {wait}\n{THROTTLED_SLIDER_JS}"
-    )
-    slider.js_on_change("value", browser_callback)
-    slider.js_on_change("value_throttled", browser_callback)
+
+    def browser_callback(*, flush: bool) -> CustomJS:
+        return CustomJS(
+            args={"request": request},
+            code=f"const wait = {wait}\nconst flush = {str(flush).lower()}\n{THROTTLED_SLIDER_JS}",
+        )
+
+    # ``value_throttled`` is unset in BokehJS until the first completed interaction.
+    # Keep the drag callback independent of it, and flush through a separate final callback.
+    slider.js_on_change("value", browser_callback(flush=False))
+    slider.js_on_change("value_throttled", browser_callback(flush=True))
 
     def forward_value(_attr: str, _old: object, new: dict[str, list[float]]) -> None:
         old_value = slider.value
