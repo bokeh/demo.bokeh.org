@@ -71,14 +71,17 @@ Bokeh session state is local to the process, ECS tasks provide horizontal
 concurrency. ALB cookie affinity keeps each browser on the same task for the
 life of its session.
 
-The production image runs free-threaded Python 3.14 with the GIL disabled. The
-deployment workflow builds that image for ARM64 Fargate tasks.
+The production image runs free-threaded Python 3.14 with the GIL disabled. CI
+checks the active GIL state after importing every application, and the deployment
+workflow builds the image for ARM64 Fargate tasks.
 
 The public endpoints are:
 
 - `/`: generated gallery
 - `/404.html`: shared Bokeh 404 page
-- `/healthz`: dependency-free health check
+- `/healthz`: runtime health and active Python GIL state
+- `/monitor`: public, sanitized view of the task or process serving the session,
+  including bounded timing summaries for public app and callback labels
 - `/assets/*`: shared site CSS
 - every route declared in `catalog.DEMOS`
 
@@ -112,6 +115,20 @@ uv run --locked uvicorn asgi:application
 ```
 
 Open `http://127.0.0.1:8000`.
+
+The monitor uses real current-process CPU and memory measurements outside ECS.
+For deterministic screenshots or UI development, run it with clearly labeled
+demonstration values:
+
+```sh
+DEMO_MONITOR_SOURCE=deterministic uv run --locked uvicorn asgi:application
+```
+
+`/healthz` returns `{"status":"ok","python_gil":"disabled"}` in the production
+runtime. If `PYTHON_GIL=0` was requested but an imported extension turns the GIL
+back on, the endpoint remains HTTP 200 and reports
+`{"status":"degraded","reason":"python_gil_enabled","python_gil":"enabled"}`.
+The container stays available while the response explains the degraded state.
 
 ### Development checks
 
@@ -168,3 +185,5 @@ AWS demo stack README.
 
 See [Production operations](docs/operations.md) for rollout verification,
 CloudWatch callback timings, event-loop lag queries, and smoke-test guidance.
+The [monitor data-source and privacy note](docs/monitor.md) documents its public
+numeric contract, scope, local behavior, and cost boundary.

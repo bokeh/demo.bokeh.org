@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from bokeh.document import Document
-from bokeh.models import ColumnDataSource, Div, Select
+from bokeh.models import ColumnDataSource, Div, RangeSlider, Select
 
 from catalog import load_applications
 
@@ -49,3 +49,14 @@ def test_vehicle_empty_filters_are_explained() -> None:
     assert "No vehicles match" in status.text
     cylinders.value = "4"
     assert status.text == ""
+
+
+def test_vehicle_year_filter_updates_while_dragging() -> None:
+    document = Document()
+    load_applications()["/mobility"](document)
+    years = next(slider for slider in document.select({"type": RangeSlider}))
+    source = document.select_one({"type": ColumnDataSource, "name": "vehicle-scatter-source"})
+
+    years.value = (1980, 1982)
+
+    assert min(source.data["year"]) >= 1980

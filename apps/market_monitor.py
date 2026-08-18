@@ -340,8 +340,9 @@ def modify_document(document) -> None:
             f"<p><strong>{latest_date:%B %d, %Y · %H:%M}</strong><br>"
             f"Showing {len(shown)} generated 15-minute bars in the rolling window.</p>"
         )
-        bar_range.start = float(shown["index"].min()) - 2
-        bar_range.end = float(shown["index"].max()) + 2
+        shown_indices = shown["index"].to_numpy(dtype=float)
+        bar_range.start = float(np.min(shown_indices)) - 2
+        bar_range.end = float(np.max(shown_indices)) + 2
         tick_positions = np.linspace(0, len(shown) - 1, 6, dtype=int)
         bar_ticker.ticks = [int(shown.iloc[position]["index"]) for position in tick_positions]
         labels = {

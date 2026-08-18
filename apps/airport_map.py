@@ -317,22 +317,22 @@ def modify_document(document) -> None:
                 index=False, name=None
             )
         ]
-        x_padding = max(float(np.ptp(region["x"])) * 0.18, 70_000)
-        y_padding = max(float(np.ptp(region["y"])) * 0.18, 70_000)
+        region_x = region["x"].to_numpy(dtype=float)
+        region_y = region["y"].to_numpy(dtype=float)
+        x_padding = max(float(np.ptp(region_x)) * 0.18, 70_000)
+        y_padding = max(float(np.ptp(region_y)) * 0.18, 70_000)
         viewport_source.data = {
-            "x": [float(region["x"].min()) - x_padding, float(region["x"].max()) + x_padding],
-            "y": [float(region["y"].min()) - y_padding, float(region["y"].max()) + y_padding],
+            "x": [float(np.min(region_x)) - x_padding, float(np.max(region_x)) + x_padding],
+            "y": [float(np.min(region_y)) - y_padding, float(np.max(region_y)) + y_padding],
         }
         set_metric(count_card, f"{len(region):,}")
 
         if anchor.value in set(region["iata"]):
             update_airport()
         else:
-            middle_x = float(np.median(region["x"]))
-            middle_y = float(np.median(region["y"]))
-            squared_distance = np.asarray(
-                (region["x"] - middle_x) ** 2 + (region["y"] - middle_y) ** 2
-            )
+            middle_x = float(np.median(region_x))
+            middle_y = float(np.median(region_y))
+            squared_distance = (region_x - middle_x) ** 2 + (region_y - middle_y) ** 2
             representative = int(np.argmin(squared_distance))
             anchor.value = str(region.loc[representative, "iata"])
 

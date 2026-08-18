@@ -5,7 +5,8 @@ from __future__ import annotations
 import logging
 import mimetypes
 import os
-from collections.abc import Awaitable, Callable
+import sys
+from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 from urllib.parse import parse_qs
 
@@ -40,8 +41,9 @@ LEGACY_DEMO_ROUTES = frozenset(
 
 
 class DemoApplication:
-    def __init__(self, bokeh: BokehASGI) -> None:
+    def __init__(self, bokeh: BokehASGI, runtime_health: bytes) -> None:
         self._bokeh = bokeh
+        self._runtime_health = runtime_health
         self._index = render_index()
         self._legacy_index = render_index(show_legacy_notice=True)
         self._not_found = (ASSET_ROOT / "404.html").read_bytes()
@@ -62,7 +64,7 @@ class DemoApplication:
             await self._response(
                 scope,
                 send,
-                b'{"status":"ok"}\n',
+                self._runtime_health,
                 "application/json; charset=utf-8",
                 cache_control="no-store",
             )
@@ -169,8 +171,22 @@ def create_application() -> DemoApplication:
         for origin in os.environ.get("BOKEH_ALLOW_WS_ORIGIN", "").split(",")
         if origin.strip()
     ]
-    bokeh = BokehASGI(load_applications(), redirect_root=False, extra_websocket_origins=origins)
-    return DemoApplication(bokeh)
+    applications = load_applications()
+    bokeh = BokehASGI(applications, redirect_root=False, extra_websocket_origins=origins)
+    return DemoApplication(bokeh, _runtime_health())
+
+
+def _runtime_health(
+    environment: Mapping[str, str] = os.environ,
+    *,
+    gil_enabled: Callable[[], bool] = sys._is_gil_enabled,
+) -> bytes:
+    """Describe the active GIL state without turning a degraded runtime into an outage."""
+    enabled = gil_enabled()
+    if environment.get("PYTHON_GIL") == "0" and enabled:
+        return b'{"status":"degraded","reason":"python_gil_enabled","python_gil":"enabled"}\n'
+    state = b"enabled" if enabled else b"disabled"
+    return b'{"status":"ok","python_gil":"' + state + b'"}\n'
 
 
 application = create_application()
