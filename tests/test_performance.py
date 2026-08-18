@@ -104,6 +104,7 @@ def test_public_performance_exposes_only_catalog_and_allowlisted_labels() -> Non
     performance.record_callback(99.0, route="arn:aws:ecs:private", callback="advance", now=2.5)
     performance.record_event_loop(3.0, route="/market-monitor", now=2.1)
     performance.record_event_loop(5.0, route="/market-monitor", now=3.1)
+    performance.record_event_loop(55.0, route="/monitor", now=3.2)
     performance.record_event_loop(88.0, route="private-service-name", now=4.1)
 
     snapshot = performance.snapshot(now=5.0)
@@ -120,4 +121,5 @@ def test_public_performance_exposes_only_catalog_and_allowlisted_labels() -> Non
     serialized = json.dumps(asdict(snapshot))
     assert "private-runtime-label" not in serialized
     assert "private-service-name" not in serialized
+    assert '"/monitor"' not in serialized
     assert "arn:aws" not in serialized

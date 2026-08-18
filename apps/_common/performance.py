@@ -110,7 +110,7 @@ PUBLIC_CALLBACKS_BY_ROUTE = {
     ),
     "/wave-field": frozenset({"update_cross_section", "update_field", "update_palette"}),
 }
-PUBLIC_APP_ROUTES = frozenset(demo.route for demo in DEMOS)
+PUBLIC_APP_ROUTES = frozenset(demo.route for demo in DEMOS if demo.route != "/monitor")
 
 
 @dataclass(slots=True)

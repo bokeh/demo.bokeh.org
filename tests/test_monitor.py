@@ -158,6 +158,8 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     history = document.select_one({"name": "monitor-history"})
     assert history is not None
     assert len(history.data["time"]) == 1
+    assert len(document.session_callbacks) == 1
+    assert document.session_callbacks[0].period == 2_000
     serialized = json.dumps(document.to_json(), default=str)
     assert ACCOUNT_ID not in serialized
     assert TASK_ARN not in serialized

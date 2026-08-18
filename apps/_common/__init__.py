@@ -55,14 +55,15 @@ def demo_for_route(route: str):
     return next(demo for demo in DEMOS if demo.route == route)
 
 
-def prepare_document(document, route: str) -> None:
+def prepare_document(document, route: str, *, measure_performance: bool = True) -> None:
     """Apply shared metadata, loading behavior, theme, and surface colors."""
     configure_document(document, demo_for_route(route))
     document.js_on_event(DocumentReady, CustomJS(code=REMOVE_LOADING_JS))
     document.theme = "light_minimal"
     for root in document.roots:
         match_background(root, colors.PAPER)
-    monitor_document(document, route).start(document)
+    if measure_performance:
+        monitor_document(document, route).start(document)
 
 
 def match_background(model, background: str) -> None:

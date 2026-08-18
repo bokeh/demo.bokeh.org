@@ -215,7 +215,7 @@ def build_document(document, sampler: CoalescedSampler) -> None:
             spacing=16,
         )
     )
-    prepare_document(document, ROUTE)
+    prepare_document(document, ROUTE, measure_performance=False)
 
 
 def _stream_values(sample: MonitorSample) -> dict[str, np.ndarray]:
