@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from html import escape
 from time import perf_counter
+from typing import cast
 
 import numpy as np
 import xarray as xr
@@ -23,7 +24,14 @@ from bokeh.models import (
 from bokeh.plotting import figure
 from skimage import data
 
-from apps._common import load_javascript, prepare_document, responsive_row, style_figure, wrap_row
+from apps._common import (
+    load_javascript,
+    monitor_document,
+    prepare_document,
+    responsive_row,
+    style_figure,
+    wrap_row,
+)
 from apps._common.colors import CORAL, GOLD
 from apps.image_lab.processing import FILTERS
 
@@ -52,6 +60,7 @@ def rgba_view(image: np.ndarray) -> np.ndarray:
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/image-processing")
     raw = data.hubble_deep_field()
     cube = xr.DataArray(
         raw,
@@ -70,11 +79,59 @@ def modify_document(document) -> None:
         image_filter.processor(sample, amount)
 
     operation = Select(title="Processing step", value="Sobel edges", options=list(FILTERS))
-    strength = Slider(title="Edge gain", start=0.5, end=5.0, value=2.2, step=0.1)
+    strength = Slider(title="Edge gain", start=0.5, end=5.0, value=2.2, step=0.1, syncable=False)
+    strength_request = ColumnDataSource(
+        data={"value": [strength.value]}, name="hubble-strength-request"
+    )
+    strength.js_on_change(
+        "value",
+        CustomJS(
+            args={"request": strength_request},
+            code="""
+                const throttle = cb_obj.tags[0] ?? {last_sent: 0, timeout: null}
+                const send_request = () => {
+                    const value = cb_obj.value
+                    if (request.data.value[0] != value) {
+                        request.data = {value: [value]}
+                        request.change.emit()
+                    }
+                    throttle.last_sent = Date.now()
+                    throttle.timeout = null
+                }
+                const remaining = 200 - (Date.now() - throttle.last_sent)
+                if (remaining <= 0) {
+                    clearTimeout(throttle.timeout)
+                    send_request()
+                } else {
+                    clearTimeout(throttle.timeout)
+                    throttle.timeout = setTimeout(send_request, remaining)
+                }
+                cb_obj.tags = [throttle]
+            """,
+        ),
+    )
+    strength.js_on_change(
+        "value_throttled",
+        CustomJS(
+            args={"request": strength_request},
+            code="""
+                const throttle = cb_obj.tags[0]
+                if (throttle != null) clearTimeout(throttle.timeout)
+                const value = cb_obj.value
+                if (request.data.value[0] != value) {
+                    request.data = {value: [value]}
+                    request.change.emit()
+                }
+                cb_obj.tags = [{last_sent: Date.now(), timeout: null}]
+            """,
+        ),
+    )
     reset_crop = Button(label="Reset crop", height=31, margin=(22, 0, 0, 0))
     crop = {"x": (260, 740), "y": (196, 676)}
     source_image = ColumnDataSource(data={"image": [rgba_view(raw)]})
-    processed_source = ColumnDataSource(data={"image": []}, name="hubble-processed-image")
+    processed_source = ColumnDataSource(
+        data={"image": [np.zeros((1, 1), dtype=np.uint32)]}, name="hubble-processed-image"
+    )
     initial_crop_box = {
         "left": 260 / raw.shape[1],
         "right": 740 / raw.shape[1],
@@ -95,7 +152,9 @@ def modify_document(document) -> None:
             initial_crop_box["top"],
         ],
     }
-    crop_handles = ColumnDataSource(data=dict(initial_crop_handles), name="hubble-crop-handles")
+    crop_handles = ColumnDataSource(
+        data=dict(initial_crop_handles), name="hubble-crop-handles", syncable=False
+    )
     crop_interaction = ColumnDataSource(
         data={
             "mode": [""],
@@ -105,7 +164,11 @@ def modify_document(document) -> None:
             "right": [initial_crop_box["right"]],
             "bottom": [initial_crop_box["bottom"]],
             "top": [initial_crop_box["top"]],
-        }
+        },
+        syncable=False,
+    )
+    crop_request = ColumnDataSource(
+        data={name: [value] for name, value in initial_crop_box.items()}, name="hubble-crop-request"
     )
     crop_pan = PanTool(dimensions="both")
     report = Div(
@@ -155,6 +218,7 @@ def modify_document(document) -> None:
         hover_fill_alpha=0.15,
         hover_line_color=GOLD,
         hover_line_width=3,
+        syncable=False,
     )
     original.add_layout(crop_box)
     original.scatter(
@@ -173,11 +237,17 @@ def modify_document(document) -> None:
         code=load_javascript(__file__, "start_crop.js"),
     )
     update_crop_box = CustomJS(
-        args={"box": crop_box, "handles": crop_handles, "state": crop_interaction},
+        args={
+            "box": crop_box,
+            "handles": crop_handles,
+            "request": crop_request,
+            "state": crop_interaction,
+        },
         code=load_javascript(__file__, "update_crop_box.js"),
     )
     end_crop = CustomJS(
-        args={"state": crop_interaction}, code=load_javascript(__file__, "end_crop.js")
+        args={"box": crop_box, "request": crop_request, "state": crop_interaction},
+        code=load_javascript(__file__, "end_crop.js"),
     )
     original.js_on_event(PanStart, start_crop)
     original.js_on_event(Pan, update_crop_box)
@@ -199,7 +269,6 @@ def modify_document(document) -> None:
     style_figure(processed)
 
     configuring = {"operation": False}
-    pending_crop_update = {"callback": None}
 
     def calculate() -> None:
         x_low, x_high = crop["x"]
@@ -213,7 +282,7 @@ def modify_document(document) -> None:
         result = image_filter.processor(image, strength.value)
         elapsed = 1000 * (perf_counter() - started)
         height, width, _ = image.shape
-        processed_source.data = {"image": [rgba_view(result)]}
+        processed_source.patch({"image": [(0, rgba_view(result))]})
         processed_title.text = image_heading("02", "Processed view", operation.value, CORAL)
         report.text = (
             f"<p><strong>{operation.value}</strong> applied &nbsp; <strong>{width} x {height}</strong> pixels &nbsp; "
@@ -222,18 +291,9 @@ def modify_document(document) -> None:
         )
 
     def apply_crop() -> None:
-        pending_crop_update["callback"] = None
-        bounds = (crop_box.left, crop_box.right, crop_box.bottom, crop_box.top)
-        left_value, right_value, bottom_value, top_value = bounds
-        if not (
-            isinstance(left_value, (int, float))
-            and isinstance(right_value, (int, float))
-            and isinstance(bottom_value, (int, float))
-            and isinstance(top_value, (int, float))
-        ):
-            return
-        left, right = sorted((float(left_value), float(right_value)))
-        bottom, top = sorted((float(bottom_value), float(top_value)))
+        bounds = cast(dict[str, list[float]], crop_request.data)
+        left, right = sorted((float(bounds["left"][0]), float(bounds["right"][0])))
+        bottom, top = sorted((float(bounds["bottom"][0]), float(bounds["top"][0])))
         x_low = int(np.clip(left * raw.shape[1], 0, raw.shape[1] - 1))
         x_high = int(np.clip(right * raw.shape[1], x_low + 1, raw.shape[1]))
         y_low = int(np.clip((1 - top) * raw.shape[0], 0, raw.shape[0] - 1))
@@ -243,19 +303,14 @@ def modify_document(document) -> None:
         calculate()
 
     def update_crop(_attr: str, _old: object, _new: object) -> None:
-        callback = pending_crop_update["callback"]
-        if callback is not None:
-            document.remove_timeout_callback(callback)
-        if document.session_context is None:
-            apply_crop()
-        else:
-            pending_crop_update["callback"] = document.add_timeout_callback(apply_crop, 80)
+        apply_crop()
 
     def restore_crop() -> None:
         crop["x"] = (260, 740)
         crop["y"] = (196, 676)
         crop_box.update(**initial_crop_box)
         crop_handles.data = dict(initial_crop_handles)
+        crop_request.data = {name: [value] for name, value in initial_crop_box.items()}
 
     def configure_filter(_attr: str, _old: object, _new: object) -> None:
         image_filter = FILTERS[operation.value]
@@ -266,6 +321,7 @@ def modify_document(document) -> None:
             strength.end = slider.end
             strength.step = slider.step
             strength.value = slider.value
+            strength_request.data = {"value": [slider.value]}
             strength.title = slider.title
         strength.disabled = slider is None
         strength.visible = slider is not None
@@ -275,13 +331,13 @@ def modify_document(document) -> None:
 
     def update_strength(_attr: str, _old: object, _new: object) -> None:
         if not configuring["operation"]:
+            strength.value = float(cast(float, strength_request.data["value"][0]))
             calculate()
 
-    operation.on_change("value", configure_filter)
-    strength.on_change("value", update_strength)
-    reset_crop.on_click(restore_crop)
-    for property_name in ("left", "right", "bottom", "top"):
-        crop_box.on_change(property_name, update_crop)
+    operation.on_change("value", performance.measure(configure_filter))
+    strength_request.on_change("data", performance.measure(update_strength))
+    reset_crop.on_click(performance.measure(restore_crop))
+    crop_request.on_change("data", performance.measure(update_crop))
     configure_filter("value", None, operation.value)
 
     intro = Div(
@@ -297,7 +353,7 @@ def modify_document(document) -> None:
         text=(
             "<p><strong>Move:</strong> drag anywhere inside the shaded crop. "
             "<strong>Resize:</strong> drag any gold corner. "
-            "The processed image updates after each adjustment.</p>"
+            "The processed image updates at a measured pace while you drag.</p>"
         ),
         styles={
             "padding": "10px 14px",

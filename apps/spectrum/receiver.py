@@ -9,6 +9,7 @@ import numpy as np
 from bokeh.document import Document
 from bokeh.events import Event, Tap
 
+from apps._common import PeriodicCoalescer, monitor_document
 from apps._common.colors import PLUM
 from apps.spectrum.simulation import (
     BLOCK_SIZE,
@@ -127,6 +128,7 @@ def receiver_status_html(
 class Receiver:
     view: SpectrumView
     state: ReceiverState = field(init=False)
+    coalescer: PeriodicCoalescer = field(init=False)
 
     def __post_init__(self) -> None:
         self.state = ReceiverState(
@@ -134,29 +136,31 @@ class Receiver:
             raw_history=self.view.sources.empty_history.copy(),
             raw=np.zeros(BLOCK_SIZE),
         )
+        self.coalescer = PeriodicCoalescer(0.15)
 
     def connect(self, document: Document) -> None:
+        performance = monitor_document(document, "/spectrum-monitor")
         controls = self.view.controls
-        controls.scene.on_change("value", self.scene_changed)
-        controls.filter_mode.on_change("value", self.filter_mode_changed)
+        controls.scene.on_change("value", performance.measure(self.scene_changed))
+        controls.filter_mode.on_change("value", performance.measure(self.filter_mode_changed))
         for control in (
             controls.center_frequency,
             controls.second_frequency,
             controls.bandwidth,
             controls.boost_gain,
         ):
-            control.on_change("value", self.filter_settings_changed)
-        controls.playing.on_change("active", self.playback_changed)
-        self.view.plots.spectrogram.on_event(Tap, self.tune_filter)
-        controls.inject_transient.on_click(self.queue_transient)
-        controls.restart.on_click(self.reset_signal)
+            control.on_change("value_throttled", performance.measure(self.filter_settings_changed))
+        controls.playing.on_change("active", performance.measure(self.playback_changed))
+        self.view.plots.spectrogram.on_event(Tap, performance.measure(self.tune_filter))
+        controls.inject_transient.on_click(performance.measure(self.queue_transient))
+        controls.restart.on_click(performance.measure(self.reset_signal))
         self.configure_filter_controls()
         self.reset_signal()
-        document.add_periodic_callback(self.update_receiver, 150)
+        document.add_periodic_callback(performance.measure(self.update_receiver), 150)
 
     def replace_waterfall(self, response: np.ndarray) -> None:
         self.view.sources.history.data = {
-            "image": [apply_response_db(self.state.raw_history, response)],
+            "image": [apply_response_db(self.state.raw_history, response).astype(np.float32)],
             "x": [0.0],
             "y": [-HISTORY_SECONDS],
             "dw": [NYQUIST],
@@ -164,7 +168,9 @@ class Receiver:
         }
 
     def append_waterfall_row(self, response: np.ndarray) -> None:
-        latest = apply_response_db(self.state.raw_history[-1], response)[np.newaxis, :]
+        latest = apply_response_db(self.state.raw_history[-1], response).astype(np.float32)[
+            np.newaxis, :
+        ]
         self.view.sources.latest.data = {"image": [latest]}
 
     def update_filter_view(self, *, history_update: HistoryUpdate) -> None:
@@ -196,9 +202,9 @@ class Receiver:
             }
             self.state.filter_signature = filter_signature
         sources.power.data = {
-            "frequency": frequencies,
-            "raw": raw_power,
-            "filtered": filtered_power,
+            "frequency": frequencies.astype(np.float32),
+            "raw": raw_power.astype(np.float32),
+            "filtered": filtered_power.astype(np.float32),
         }
         match history_update:
             case "replace":
@@ -279,16 +285,23 @@ class Receiver:
         controls = self.view.controls
         if not controls.playing.active and not force:
             return
-        if not force:
-            self.state.ticks += 1
-            if self.state.ticks < UPDATE_TICKS[controls.update_rate.value]:
-                return
-            self.state.ticks = 0
-        self.advance_signal()
+        if force:
+            updates = 1
+        else:
+            self.state.ticks += self.coalescer.due_ticks()
+            updates, self.state.ticks = divmod(
+                self.state.ticks, UPDATE_TICKS[controls.update_rate.value]
+            )
+        if not updates:
+            return
+        # Catch simulation time up in one callback and render only the newest measurement.
+        for _ in range(updates):
+            self.advance_signal()
         self.update_filter_view(history_update="append")
 
     def reset_signal(self) -> None:
         self.state.reset()
+        self.coalescer.reset()
         # Prime the waterfall so the first render is already informative.
         for _ in range(HISTORY_ROWS):
             self.advance_signal()
@@ -385,6 +398,8 @@ class Receiver:
 
     def playback_changed(self, _attr: str, _old: bool, active: bool) -> None:
         self.view.controls.playing.label = "Pause" if active else "Resume"
+        if active:
+            self.coalescer.reset()
 
     def tune_filter(self, event: Event) -> None:
         controls = self.view.controls

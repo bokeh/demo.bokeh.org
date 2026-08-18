@@ -7,6 +7,7 @@ from bokeh.layouts import column
 from bokeh.models import (
     ColorBar,
     ColumnDataSource,
+    CustomJS,
     Div,
     LinearColorMapper,
     Range1d,
@@ -22,6 +23,7 @@ from apps._common import (
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -122,6 +124,7 @@ def evaluate_field(
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/wave-field")
     xx, yy = np.meshgrid(FIELD_AXIS, FIELD_AXIS)
     field_source = ColumnDataSource(
         data={"x": xx.ravel(), "y": yy.ravel(), "z": np.zeros(xx.size)}, name="wave-field-values"
@@ -162,7 +165,15 @@ def modify_document(document) -> None:
         fill_color={"field": "z", "transform": mapper},
     )
     section_marker = Span(
-        location=0, dimension="width", line_color=GOLD, line_width=3, line_dash="dashed"
+        location=0,
+        dimension="width",
+        line_color=GOLD,
+        line_width=3,
+        line_dash="dashed",
+        syncable=False,
+    )
+    cross_section.js_on_change(
+        "value", CustomJS(args={"marker": section_marker}, code="marker.location = cb_obj.value")
     )
     field_plot.add_layout(section_marker)
     field_plot.add_layout(
@@ -200,34 +211,45 @@ def modify_document(document) -> None:
     distribution.yaxis.axis_label = "Cells"
     style_figure(distribution)
 
-    def calculate() -> None:
+    def update_section() -> None:
         f = frequency.value
         c = coupling.value
-        values = evaluate_field(field.value, xx, yy, f, c)
         section_y = float(cross_section.value)
         section = evaluate_field(
             field.value, SECTION_AXIS, np.full_like(SECTION_AXIS, section_y), f, c
         )
-        counts, edges = np.histogram(values, bins=24)
+        section_source.patch({"z": [(slice(SECTION_AXIS.size), section.astype(np.float32))]})
+        section_marker.location = section_y
+        set_metric(section_card, f"{np.mean(section):+.2f}")
 
+    def calculate_field() -> None:
+        values = evaluate_field(field.value, xx, yy, frequency.value, coupling.value)
+        counts, edges = np.histogram(values, bins=24)
         mapper.low = float(values.min())
         mapper.high = float(values.max())
-        mapper.palette = palettes[palette.value]
-        field_source.data = {"x": xx.ravel(), "y": yy.ravel(), "z": values.ravel()}
-        section_source.data = {"x": SECTION_AXIS, "z": section}
+        # Coordinates are immutable, so only send the computed value array.
+        field_source.patch({"z": [(slice(xx.size), values.ravel().astype(np.float32))]})
         distribution_source.data = {"top": counts, "left": edges[:-1], "right": edges[1:]}
-        section_marker.location = section_y
         set_metric(minimum_card, f"{values.min():.2f}")
         set_metric(maximum_card, f"{values.max():.2f}")
         set_metric(energy_card, f"{np.mean(values**2):.2f}")
-        set_metric(section_card, f"{np.mean(section):+.2f}")
+        update_section()
 
-    def update(_attr: str, _old: object, _new: object) -> None:
-        calculate()
+    def update_field(_attr: str, _old: object, _new: object) -> None:
+        calculate_field()
 
-    for control in (field, frequency, coupling, cross_section, palette):
-        control.on_change("value", update)
-    calculate()
+    def update_cross_section(_attr: str, _old: object, _new: object) -> None:
+        update_section()
+
+    def update_palette(_attr: str, _old: object, _new: object) -> None:
+        mapper.palette = palettes[palette.value]
+
+    field.on_change("value", performance.measure(update_field))
+    palette.on_change("value", performance.measure(update_palette))
+    frequency.on_change("value_throttled", performance.measure(update_field))
+    coupling.on_change("value_throttled", performance.measure(update_field))
+    cross_section.on_change("value_throttled", performance.measure(update_cross_section))
+    calculate_field()
 
     controls = column(
         Div(

@@ -27,7 +27,7 @@ def test_task_scheduler_streams_state_without_rebuilding_the_graph() -> None:
     original_edges = dict(edges.data)
     initial_bars = len(stream.data["task"])
     for _ in range(12):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
     assert len(stream.data["task"]) > initial_bars
     assert edges.data["start"] == original_edges["start"]
     assert edges.data["end"] == original_edges["end"]
@@ -65,7 +65,7 @@ def test_task_scheduler_streams_state_without_rebuilding_the_graph() -> None:
         in document.select_one({"name": "scheduler-task-details"}).text
     )
     for _ in range(10):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
     assert not (
         any(
             worker == interrupted_worker and left > interrupted_at
@@ -82,7 +82,7 @@ def test_task_scheduler_streams_state_without_rebuilding_the_graph() -> None:
     assert len(interruptions.data["event"]) == 1
     assert "Injected delay: 18 s" in document.select_one({"name": "scheduler-task-details"}).text
     for _ in range(220):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
     assert max(stream.data["run"]) >= 2
     assert next(
         toggle for toggle in document.select({"type": Toggle}) if toggle.label == "Pause scheduler"
@@ -98,5 +98,6 @@ def test_task_scheduler_streams_state_without_rebuilding_the_graph() -> None:
     assert len(workload.options) >= 8
     workload.value = "Storm forecast ensemble"
     workers.value = 3
+    workers.trigger("value_throttled", workers.value_throttled, workers.value)
     assert task_stream.y_range.factors == ["Worker 3", "Worker 2", "Worker 1"]
     assert len(nodes.data["index"]) >= 40

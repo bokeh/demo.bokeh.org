@@ -29,7 +29,7 @@ from bokeh.models import (
 )
 from bokeh.plotting import figure
 
-from apps._common import prepare_document, responsive_row, style_figure, wrap_row
+from apps._common import monitor_document, prepare_document, responsive_row, style_figure, wrap_row
 from apps._common.colors import CORAL, GOLD, GRID, INK, MUTED, PAPER, TEAL, VIOLET, WARM
 
 DATA = json.loads(Path(__file__).with_name("research_lineages.json").read_text())
@@ -122,6 +122,7 @@ def arc_paths(
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/research-lineage")
     lineage_names = tuple(LINEAGES)
     lineage_buttons = RadioButtonGroup(
         labels=list(lineage_names),
@@ -585,12 +586,12 @@ def modify_document(document) -> None:
         state["updating"] = False
         update_inspector(paper_id)
 
-    lineage_buttons.on_change("active", lineage_changed)
-    metric_select.on_change("value", graph_changed)
-    layout_select.on_change("value", graph_changed)
-    year.on_change("value", view_changed)
-    paper_select.on_change("value", paper_changed)
-    node_source.selected.on_change("indices", graph_selected)
+    lineage_buttons.on_change("active", performance.measure(lineage_changed))
+    metric_select.on_change("value", performance.measure(graph_changed))
+    layout_select.on_change("value", performance.measure(graph_changed))
+    year.on_change("value_throttled", performance.measure(view_changed))
+    paper_select.on_change("value", performance.measure(paper_changed))
+    node_source.selected.on_change("indices", performance.measure(graph_selected))
     refresh_lineage()
 
     intro = Div(

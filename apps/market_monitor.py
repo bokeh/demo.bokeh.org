@@ -23,9 +23,11 @@ from bokeh.models import (
 from bokeh.plotting import figure
 
 from apps._common import (
+    PeriodicCoalescer,
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -40,6 +42,9 @@ BARS_PER_SESSION = 390 // BAR_MINUTES
 SEED_BARS = 64
 WINDOW_BARS = 64
 BAR_WIDTH = 0.8
+FAST_ALPHA = 2 / 13
+SLOW_ALPHA = 2 / 27
+SIGNAL_ALPHA = 2 / 10
 UPDATE_TICKS = {"Slow": 6, "Medium": 3, "Fast": 1}
 REGIMES = {
     "Steady growth": {"drift": 0.010, "reversion": 0.010, "volume": 2.8, "volatility": 0.65},
@@ -54,6 +59,8 @@ REGIME_DESCRIPTIONS = {
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/market-monitor")
+    coalescer = PeriodicCoalescer(0.15)
     regime = Select(title="Market regime", value="Steady growth", options=list(REGIMES))
     regime_note = Div(
         name="market-regime-note",
@@ -274,25 +281,51 @@ def modify_document(document) -> None:
             "color": [color],
         }
 
-    def update_summary() -> None:
+    def reset_indicators() -> None:
         shown = cast(pd.DataFrame, pd.DataFrame(price_source.data))
-        latest = shown.iloc[-1]
-        previous = shown.iloc[-2]
-        returns = shown["close"].pct_change().dropna().tail(20)
         fast_average = shown["close"].ewm(span=12, adjust=False).mean()
         slow_average = shown["close"].ewm(span=26, adjust=False).mean()
         macd_values = fast_average - slow_average
         signal_values = macd_values.ewm(span=9, adjust=False).mean()
         indicator_source.data = {
-            "index": shown["index"].to_list(),
+            "index": shown["index"].to_numpy(dtype=np.int32),
             "date": shown["date"].to_list(),
-            "macd": macd_values.to_list(),
-            "signal": signal_values.to_list(),
-            "positive_macd": np.maximum(macd_values, signal_values).to_list(),
-            "positive_signal": signal_values.to_list(),
-            "negative_macd": np.minimum(macd_values, signal_values).to_list(),
-            "negative_signal": signal_values.to_list(),
+            "macd": macd_values.to_numpy(dtype=np.float32),
+            "signal": signal_values.to_numpy(dtype=np.float32),
+            "positive_macd": np.maximum(macd_values, signal_values).to_numpy(dtype=np.float32),
+            "positive_signal": signal_values.to_numpy(dtype=np.float32),
+            "negative_macd": np.minimum(macd_values, signal_values).to_numpy(dtype=np.float32),
+            "negative_signal": signal_values.to_numpy(dtype=np.float32),
         }
+        state["fast_ema"] = float(fast_average.iloc[-1])
+        state["slow_ema"] = float(slow_average.iloc[-1])
+        state["signal_ema"] = float(signal_values.iloc[-1])
+
+    def append_indicators(candles: dict[str, list[Any]]) -> None:
+        values = {name: [] for name in indicator_source.data}
+        for index, date, close in zip(
+            candles["index"], candles["date"], candles["close"], strict=True
+        ):
+            fast = FAST_ALPHA * close + (1 - FAST_ALPHA) * state["fast_ema"]
+            slow = SLOW_ALPHA * close + (1 - SLOW_ALPHA) * state["slow_ema"]
+            macd_value = fast - slow
+            signal_value = SIGNAL_ALPHA * macd_value + (1 - SIGNAL_ALPHA) * state["signal_ema"]
+            state.update(fast_ema=fast, slow_ema=slow, signal_ema=signal_value)
+            values["index"].append(index)
+            values["date"].append(date)
+            values["macd"].append(macd_value)
+            values["signal"].append(signal_value)
+            values["positive_macd"].append(max(macd_value, signal_value))
+            values["positive_signal"].append(signal_value)
+            values["negative_macd"].append(min(macd_value, signal_value))
+            values["negative_signal"].append(signal_value)
+        indicator_source.stream(cast(Any, values), rollover=WINDOW_BARS)
+
+    def update_summary() -> None:
+        shown = cast(pd.DataFrame, pd.DataFrame(price_source.data))
+        latest = shown.iloc[-1]
+        previous = shown.iloc[-2]
+        returns = shown["close"].pct_change().dropna().tail(20)
         move = latest["close"] / previous["close"] - 1
         annualized = (
             float(returns.std() * np.sqrt(252 * BARS_PER_SESSION)) if len(returns) > 1 else 0.0
@@ -335,17 +368,26 @@ def modify_document(document) -> None:
             for name, values in candle.items():
                 columns[name].extend(values)
         price_source.data = cast(Any, columns)
+        reset_indicators()
         update_summary()
+        coalescer.reset()
 
     def advance(*, force: bool = False) -> None:
         if not playing.active and not force:
             return
-        if not force:
-            state["ticks"] = int(state["ticks"]) + 1
-            if int(state["ticks"]) < UPDATE_TICKS[speed.value]:
-                return
-            state["ticks"] = 0
-        price_source.stream(cast(Any, next_candle()), rollover=WINDOW_BARS)
+        if force:
+            updates = 1
+        else:
+            state["ticks"] = int(state["ticks"]) + coalescer.due_ticks()
+            updates, state["ticks"] = divmod(int(state["ticks"]), UPDATE_TICKS[speed.value])
+        if not updates:
+            return
+        candles: dict[str, list[Any]] = {name: [] for name in price_source.data}
+        for _ in range(updates):
+            for name, values in next_candle().items():
+                candles[name].extend(values)
+        price_source.stream(cast(Any, candles), rollover=WINDOW_BARS)
+        append_indicators(candles)
         update_summary()
 
     def regime_changed(_attr: str, _old: object, _new: object) -> None:
@@ -354,18 +396,20 @@ def modify_document(document) -> None:
 
     def playback_changed(_attr: str, _old: bool, active: bool) -> None:
         playing.label = "Pause simulation" if active else "Resume simulation"
+        if active:
+            coalescer.reset()
 
     def inject_selloff() -> None:
         state["shock"] = -0.08
         if not playing.active:
             advance(force=True)
 
-    regime.on_change("value", regime_changed)
-    playing.on_change("active", playback_changed)
-    selloff.on_click(inject_selloff)
-    restart.on_click(reset_simulation)
+    regime.on_change("value", performance.measure(regime_changed))
+    playing.on_change("active", performance.measure(playback_changed))
+    selloff.on_click(performance.measure(inject_selloff))
+    restart.on_click(performance.measure(reset_simulation))
     reset_simulation()
-    document.add_periodic_callback(advance, 150)
+    document.add_periodic_callback(performance.measure(advance), 150)
 
     key = Div(
         text=(

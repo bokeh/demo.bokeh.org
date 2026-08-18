@@ -15,6 +15,7 @@ from apps._common import (
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -24,6 +25,7 @@ from apps._common.colors import CORAL, GOLD, TEAL, VIOLET, WARM
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/mobility")
     frame = cast(pd.DataFrame, local_data.cars()).dropna().copy()
     frame["Model_year"] = frame["Year"].dt.year
     colors = {"USA": CORAL, "Europe": TEAL, "Japan": VIOLET}
@@ -201,9 +203,10 @@ def modify_document(document) -> None:
     def update_selection(_attr: str, _old: list[int], indices: list[int]) -> None:
         update_analysis(np.asarray(indices, dtype=int))
 
-    for control in (origin_filter, year_filter, cylinder_filter, x_axis, y_axis):
-        control.on_change("value", update_filter)
-    vehicle_source.selected.on_change("indices", update_selection)
+    for control in (origin_filter, cylinder_filter, x_axis, y_axis):
+        control.on_change("value", performance.measure(update_filter))
+    year_filter.on_change("value_throttled", performance.measure(update_filter))
+    vehicle_source.selected.on_change("indices", performance.measure(update_selection))
     calculate_filter()
 
     attribution = Div(

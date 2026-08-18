@@ -113,8 +113,12 @@ def test_terrain_has_multiple_landforms_and_a_movable_transect() -> None:
     assert len(handle_hovers) == 1
     assert handle_hovers[0].tooltips is None
     source = document.select_one({"type": ColumnDataSource, "name": "terrain-transect"})
+    request = document.select_one({"type": ColumnDataSource, "name": "terrain-transect-request"})
     profile = document.select_one({"type": ColumnDataSource, "name": "terrain-profile"})
+    assert not source.syncable
+    assert "setTimeout" in source.js_property_callbacks["change:data"][0].code
     source.data = {"x": [-3.0, 3.0], "y": [-2.0, 2.0], "label": ["A", "B"]}
+    request.data = dict(source.data)
     assert profile.data["distance"][-1] == pytest.approx(math.hypot(6, 4), abs=5e-8)
     reset = next(
         button
@@ -124,3 +128,4 @@ def test_terrain_has_multiple_landforms_and_a_movable_transect() -> None:
     reset._trigger_event(ButtonClick(reset))
     assert source.data["x"] == [-4.5, 4.5]
     assert source.data["y"] == [0.0, 0.0]
+    assert request.data["x"] == source.data["x"]

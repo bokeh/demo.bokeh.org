@@ -24,7 +24,14 @@ from bokeh.models import (
 )
 from bokeh.plotting import figure
 
-from apps._common import match_background, prepare_document, responsive_row, style_figure, wrap_row
+from apps._common import (
+    match_background,
+    monitor_document,
+    prepare_document,
+    responsive_row,
+    style_figure,
+    wrap_row,
+)
 from apps._common.colors import CORAL, GOLD, GRID, INK, MUTED, PAPER, TEAL, WARM
 from apps.cellular_automata.model import (
     BRUSHES,
@@ -71,6 +78,7 @@ COMPARISON_PALETTE = (BACKGROUND, COMPARISON_A, COMPARISON_B, COMPARISON_SHARED)
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/cellular-automata")
     experiment = Select(
         title="Experiment", value="Single rule", options=["Single rule", "Compare rules"]
     )
@@ -133,7 +141,9 @@ def modify_document(document) -> None:
         )
     )
 
-    image_source = ColumnDataSource(data={"image": []}, name="automata-field")
+    image_source = ColumnDataSource(
+        data={"image": [np.zeros((ROWS, COLUMNS), dtype=np.uint16)]}, name="automata-field"
+    )
     history_source = ColumnDataSource(
         data={
             "generation": [],
@@ -375,9 +385,9 @@ def modify_document(document) -> None:
             comparison_image[state.field & ~state.comparison_field] = 1
             comparison_image[~state.field & state.comparison_field] = 2
             comparison_image[state.field & state.comparison_field] = 3
-            image_source.data = {"image": [comparison_image]}
+            image_source.patch({"image": [(0, comparison_image)]})
         else:
-            image_source.data = {"image": [state.age]}
+            image_source.patch({"image": [(0, state.age)]})
         update_status()
 
     def reset_history() -> None:
@@ -472,21 +482,18 @@ def modify_document(document) -> None:
             playing.button_type = "default"
 
     def update_latest_history() -> None:
-        data = history_source.data
-        history_source.data = {
-            "generation": [*data["generation"]],
-            "population": [*data["population"][:-1], int(state.field.sum())],
-            "comparison_population": [
-                *data["comparison_population"][:-1],
-                int(state.comparison_field.sum()),
-            ],
-            "divergence": [
-                *data["divergence"][:-1],
-                int(np.count_nonzero(state.field != state.comparison_field)),
-            ],
-            "births": [*data["births"][:-1], 0],
-            "deaths": [*data["deaths"][:-1], 0],
-        }
+        last = len(history_source.data["generation"]) - 1
+        history_source.patch(
+            {
+                "population": [(last, int(state.field.sum()))],
+                "comparison_population": [(last, int(state.comparison_field.sum()))],
+                "divergence": [
+                    (last, int(np.count_nonzero(state.field != state.comparison_field)))
+                ],
+                "births": [(last, 0)],
+                "deaths": [(last, 0)],
+            }
+        )
 
     def edit_field(event: Event) -> None:
         if not isinstance(event, Tap) or event.x is None or event.y is None:
@@ -665,30 +672,30 @@ def modify_document(document) -> None:
         state.brush_flipped = not state.brush_flipped
         flip_pattern.label = f"Mirror · {'on' if state.brush_flipped else 'off'}"
 
-    experiment.on_change("value", experiment_changed)
-    seed.on_change("value", seed_changed)
-    rule.on_change("value", rule_changed)
-    comparison_rule.on_change("value", comparison_rule_changed)
-    primary_birth.on_change("value", primary_custom_rule_changed)
-    primary_survival.on_change("value", primary_custom_rule_changed)
-    comparison_birth.on_change("value", comparison_custom_rule_changed)
-    comparison_survival.on_change("value", comparison_custom_rule_changed)
-    brush.on_change("value", brush_changed)
-    density.on_change("value_throttled", density_changed)
-    playing.on_click(toggle_playing)
-    wrap_edges.on_click(toggle_wrap)
-    rotate_pattern.on_click(rotate_brush)
-    flip_pattern.on_click(flip_brush)
-    restart.on_click(load_seed)
-    step.on_click(lambda: advance(force=True))
-    clear.on_click(clear_field)
-    field_plot.on_event(Tap, edit_field)
+    experiment.on_change("value", performance.measure(experiment_changed))
+    seed.on_change("value", performance.measure(seed_changed))
+    rule.on_change("value", performance.measure(rule_changed))
+    comparison_rule.on_change("value", performance.measure(comparison_rule_changed))
+    primary_birth.on_change("value", performance.measure(primary_custom_rule_changed))
+    primary_survival.on_change("value", performance.measure(primary_custom_rule_changed))
+    comparison_birth.on_change("value", performance.measure(comparison_custom_rule_changed))
+    comparison_survival.on_change("value", performance.measure(comparison_custom_rule_changed))
+    brush.on_change("value", performance.measure(brush_changed))
+    density.on_change("value_throttled", performance.measure(density_changed))
+    playing.on_click(performance.measure(toggle_playing))
+    wrap_edges.on_click(performance.measure(toggle_wrap))
+    rotate_pattern.on_click(performance.measure(rotate_brush))
+    flip_pattern.on_click(performance.measure(flip_brush))
+    restart.on_click(performance.measure(load_seed))
+    step.on_click(performance.measure(lambda: advance(force=True), name="step_once"))
+    clear.on_click(performance.measure(clear_field))
+    field_plot.on_event(Tap, performance.measure(edit_field))
 
     update_notes()
     update_brush_note()
     load_seed()
     update_visual_mode()
-    document.add_periodic_callback(advance, 100)
+    document.add_periodic_callback(performance.measure(advance), 100)
 
     controls = column(
         Div(

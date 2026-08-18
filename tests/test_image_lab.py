@@ -21,6 +21,10 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
     processed = document.select_one({"type": ColumnDataSource, "name": "hubble-processed-image"})
     crop_box = document.select_one({"type": BoxAnnotation, "name": "hubble-crop-box"})
     crop_handles = document.select_one({"type": ColumnDataSource, "name": "hubble-crop-handles"})
+    crop_request = document.select_one({"type": ColumnDataSource, "name": "hubble-crop-request"})
+    strength_request = document.select_one(
+        {"type": ColumnDataSource, "name": "hubble-strength-request"}
+    )
     report = document.select_one({"type": Div, "name": "hubble-processing-report"})
     source_plot = document.select_one({"name": "hubble-source-plot"})
     processed_plot = document.select_one({"name": "hubble-processed-plot"})
@@ -31,6 +35,8 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
     assert reset_crop.margin == (22, 0, 0, 0)
     assert reset_crop.height == 31
     assert not crop_box.editable
+    assert not crop_box.syncable
+    assert not crop_handles.syncable
     assert set(source_plot.js_event_callbacks) == {"panstart", "pan", "panend"}
     pan_callback = source_plot.js_event_callbacks["pan"][0]
     assert "box.update" in pan_callback.code
@@ -47,6 +53,9 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
     strength = next(
         slider for slider in document.select({"type": Slider}) if slider.title == "Edge gain"
     )
+    assert not strength.syncable
+    assert "change:value" in strength.js_property_callbacks
+    assert "change:value_throttled" in strength.js_property_callbacks
     results = []
     for option in operation.options:
         operation.value = option
@@ -58,9 +67,10 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
 
     operation.value = "Sobel edges"
     edges = processed.data["image"][0].copy()
-    strength.value = 3.0
+    strength_request.data = {"value": [3.0]}
     assert not np.array_equal(edges, processed.data["image"][0])
 
     crop_box.update(left=0, right=0.48, bottom=1 - 480 / 872, top=1)
+    crop_request.data = {"left": [0], "right": [0.48], "bottom": [1 - 480 / 872], "top": [1]}
     assert "x=0:480" in report.text
     assert "y=0:480" in report.text
