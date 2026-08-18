@@ -98,7 +98,7 @@ def modify_document(document) -> None:
                     throttle.last_sent = Date.now()
                     throttle.timeout = null
                 }
-                const remaining = 200 - (Date.now() - throttle.last_sent)
+                const remaining = 100 - (Date.now() - throttle.last_sent)
                 if (remaining <= 0) {
                     clearTimeout(throttle.timeout)
                     send_request()
@@ -302,9 +302,11 @@ def modify_document(document) -> None:
         crop["y"] = (y_low, y_high)
         calculate()
 
+    @performance.measure
     def update_crop(_attr: str, _old: object, _new: object) -> None:
         apply_crop()
 
+    @performance.measure
     def restore_crop() -> None:
         crop["x"] = (260, 740)
         crop["y"] = (196, 676)
@@ -312,6 +314,7 @@ def modify_document(document) -> None:
         crop_handles.data = dict(initial_crop_handles)
         crop_request.data = {name: [value] for name, value in initial_crop_box.items()}
 
+    @performance.measure
     def configure_filter(_attr: str, _old: object, _new: object) -> None:
         image_filter = FILTERS[operation.value]
         slider = image_filter.slider
@@ -329,15 +332,16 @@ def modify_document(document) -> None:
         operation_note.text = f"<p>{image_filter.description}</p>"
         calculate()
 
+    @performance.measure
     def update_strength(_attr: str, _old: object, _new: object) -> None:
         if not configuring["operation"]:
             strength.value = float(cast(float, strength_request.data["value"][0]))
             calculate()
 
-    operation.on_change("value", performance.measure(configure_filter))
-    strength_request.on_change("data", performance.measure(update_strength))
-    reset_crop.on_click(performance.measure(restore_crop))
-    crop_request.on_change("data", performance.measure(update_crop))
+    operation.on_change("value", configure_filter)
+    strength_request.on_change("data", update_strength)
+    reset_crop.on_click(restore_crop)
+    crop_request.on_change("data", update_crop)
     configure_filter("value", None, operation.value)
 
     intro = Div(

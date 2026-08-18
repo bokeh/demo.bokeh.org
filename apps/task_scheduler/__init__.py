@@ -425,6 +425,7 @@ def modify_document(document) -> None:
         refresh_ready()
         update_graph_styles()
 
+    @performance.measure
     def reset_simulation() -> None:
         workload_name = cast(WorkloadName, workload.value)
         definition = WORKLOADS[workload_name]
@@ -506,6 +507,7 @@ def modify_document(document) -> None:
         for _ in range(12):
             advance(force=True)
 
+    @performance.measure
     def advance(*, force: bool = False) -> None:
         if not playing.active and not force:
             return
@@ -555,18 +557,23 @@ def modify_document(document) -> None:
             start_next_run()
         update_summary()
 
+    @performance.measure
     def selection_changed(_attr: str, _old: object, indices: list[int]) -> None:
         show_task(indices[0] if indices else None)
 
+    @performance.measure
     def settings_changed(_attr: str, _old: object, _new: object) -> None:
         reset_simulation()
 
+    @performance.measure
     def playback_changed(_attr: str, _old: bool, active: bool) -> None:
         playing.label = "Pause scheduler" if active else "Resume scheduler"
 
+    @performance.measure
     def critical_changed(_attr: str, _old: bool, _new: bool) -> None:
         update_graph_styles()
 
+    @performance.measure
     def slow_task() -> None:
         tasks = state.tasks
         running = [task for task in tasks if task["status"] == "Running" and not task["straggler"]]
@@ -590,6 +597,7 @@ def modify_document(document) -> None:
         update_graph_styles()
         show_task(task["id"])
 
+    @performance.measure
     def interrupt_worker() -> None:
         tasks = state.tasks
         workers = state.workers
@@ -621,16 +629,16 @@ def modify_document(document) -> None:
         )
         update_summary()
 
-    workload.on_change("value", performance.measure(settings_changed))
-    worker_count.on_change("value_throttled", performance.measure(settings_changed))
-    playing.on_change("active", performance.measure(playback_changed))
-    critical_path.on_change("active", performance.measure(critical_changed))
-    node_source.selected.on_change("indices", performance.measure(selection_changed))
-    straggler.on_click(performance.measure(slow_task))
-    fail_worker.on_click(performance.measure(interrupt_worker))
-    restart.on_click(performance.measure(reset_simulation))
+    workload.on_change("value", settings_changed)
+    worker_count.on_change("value_throttled", settings_changed)
+    playing.on_change("active", playback_changed)
+    critical_path.on_change("active", critical_changed)
+    node_source.selected.on_change("indices", selection_changed)
+    straggler.on_click(slow_task)
+    fail_worker.on_click(interrupt_worker)
+    restart.on_click(reset_simulation)
     reset_simulation()
-    document.add_periodic_callback(performance.measure(advance), 150)
+    document.add_periodic_callback(advance, 150)
 
     controls = column(
         Div(text=INTRO_HTML, css_classes=["scheduler-introduction"], stylesheets=[SCHEDULER_CSS]),

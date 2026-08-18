@@ -231,9 +231,10 @@ def build_sources() -> Sources:
         name="spectrum-history",
     )
     latest = ColumnDataSource(
-        data={"image": [empty_history[-1][np.newaxis, :].copy()]}, name="spectrum-latest-row"
+        data={"image": [empty_history[-1][np.newaxis, :].copy()], "advance": [False]},
+        name="spectrum-latest-row",
     )
-    # Send one row per update; BokehJS shifts it into the existing waterfall buffer.
+    # Send one row per update; BokehJS either refreshes the top row or advances the buffer.
     latest.js_on_change(
         "data",
         CustomJS(args={"history": history}, code=load_javascript(__file__, "shift_history.js")),
@@ -403,8 +404,8 @@ def build_layout(controls: Controls, plots: Plots, status: Div) -> Column:
         Div(
             text=(
                 '<h2 style="margin:0 0 5px">Tune the receiver</h2>'
-                '<p style="margin:0">All three displays share the same frequency axis. Manual filters can be '
-                "retuned across the visible history; adaptive changes apply only to new measurements.</p>"
+                '<p style="margin:0">All three displays share the same frequency axis. Filter changes update '
+                "the current measurement; recorded rows keep the settings used when they arrived.</p>"
             )
         ),
         controls.primary,
@@ -429,8 +430,8 @@ def build_layout(controls: Controls, plots: Plots, status: Div) -> Column:
         text=(
             f"<p><strong>Simulation:</strong> every signal is generated from a reproducible model with seed "
             f"<code>{SEED}</code>. Each update streams one filtered <code>float32</code> spectrum row through "
-            "Bokeh's binary transport. Manual filter changes reprocess the visible history, while adaptive "
-            "settings affect only subsequent rows. The display contains no captured or licensed radio traffic.</p>"
+            "Bokeh's binary transport. Filter changes refresh only the newest row, so the waterfall remains "
+            "a faithful history of settings over time. The display contains no captured or licensed radio traffic.</p>"
         )
     )
     return column(controls_layout, console, note, sizing_mode="stretch_width", spacing=10)

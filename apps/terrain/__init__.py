@@ -81,7 +81,7 @@ def modify_document(document) -> None:
     )
     reset = Button(label="Reset horizontal transect")
 
-    # Keep drag feedback in BokehJS and send at most five profile requests per second.
+    # Keep drag feedback in BokehJS and send at most ten profile requests per second.
     transect_source = ColumnDataSource(
         data=dict(DEFAULT_TRANSECT), name="terrain-transect", syncable=False
     )
@@ -112,7 +112,7 @@ def modify_document(document) -> None:
                     throttle.timeout = null
                 }
 
-                const remaining = 200 - (Date.now() - throttle.last_sent)
+                const remaining = 100 - (Date.now() - throttle.last_sent)
                 if (remaining <= 0) {
                     clearTimeout(throttle.timeout)
                     send_request()
@@ -271,25 +271,29 @@ def modify_document(document) -> None:
         set_metric(grade_card, f"{np.hypot(dx, dy).max() / 10:.0f}%")
         update_profile()
 
+    @performance.measure
     def choose_landform(_attr: str, _old: object, _new: object) -> None:
         update_terrain()
 
+    @performance.measure
     def move_transect(_attr: str, _old: object, _new: object) -> None:
         update_profile()
 
+    @performance.measure
     def toggle_outlines(_attr: str, _old: bool, active: bool) -> None:
         contours.fill_renderer.visible = True
         contours.line_renderer.visible = active
         outlines.label = "Hide contour outlines" if active else "Show contour outlines"
 
+    @performance.measure
     def reset_transect() -> None:
         transect_source.data = dict(DEFAULT_TRANSECT)
         transect_request.data = dict(DEFAULT_TRANSECT)
 
-    landform.on_change("value", performance.measure(choose_landform))
-    transect_request.on_change("data", performance.measure(move_transect))
-    outlines.on_change("active", performance.measure(toggle_outlines))
-    reset.on_click(performance.measure(reset_transect))
+    landform.on_change("value", choose_landform)
+    transect_request.on_change("data", move_transect)
+    outlines.on_change("active", toggle_outlines)
+    reset.on_click(reset_transect)
     update_terrain()
 
     introduction = Div(

@@ -24,6 +24,7 @@ from apps._common import (
     metric,
     metric_row,
     monitor_document,
+    on_throttled_value,
     prepare_document,
     responsive_row,
     set_metric,
@@ -235,20 +236,23 @@ def modify_document(document) -> None:
         set_metric(energy_card, f"{np.mean(values**2):.2f}")
         update_section()
 
+    @performance.measure
     def update_field(_attr: str, _old: object, _new: object) -> None:
         calculate_field()
 
+    @performance.measure
     def update_cross_section(_attr: str, _old: object, _new: object) -> None:
         update_section()
 
+    @performance.measure
     def update_palette(_attr: str, _old: object, _new: object) -> None:
         mapper.palette = palettes[palette.value]
 
-    field.on_change("value", performance.measure(update_field))
-    palette.on_change("value", performance.measure(update_palette))
-    frequency.on_change("value_throttled", performance.measure(update_field))
-    coupling.on_change("value_throttled", performance.measure(update_field))
-    cross_section.on_change("value_throttled", performance.measure(update_cross_section))
+    field.on_change("value", update_field)
+    palette.on_change("value", update_palette)
+    on_throttled_value(frequency, update_field, name="wave-frequency-request")
+    on_throttled_value(coupling, update_field, name="wave-coupling-request")
+    on_throttled_value(cross_section, update_cross_section, name="wave-cross-section-request")
     calculate_field()
 
     controls = column(

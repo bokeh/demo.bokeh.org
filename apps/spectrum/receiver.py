@@ -9,7 +9,7 @@ import numpy as np
 from bokeh.document import Document
 from bokeh.events import Event, Tap
 
-from apps._common import PeriodicCoalescer, monitor_document
+from apps._common import PeriodicCoalescer, monitor_document, on_throttled_value
 from apps._common.colors import PLUM
 from apps.spectrum.simulation import (
     BLOCK_SIZE,
@@ -31,7 +31,7 @@ from apps.spectrum.view import (
     SpectrumView,
 )
 
-type HistoryUpdate = Literal["append", "preserve", "replace"]
+type HistoryUpdate = Literal["append", "refresh", "replace"]
 type FilterSignature = tuple[str, float, float, float, float]
 
 
@@ -149,7 +149,11 @@ class Receiver:
             controls.bandwidth,
             controls.boost_gain,
         ):
-            control.on_change("value_throttled", performance.measure(self.filter_settings_changed))
+            on_throttled_value(
+                control,
+                performance.measure(self.filter_settings_changed),
+                name=f"{control.name}-request",
+            )
         controls.playing.on_change("active", performance.measure(self.playback_changed))
         self.view.plots.spectrogram.on_event(Tap, performance.measure(self.tune_filter))
         controls.inject_transient.on_click(performance.measure(self.queue_transient))
@@ -167,11 +171,11 @@ class Receiver:
             "dh": [HISTORY_SECONDS],
         }
 
-    def append_waterfall_row(self, response: np.ndarray) -> None:
+    def update_waterfall_row(self, response: np.ndarray, *, advance: bool) -> None:
         latest = apply_response_db(self.state.raw_history[-1], response).astype(np.float32)[
             np.newaxis, :
         ]
-        self.view.sources.latest.data = {"image": [latest]}
+        self.view.sources.latest.data = {"image": [latest], "advance": [advance]}
 
     def update_filter_view(self, *, history_update: HistoryUpdate) -> None:
         controls = self.view.controls
@@ -210,9 +214,9 @@ class Receiver:
             case "replace":
                 self.replace_waterfall(response)
             case "append":
-                self.append_waterfall_row(response)
-            case "preserve":
-                pass
+                self.update_waterfall_row(response, advance=True)
+            case "refresh":
+                self.update_waterfall_row(response, advance=False)
             case _:
                 raise ValueError(history_update)
 
@@ -382,19 +386,12 @@ class Receiver:
                 controls.bandwidth.title = "Notch spacing (Hz)"
 
     def filter_settings_changed(self, _attr: str, _old: object, _new: object) -> None:
-        # Adaptive settings affect new measurements; manual settings reprocess visible history.
-        self.update_filter_view(
-            history_update=(
-                "preserve"
-                if self.view.controls.filter_mode.value == "Adaptive notch"
-                else "replace"
-            )
-        )
+        # A filter change updates the newest measurement without rewriting recorded history.
+        self.update_filter_view(history_update="refresh")
 
-    def filter_mode_changed(self, _attr: str, old: object, new: object) -> None:
+    def filter_mode_changed(self, _attr: str, _old: object, _new: object) -> None:
         self.configure_filter_controls()
-        history_update: HistoryUpdate = "preserve" if "Adaptive notch" in (old, new) else "replace"
-        self.update_filter_view(history_update=history_update)
+        self.update_filter_view(history_update="refresh")
 
     def playback_changed(self, _attr: str, _old: bool, active: bool) -> None:
         self.view.controls.playing.label = "Pause" if active else "Resume"

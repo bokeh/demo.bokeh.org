@@ -45,8 +45,10 @@ def test_wave_field_uses_webgl() -> None:
     cross_section = next(
         slider for slider in document.select({"type": Slider}) if slider.title == "Cross-section y"
     )
-    cross_section.value = 0.05
-    cross_section.trigger("value_throttled", cross_section.value_throttled, cross_section.value)
+    assert not cross_section.syncable
+    assert set(cross_section.js_property_callbacks) == {"change:value", "change:value_throttled"}
+    request = document.select_one({"type": ColumnDataSource, "name": "wave-cross-section-request"})
+    request.data = {"value": [0.05]}
     x = section.data["x"][0]
     expected = math.sin(1.8 * x) * math.cos(1.8 * cross_section.value) + 0.7 * math.sin(
         x * cross_section.value

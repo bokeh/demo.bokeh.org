@@ -336,12 +336,15 @@ def modify_document(document) -> None:
             representative = int(np.argmin(squared_distance))
             anchor.value = str(region.loc[representative, "iata"])
 
+    @performance.measure
     def choose_state(_attr: str, _old: object, _new: object) -> None:
         update_state()
 
+    @performance.measure
     def choose_airport(_attr: str, _old: object, _new: object) -> None:
         update_airport()
 
+    @performance.measure
     def tap_airport(_attr: str, _old: list[int], indices: list[int]) -> None:
         if indices:
             selected_iata = str(airport_source.data["iata"][indices[0]])
@@ -354,9 +357,9 @@ def modify_document(document) -> None:
                 anchor.options = [(selected_iata, label), *options]
             anchor.value = selected_iata
 
-    state.on_change("value", performance.measure(choose_state))
-    anchor.on_change("value", performance.measure(choose_airport))
-    airport_source.selected.on_change("indices", performance.measure(tap_airport))
+    state.on_change("value", choose_state)
+    anchor.on_change("value", choose_airport)
+    airport_source.selected.on_change("indices", tap_airport)
     update_state()
 
     introduction = Div(

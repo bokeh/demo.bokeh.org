@@ -405,6 +405,7 @@ def modify_document(document) -> None:
         history_range.end = max(30, generation + 1)
         history_range.start = max(0, history_range.end - 30)
 
+    @performance.measure
     def load_seed() -> None:
         field = seed_field(seed.value, density.value, state.rng)
         state.field = field
@@ -423,6 +424,7 @@ def modify_document(document) -> None:
         reset_history()
         render()
 
+    @performance.measure
     def advance(*, force: bool = False) -> None:
         if not state.running and not force:
             return
@@ -495,6 +497,7 @@ def modify_document(document) -> None:
             }
         )
 
+    @performance.measure
     def edit_field(event: Event) -> None:
         if not isinstance(event, Tap) or event.x is None or event.y is None:
             return
@@ -536,6 +539,7 @@ def modify_document(document) -> None:
         update_latest_history()
         render()
 
+    @performance.measure
     def clear_field() -> None:
         state.running = False
         playing.label = "Resume evolution"
@@ -555,15 +559,18 @@ def modify_document(document) -> None:
         reset_history()
         render()
 
+    @performance.measure
     def seed_changed(_attr: str, _old: object, _new: object) -> None:
         load_seed()
 
+    @performance.measure
     def rule_changed(_attr: str, _old: object, _new: object) -> None:
         update_rule_builder_visibility()
         reset_cycle_tracking()
         update_notes()
         update_status()
 
+    @performance.measure
     def comparison_rule_changed(_attr: str, _old: object, _new: object) -> None:
         update_rule_builder_visibility()
         state.comparison_seen.clear()
@@ -572,12 +579,14 @@ def modify_document(document) -> None:
         update_notes()
         update_status()
 
+    @performance.measure
     def primary_custom_rule_changed(_attr: str, _old: object, _new: object) -> None:
         if rule.value == CUSTOM_RULE:
             reset_cycle_tracking()
             update_notes()
             update_status()
 
+    @performance.measure
     def comparison_custom_rule_changed(_attr: str, _old: object, _new: object) -> None:
         if comparing() and comparison_rule.value == CUSTOM_RULE:
             state.comparison_seen.clear()
@@ -586,6 +595,7 @@ def modify_document(document) -> None:
             update_notes()
             update_status()
 
+    @performance.measure
     def density_changed(_attr: str, _old: object, _new: object) -> None:
         if seed.value == "Random soup":
             load_seed()
@@ -595,9 +605,11 @@ def modify_document(document) -> None:
         playing.label = "Pause evolution" if running else "Resume evolution"
         playing.button_type = "primary" if running else "default"
 
+    @performance.measure
     def toggle_playing() -> None:
         set_running(not state.running)
 
+    @performance.measure
     def toggle_wrap() -> None:
         state.wrap = not state.wrap
         wrap_edges.label = f"Edges wrap · {'on' if state.wrap else 'off'}"
@@ -646,6 +658,7 @@ def modify_document(document) -> None:
         update_notes()
         render()
 
+    @performance.measure
     def experiment_changed(_attr: str, _old: object, _new: object) -> None:
         if comparing():
             state.comparison_field = state.field.copy()
@@ -656,6 +669,7 @@ def modify_document(document) -> None:
             update_latest_history()
         update_visual_mode()
 
+    @performance.measure
     def brush_changed(_attr: str, _old: object, _new: object) -> None:
         is_pattern = BRUSHES[brush.value] is not None
         rotate_pattern.visible = is_pattern
@@ -664,38 +678,44 @@ def modify_document(document) -> None:
             set_running(False)
         update_brush_note()
 
+    @performance.measure
     def rotate_brush() -> None:
         state.brush_rotation = (state.brush_rotation + 1) % 4
         rotate_pattern.label = f"Rotation · {90 * state.brush_rotation}°"
 
+    @performance.measure
     def flip_brush() -> None:
         state.brush_flipped = not state.brush_flipped
         flip_pattern.label = f"Mirror · {'on' if state.brush_flipped else 'off'}"
 
-    experiment.on_change("value", performance.measure(experiment_changed))
-    seed.on_change("value", performance.measure(seed_changed))
-    rule.on_change("value", performance.measure(rule_changed))
-    comparison_rule.on_change("value", performance.measure(comparison_rule_changed))
-    primary_birth.on_change("value", performance.measure(primary_custom_rule_changed))
-    primary_survival.on_change("value", performance.measure(primary_custom_rule_changed))
-    comparison_birth.on_change("value", performance.measure(comparison_custom_rule_changed))
-    comparison_survival.on_change("value", performance.measure(comparison_custom_rule_changed))
-    brush.on_change("value", performance.measure(brush_changed))
-    density.on_change("value_throttled", performance.measure(density_changed))
-    playing.on_click(performance.measure(toggle_playing))
-    wrap_edges.on_click(performance.measure(toggle_wrap))
-    rotate_pattern.on_click(performance.measure(rotate_brush))
-    flip_pattern.on_click(performance.measure(flip_brush))
-    restart.on_click(performance.measure(load_seed))
-    step.on_click(performance.measure(lambda: advance(force=True), name="step_once"))
-    clear.on_click(performance.measure(clear_field))
-    field_plot.on_event(Tap, performance.measure(edit_field))
+    @performance.measure
+    def step_once() -> None:
+        advance(force=True)
+
+    experiment.on_change("value", experiment_changed)
+    seed.on_change("value", seed_changed)
+    rule.on_change("value", rule_changed)
+    comparison_rule.on_change("value", comparison_rule_changed)
+    primary_birth.on_change("value", primary_custom_rule_changed)
+    primary_survival.on_change("value", primary_custom_rule_changed)
+    comparison_birth.on_change("value", comparison_custom_rule_changed)
+    comparison_survival.on_change("value", comparison_custom_rule_changed)
+    brush.on_change("value", brush_changed)
+    density.on_change("value_throttled", density_changed)
+    playing.on_click(toggle_playing)
+    wrap_edges.on_click(toggle_wrap)
+    rotate_pattern.on_click(rotate_brush)
+    flip_pattern.on_click(flip_brush)
+    restart.on_click(load_seed)
+    step.on_click(step_once)
+    clear.on_click(clear_field)
+    field_plot.on_event(Tap, edit_field)
 
     update_notes()
     update_brush_note()
     load_seed()
     update_visual_mode()
-    document.add_periodic_callback(performance.measure(advance), 100)
+    document.add_periodic_callback(advance, 100)
 
     controls = column(
         Div(
