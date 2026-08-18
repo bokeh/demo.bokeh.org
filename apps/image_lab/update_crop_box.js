@@ -36,7 +36,7 @@ handles.change.emit()
 // Preserve smooth browser-side motion while limiting expensive Python image work.
 const now = Date.now()
 const last_sent = state.tags[0] ?? 0
-if (now - last_sent >= 200) {
+if (now - last_sent >= 100) {
   request.data = {left: [left], right: [right], bottom: [bottom], top: [top]}
   request.change.emit()
   state.tags = [now]

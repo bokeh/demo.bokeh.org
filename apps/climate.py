@@ -385,12 +385,13 @@ def modify_document(document) -> None:
             f"exceeded the {threshold:.0f} mm threshold; the yearly average was {average_heavy_days:.1f}.</p>"
         )
 
+    @performance.measure
     def update(_attr: str, _old: object, _new: object) -> None:
         calculate()
 
-    year.on_change("value", performance.measure(update))
-    smoothing.on_change("value_throttled", performance.measure(update))
-    heavy_rain.on_change("value_throttled", performance.measure(update))
+    year.on_change("value", update)
+    smoothing.on_change("value_throttled", update)
+    heavy_rain.on_change("value_throttled", update)
     calculate()
 
     attribution = Div(

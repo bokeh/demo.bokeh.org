@@ -379,16 +379,22 @@ def modify_document(document) -> None:
                     f"<strong>{len(sample_source.data['x'])}</strong> diagnostic samples</p>"
                 )
 
+        @performance.measure
         def parameters_changed(_attr: str, _old: object, _new: object) -> None:
             restart()
 
+        @performance.measure
         def running_changed(_attr: str, _old: bool, active: bool) -> None:
             running.label = "Pause integration" if active else "Resume integration"
 
+        @performance.measure
+        def reset_oscillator() -> None:
+            restart()
+
         for slider in controls:
-            slider.on_change("value_throttled", performance.measure(parameters_changed))
-        running.on_change("active", performance.measure(running_changed))
-        reset.on_click(performance.measure(restart))
+            slider.on_change("value_throttled", parameters_changed)
+        running.on_change("active", running_changed)
+        reset.on_click(reset_oscillator)
         restart()
         advance()
         advances.append(advance)
@@ -573,9 +579,10 @@ def modify_document(document) -> None:
 
     tabs = Tabs(tabs=panels, active=0, sizing_mode="stretch_width", name="oscillator-tabs")
 
+    @performance.measure
     def advance_active() -> None:
         advances[tabs.active](coalescer.due_ticks())
 
-    document.add_periodic_callback(performance.measure(advance_active), 100)
+    document.add_periodic_callback(advance_active, 100)
     document.add_root(tabs)
     prepare_document(document, "/chaotic-motion")

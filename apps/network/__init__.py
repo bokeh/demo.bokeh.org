@@ -560,23 +560,28 @@ def modify_document(document) -> None:
         update_timeline()
         update_graph()
 
+    @performance.measure
     def lineage_changed(_attr: str, _old: object, _new: object) -> None:
         if not state["updating"]:
             refresh_lineage()
 
+    @performance.measure
     def view_changed(_attr: str, _old: object, _new: object) -> None:
         if not state["updating"]:
             update_timeline()
             update_graph()
 
+    @performance.measure
     def graph_changed(_attr: str, _old: object, _new: object) -> None:
         if not state["updating"]:
             update_graph()
 
+    @performance.measure
     def paper_changed(_attr: str, _old: object, paper_id: str) -> None:
         if not state["updating"] and paper_id:
             update_inspector(paper_id)
 
+    @performance.measure
     def graph_selected(_attr: str, _old: list[int], indices: list[int]) -> None:
         if state["updating"] or not indices:
             return
@@ -586,12 +591,12 @@ def modify_document(document) -> None:
         state["updating"] = False
         update_inspector(paper_id)
 
-    lineage_buttons.on_change("active", performance.measure(lineage_changed))
-    metric_select.on_change("value", performance.measure(graph_changed))
-    layout_select.on_change("value", performance.measure(graph_changed))
-    year.on_change("value_throttled", performance.measure(view_changed))
-    paper_select.on_change("value", performance.measure(paper_changed))
-    node_source.selected.on_change("indices", performance.measure(graph_selected))
+    lineage_buttons.on_change("active", lineage_changed)
+    metric_select.on_change("value", graph_changed)
+    layout_select.on_change("value", graph_changed)
+    year.on_change("value_throttled", view_changed)
+    paper_select.on_change("value", paper_changed)
+    node_source.selected.on_change("indices", graph_selected)
     refresh_lineage()
 
     intro = Div(

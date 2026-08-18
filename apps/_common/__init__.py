@@ -24,6 +24,7 @@ from catalog import DEMOS
 from presentation import SITE, configure_document
 
 from . import colors
+from .callbacks import on_throttled_value as on_throttled_value
 from .performance import monitor_document
 from .streaming import PeriodicCoalescer as PeriodicCoalescer
 

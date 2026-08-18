@@ -353,6 +353,7 @@ def modify_document(document) -> None:
         for plot in (price, volume, macd):
             plot.xaxis[0].major_label_overrides = cast(Any, labels)
 
+    @performance.measure
     def reset_simulation() -> None:
         state.update(
             rng=np.random.default_rng(SEED),
@@ -372,6 +373,7 @@ def modify_document(document) -> None:
         update_summary()
         coalescer.reset()
 
+    @performance.measure
     def advance(*, force: bool = False) -> None:
         if not playing.active and not force:
             return
@@ -390,26 +392,29 @@ def modify_document(document) -> None:
         append_indicators(candles)
         update_summary()
 
+    @performance.measure
     def regime_changed(_attr: str, _old: object, _new: object) -> None:
         update_regime_note()
         reset_simulation()
 
+    @performance.measure
     def playback_changed(_attr: str, _old: bool, active: bool) -> None:
         playing.label = "Pause simulation" if active else "Resume simulation"
         if active:
             coalescer.reset()
 
+    @performance.measure
     def inject_selloff() -> None:
         state["shock"] = -0.08
         if not playing.active:
             advance(force=True)
 
-    regime.on_change("value", performance.measure(regime_changed))
-    playing.on_change("active", performance.measure(playback_changed))
-    selloff.on_click(performance.measure(inject_selloff))
-    restart.on_click(performance.measure(reset_simulation))
+    regime.on_change("value", regime_changed)
+    playing.on_change("active", playback_changed)
+    selloff.on_click(inject_selloff)
+    restart.on_click(reset_simulation)
     reset_simulation()
-    document.add_periodic_callback(performance.measure(advance), 150)
+    document.add_periodic_callback(advance, 150)
 
     key = Div(
         text=(
