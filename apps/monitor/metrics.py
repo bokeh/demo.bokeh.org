@@ -17,6 +17,7 @@ from typing import Any, Protocol
 from urllib.parse import urlsplit
 from urllib.request import Request, urlopen
 
+from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
 from apps._common.performance import (
     PUBLIC_PERFORMANCE,
     AppTiming,
@@ -60,6 +61,8 @@ class MonitorSample:
     memory_percent: float | None
     rx_bytes_per_second: float | None
     tx_bytes_per_second: float | None
+    active_sessions: int
+    requests_per_minute: float
     callback_rate: float
     callback_p95_ms: float | None
     event_loop_p95_ms: float | None
@@ -322,11 +325,13 @@ class CoalescedSampler:
         adapter: MetricsAdapter,
         *,
         performance: PublicPerformance = PUBLIC_PERFORMANCE,
+        activity: PublicActivity = PUBLIC_ACTIVITY,
         interval_seconds: float = SAMPLE_INTERVAL_SECONDS,
         fallback: MetricsAdapter | None = None,
     ) -> None:
         self._adapter = adapter
         self._performance = performance
+        self._activity = activity
         self._interval_seconds = interval_seconds
         self._fallback = fallback or DeterministicAdapter(
             source_label="Deterministic fallback · live source unavailable"
@@ -350,8 +355,13 @@ class CoalescedSampler:
                 return self._last_sample
             system = self._read_system(sampled_at)
             performance = self._performance.snapshot(now=sampled_at)
+            activity = self._activity.snapshot(now=sampled_at)
             if system.deterministic:
                 performance = _deterministic_performance(self._generation)
+                active_sessions, requests_per_minute = _deterministic_activity(self._generation)
+            else:
+                active_sessions = activity.active_sessions
+                requests_per_minute = activity.requests_per_minute
             self._generation += 1
             self._last_sampled_at = sampled_at
             self._last_sample = MonitorSample(
@@ -365,6 +375,8 @@ class CoalescedSampler:
                 memory_percent=system.memory_percent,
                 rx_bytes_per_second=system.rx_bytes_per_second,
                 tx_bytes_per_second=system.tx_bytes_per_second,
+                active_sessions=active_sessions,
+                requests_per_minute=requests_per_minute,
                 callback_rate=performance.callback_count / performance.window_seconds,
                 callback_p95_ms=performance.callback_p95_ms,
                 event_loop_p95_ms=performance.event_loop_p95_ms,
@@ -450,3 +462,8 @@ def _deterministic_performance(index: int) -> PerformanceSnapshot:
         event_loop_by_app=event_loop_by_app,
         slowest_callbacks=slowest_callbacks,
     )
+
+
+def _deterministic_activity(index: int) -> tuple[int, float]:
+    phase = index / 6
+    return 5 + round(2 * (1 + math.sin(phase))), 18 + 7 * (1 + math.sin(phase * 1.3))

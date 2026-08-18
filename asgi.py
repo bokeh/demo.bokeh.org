@@ -12,7 +12,8 @@ from urllib.parse import parse_qs
 
 from bokeh.server.asgi import BokehASGI
 
-from catalog import load_applications
+from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
+from catalog import DEMOS, load_applications
 from presentation import ROOT, render_index
 
 os.environ.setdefault("BOKEH_RESOURCES", "cdn")
@@ -38,12 +39,18 @@ LEGACY_DEMO_ROUTES = frozenset(
         "/weather",
     }
 )
+PUBLIC_PAGE_ROUTES = frozenset(
+    {"/", "/index.html", *LEGACY_DEMO_ROUTES, *(demo.route for demo in DEMOS if demo.listed)}
+)
 
 
 class DemoApplication:
-    def __init__(self, bokeh: BokehASGI, runtime_health: bytes) -> None:
+    def __init__(
+        self, bokeh: BokehASGI, runtime_health: bytes, *, activity: PublicActivity = PUBLIC_ACTIVITY
+    ) -> None:
         self._bokeh = bokeh
         self._runtime_health = runtime_health
+        self._activity = activity
         self._index = render_index()
         self._legacy_index = render_index(show_legacy_notice=True)
         self._not_found = (ASSET_ROOT / "404.html").read_bytes()
@@ -51,6 +58,8 @@ class DemoApplication:
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope_type = scope["type"]
         path = scope.get("path", "/")
+        if scope_type == "http" and _counts_as_public_request(path):
+            self._activity.record_request()
 
         if scope_type == "lifespan":
             await self._bokeh(scope, receive, send)
@@ -174,6 +183,11 @@ def create_application() -> DemoApplication:
     applications = load_applications()
     bokeh = BokehASGI(applications, redirect_root=False, extra_websocket_origins=origins)
     return DemoApplication(bokeh, _runtime_health())
+
+
+def _counts_as_public_request(path: str) -> bool:
+    """Count page entry requests without monitor, health, or asset traffic."""
+    return path in PUBLIC_PAGE_ROUTES
 
 
 def _runtime_health(

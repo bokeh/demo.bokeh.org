@@ -20,7 +20,7 @@ from bokeh.models import (
 )
 
 import presentation
-from catalog import DEMOS, load_applications
+from catalog import DEMOS, LISTED_DEMOS, load_applications
 from presentation import APP_TEMPLATE, SITE_FOOTER, SITE_HEADER, configure_document, render_index
 
 
@@ -84,7 +84,7 @@ def test_landing_page_comes_from_catalog() -> None:
     assert "runtime-section" not in html
     assert "uv run --locked uvicorn asgi:application" in html
     assert 'class="demo-card featured' not in html
-    for demo in DEMOS:
+    for demo in LISTED_DEMOS:
         assert f'href="{demo.route}"' in html
         assert demo.title in html
         assert f"/assets/{demo.preview}?v=11" in html
@@ -100,8 +100,8 @@ def test_landing_page_legacy_notice_is_opt_in() -> None:
 
 
 def test_landing_page_escapes_catalog_content(monkeypatch) -> None:
-    unsafe = replace(DEMOS[0], title="<script>alert('bad')</script>")
-    monkeypatch.setattr(presentation, "DEMOS", (unsafe,))
+    unsafe = replace(LISTED_DEMOS[0], title="<script>alert('bad')</script>")
+    monkeypatch.setattr(presentation, "LISTED_DEMOS", (unsafe,))
 
     html = render_index().decode()
 

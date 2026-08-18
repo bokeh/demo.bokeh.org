@@ -80,8 +80,9 @@ The public endpoints are:
 - `/`: generated gallery
 - `/404.html`: shared Bokeh 404 page
 - `/healthz`: runtime health and active Python GIL state
-- `/monitor`: public, sanitized view of the task or process serving the session,
-  including bounded timing summaries for public app and callback labels
+- `/monitor`: directly accessible, sanitized view of the task or process serving
+  the session, including anonymous activity counts and bounded timing summaries;
+  it is not listed in the gallery yet
 - `/assets/*`: shared site CSS
 - every route declared in `catalog.DEMOS`
 

@@ -24,6 +24,7 @@ from catalog import DEMOS
 from presentation import SITE, configure_document
 
 from . import colors
+from .activity import PUBLIC_ACTIVITY
 from .callbacks import on_throttled_value as on_throttled_value
 from .performance import monitor_document
 from .streaming import PeriodicCoalescer as PeriodicCoalescer
@@ -62,6 +63,8 @@ def prepare_document(document, route: str, *, measure_performance: bool = True) 
     document.theme = "light_minimal"
     for root in document.roots:
         match_background(root, colors.PAPER)
+    if route != "/monitor":
+        PUBLIC_ACTIVITY.track_session(document)
     if measure_performance:
         monitor_document(document, route).start(document)
 
