@@ -156,7 +156,15 @@ push it to ECR under an immutable `sha-*` tag, register a new ECS task
 definition, update the `worker` service, wait for stability, and verify the
 production health endpoint.
 
+Pull requests run all checks and build the container without publishing or
+deploying it. Merging to `main` is therefore the normal release action; no
+Terraform command is needed for an application-only change. The workflow
+summary records the immutable image digest used by ECS.
+
 To roll back an application release, rerun the workflow for the desired commit
 or revert the change on `main`. ECR retains the twenty most recent immutable
 release images. Infrastructure operations are documented in the `bokeh/infra`
 AWS demo stack README.
+
+See [Production operations](docs/operations.md) for rollout verification,
+CloudWatch callback timings, event-loop lag queries, and smoke-test guidance.

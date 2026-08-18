@@ -25,7 +25,14 @@ from bokeh.models import (
 from bokeh.plotting import figure
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from apps._common import match_background, prepare_document, responsive_row, style_figure, wrap_row
+from apps._common import (
+    match_background,
+    monitor_document,
+    prepare_document,
+    responsive_row,
+    style_figure,
+    wrap_row,
+)
 from apps._common.colors import CORAL, GOLD, PAPER, PLUM, TEAL, VIOLET, WARM
 from apps.task_scheduler.simulation import (
     SEED,
@@ -72,6 +79,7 @@ TASK_HOVER_HTML = (ASSETS / "task_hover.html").read_text()
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/task-scheduler")
     workload = Select(
         title="Synthetic workload",
         value="Satellite mosaic",
@@ -507,6 +515,9 @@ def modify_document(document) -> None:
         state.clock += step
         clock = state.clock
 
+        right_patches: list[tuple[int, float]] = []
+        duration_patches: list[tuple[int, float]] = []
+        result_patches: list[tuple[int, str]] = []
         for worker in workers:
             task_id = worker["task"]
             if task_id is None:
@@ -515,18 +526,20 @@ def modify_document(document) -> None:
             task["remaining"] -= step
             bar = task["bar"]
             assert bar is not None
-            stream_source.patch(
-                {
-                    "right": [(bar, clock)],
-                    "duration": [(bar, clock - cast(float, stream_source.data["left"][bar]))],
-                }
-            )
+            right_patches.append((bar, clock))
+            duration_patches.append((bar, clock - cast(float, stream_source.data["left"][bar])))
             if task["remaining"] <= 0:
                 set_status(task, "Complete")
                 task["worker"] = None
                 result = "Straggler complete" if task["straggler"] else "Complete"
-                stream_source.patch({"result": [(bar, result)]})
+                result_patches.append((bar, result))
                 worker["task"] = None
+
+        if right_patches:
+            patches: dict[str, Any] = {"right": right_patches, "duration": duration_patches}
+            if result_patches:
+                patches["result"] = result_patches
+            stream_source.patch(cast(Any, patches))
 
         refresh_ready()
         ready = [task for task in tasks if task["status"] == "Ready"]
@@ -608,16 +621,16 @@ def modify_document(document) -> None:
         )
         update_summary()
 
-    workload.on_change("value", settings_changed)
-    worker_count.on_change("value", settings_changed)
-    playing.on_change("active", playback_changed)
-    critical_path.on_change("active", critical_changed)
-    node_source.selected.on_change("indices", selection_changed)
-    straggler.on_click(slow_task)
-    fail_worker.on_click(interrupt_worker)
-    restart.on_click(reset_simulation)
+    workload.on_change("value", performance.measure(settings_changed))
+    worker_count.on_change("value_throttled", performance.measure(settings_changed))
+    playing.on_change("active", performance.measure(playback_changed))
+    critical_path.on_change("active", performance.measure(critical_changed))
+    node_source.selected.on_change("indices", performance.measure(selection_changed))
+    straggler.on_click(performance.measure(slow_task))
+    fail_worker.on_click(performance.measure(interrupt_worker))
+    restart.on_click(performance.measure(reset_simulation))
     reset_simulation()
-    document.add_periodic_callback(advance, 150)
+    document.add_periodic_callback(performance.measure(advance), 150)
 
     controls = column(
         Div(text=INTRO_HTML, css_classes=["scheduler-introduction"], stylesheets=[SCHEDULER_CSS]),

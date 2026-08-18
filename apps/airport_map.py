@@ -28,6 +28,7 @@ from apps._common import (
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -82,6 +83,7 @@ def distance_miles(
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/airport-access")
     airports = cast(pd.DataFrame, local_data.airports()).dropna().copy()
     airports = cast(pd.DataFrame, airports[airports["state"].isin(STATE_NAMES)])
     airports = airports.sort_values(by=["state", "city", "name"]).reset_index(drop=True)
@@ -107,7 +109,10 @@ def modify_document(document) -> None:
     )
     anchor = Select(title="Anchor airport", value="SEA", options=[])
 
-    airport_source = ColumnDataSource(data={}, name="airport-map")
+    airport_source = ColumnDataSource(
+        data={**airport_data, "distance": np.zeros(len(airports), dtype=np.float32)},
+        name="airport-map",
+    )
     viewport_source = ColumnDataSource(data={"x": [], "y": []}, name="airport-map-viewport")
     anchor_source = ColumnDataSource(data={"x": [], "y": [], "iata": []}, name="airport-anchor")
     route_source = ColumnDataSource(data={"xs": [], "ys": []}, name="airport-routes")
@@ -246,7 +251,7 @@ def modify_document(document) -> None:
             airport_latitudes,
             airport_longitudes,
         )
-        airport_source.data = dict(airport_data, distance=distances)
+        airport_source.patch({"distance": [(slice(len(distances)), distances.astype(np.float32))]})
         airport_source.selected.indices = [selected_index]
         anchor_source.data = {
             "x": [selected["x"]],
@@ -349,9 +354,9 @@ def modify_document(document) -> None:
                 anchor.options = [(selected_iata, label), *options]
             anchor.value = selected_iata
 
-    state.on_change("value", choose_state)
-    anchor.on_change("value", choose_airport)
-    airport_source.selected.on_change("indices", tap_airport)
+    state.on_change("value", performance.measure(choose_state))
+    anchor.on_change("value", performance.measure(choose_airport))
+    airport_source.selected.on_change("indices", performance.measure(tap_airport))
     update_state()
 
     introduction = Div(

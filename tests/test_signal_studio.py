@@ -101,7 +101,7 @@ def test_oscillator_phase_range_expands_to_contain_the_orbit() -> None:
     )
     nonlinearity.value = nonlinearity.end
     for _ in range(50):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
 
     phase = document.select_one({"name": "van-der-pol-phase-plot"})
     source = document.select_one({"type": ColumnDataSource, "name": "van-der-pol-phase"})
@@ -123,7 +123,7 @@ def test_pendulum_ticks_remain_readable_across_multiple_rotations() -> None:
     )
     damping.value = damping.start
     for _ in range(40):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
 
     phase = document.select_one({"name": "pendulum-phase-plot"})
     phase_source = document.select_one({"name": "pendulum-phase"})
@@ -142,7 +142,7 @@ def test_mathieu_oscillator_streams_a_finite_stroboscopic_section() -> None:
     tabs = document.select_one({"type": Tabs, "name": "oscillator-tabs"})
     tabs.active = 3
     for _ in range(20):
-        document.session_callbacks[0].callback()
+        min(document.session_callbacks, key=lambda callback: callback.period).callback()
 
     phase = document.select_one({"type": ColumnDataSource, "name": "mathieu-phase"})
     diagnostic = document.select_one({"type": ColumnDataSource, "name": "mathieu-diagnostic"})
@@ -178,7 +178,7 @@ def test_oscillator_tabs_own_their_controls_and_only_advance_when_active() -> No
     }
     lengths = {name: len(source.data["time"]) for name, source in traces.items()}
     tabs.active = 1
-    document.session_callbacks[0].callback()
+    min(document.session_callbacks, key=lambda callback: callback.period).callback()
     assert len(traces["duffing-trace"].data["time"]) == lengths["duffing-trace"]
     assert len(traces["van-der-pol-trace"].data["time"]) > lengths["van-der-pol-trace"]
     assert len(traces["pendulum-trace"].data["time"]) == lengths["pendulum-trace"]

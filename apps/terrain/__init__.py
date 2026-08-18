@@ -9,6 +9,7 @@ from bokeh.layouts import column
 from bokeh.models import (
     Button,
     ColumnDataSource,
+    CustomJS,
     Div,
     HoverTool,
     LabelSet,
@@ -25,6 +26,7 @@ from apps._common import (
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -63,6 +65,7 @@ TOGGLE_STYLESHEET = """
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/terrain-contours")
     landform_options = list(LANDFORMS)
     landform = Select(
         title="Modeled landform",
@@ -78,7 +81,49 @@ def modify_document(document) -> None:
     )
     reset = Button(label="Reset horizontal transect")
 
-    transect_source = ColumnDataSource(data=dict(DEFAULT_TRANSECT), name="terrain-transect")
+    # Keep drag feedback in BokehJS and send at most five profile requests per second.
+    transect_source = ColumnDataSource(
+        data=dict(DEFAULT_TRANSECT), name="terrain-transect", syncable=False
+    )
+    transect_request = ColumnDataSource(
+        data=dict(DEFAULT_TRANSECT), name="terrain-transect-request"
+    )
+    transect_source.js_on_change(
+        "data",
+        CustomJS(
+            args={"request": transect_request},
+            code="""
+                const throttle = cb_obj.tags[0] ?? {last_sent: 0, timeout: null}
+                const send_request = () => {
+                    const data = cb_obj.data
+                    const unchanged = ["x", "y", "label"].every((name) =>
+                        data[name].length == request.data[name].length &&
+                        data[name].every((value, index) => value == request.data[name][index])
+                    )
+                    if (!unchanged) {
+                        request.data = {
+                            x: Array.from(data.x),
+                            y: Array.from(data.y),
+                            label: Array.from(data.label),
+                        }
+                        request.change.emit()
+                    }
+                    throttle.last_sent = Date.now()
+                    throttle.timeout = null
+                }
+
+                const remaining = 200 - (Date.now() - throttle.last_sent)
+                if (remaining <= 0) {
+                    clearTimeout(throttle.timeout)
+                    send_request()
+                } else {
+                    clearTimeout(throttle.timeout)
+                    throttle.timeout = setTimeout(send_request, remaining)
+                }
+                cb_obj.tags = [throttle]
+            """,
+        ),
+    )
     profile_source = ColumnDataSource(
         data={"distance": np.zeros(241), "elevation": np.zeros(241)}, name="terrain-profile"
     )
@@ -191,14 +236,19 @@ def modify_document(document) -> None:
     current_z = z
 
     def update_profile() -> None:
-        coordinates = transect_source.data
+        coordinates = transect_request.data
         if len(coordinates["x"]) != 2 or len(coordinates["y"]) != 2:
             reading.text = "<p><strong>Two handles are required.</strong><br>Reset the transect to restore them.</p>"
             return
         x0, x1 = map(float, coordinates["x"])
         y0, y1 = map(float, coordinates["y"])
         distance, values = sample_transect(current_z, x0, y0, x1, y1)
-        profile_source.data = {"distance": distance, "elevation": values}
+        profile_source.patch(
+            {
+                "distance": [(slice(len(distance)), distance)],
+                "elevation": [(slice(len(values)), values)],
+            }
+        )
         profile_range.end = max(float(distance[-1]), 0.1)
         peak_index = int(np.argmax(values))
         angle = np.degrees(np.arctan2(y1 - y0, x1 - x0))
@@ -234,11 +284,12 @@ def modify_document(document) -> None:
 
     def reset_transect() -> None:
         transect_source.data = dict(DEFAULT_TRANSECT)
+        transect_request.data = dict(DEFAULT_TRANSECT)
 
-    landform.on_change("value", choose_landform)
-    transect_source.on_change("data", move_transect)
-    outlines.on_change("active", toggle_outlines)
-    reset.on_click(reset_transect)
+    landform.on_change("value", performance.measure(choose_landform))
+    transect_request.on_change("data", performance.measure(move_transect))
+    outlines.on_change("active", performance.measure(toggle_outlines))
+    reset.on_click(performance.measure(reset_transect))
     update_terrain()
 
     introduction = Div(

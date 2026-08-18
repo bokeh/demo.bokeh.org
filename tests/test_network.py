@@ -113,6 +113,7 @@ def test_research_lineage_links_time_selection_and_ranking() -> None:
 
     initial_count = len(nodes.data["index"])
     year.value = year.start
+    year.trigger("value_throttled", year.value_throttled, year.value)
     assert len(nodes.data["index"]) < initial_count
     assert all(
         relation != "Follow-on" or published <= year.value

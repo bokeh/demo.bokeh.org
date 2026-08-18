@@ -23,7 +23,15 @@ from bokeh.models import (
 from bokeh.plotting import figure
 from scipy.integrate import solve_ivp
 
-from apps._common import match_background, prepare_document, responsive_row, style_figure, wrap_row
+from apps._common import (
+    PeriodicCoalescer,
+    match_background,
+    monitor_document,
+    prepare_document,
+    responsive_row,
+    style_figure,
+    wrap_row,
+)
 from apps._common.colors import CORAL, GOLD, PAPER, PLUM, TEAL, VIOLET
 
 Acceleration = Callable[[float, float, float], float]
@@ -41,7 +49,9 @@ NARROW_CONTENT_CSS = """
 
 
 def modify_document(document) -> None:
-    advances: list[Callable[[], None]] = []
+    performance = monitor_document(document, "/chaotic-motion")
+    advances: list[Callable[[int], None]] = []
+    coalescer = PeriodicCoalescer(0.1)
 
     def build_oscillator(
         *,
@@ -71,6 +81,7 @@ def modify_document(document) -> None:
             "velocity": initial_velocity,
             "previous_velocity": initial_velocity,
             "sample": 0,
+            "updates": 0,
         }
         steps_per_period = 120
         steps_per_update = 40
@@ -259,6 +270,7 @@ def modify_document(document) -> None:
                 velocity=initial_velocity,
                 previous_velocity=initial_velocity,
                 sample=0,
+                updates=0,
             )
             trace_source.data = {"time": [0.0], "cycles": [0.0], "x": [initial_position]}
             phase_source.data = {"x": [initial_phase_position], "velocity": [initial_velocity]}
@@ -270,7 +282,7 @@ def modify_document(document) -> None:
             reset_phase_range()
             status.text = "<p>Ready from the initial state.</p>"
 
-        def advance() -> None:
+        def advance(ticks: int = 1) -> None:
             if not running.active:
                 return
             if forcing_frequency is None:
@@ -280,7 +292,8 @@ def modify_document(document) -> None:
                 frequency = float(forcing_frequency.value)
                 step = 2 * np.pi / (frequency * steps_per_period)
 
-            times = state["t"] + step * np.arange(1, steps_per_update + 1)
+            total_steps = steps_per_update * ticks
+            times = state["t"] + step * np.arange(1, total_steps + 1)
 
             def derivatives(time: float, values_at_time: np.ndarray) -> tuple[float, float]:
                 position, velocity = values_at_time
@@ -299,9 +312,9 @@ def modify_document(document) -> None:
                 status.text = f"<p>Integration stopped: {solution.message}</p>"
                 return
 
-            positions = solution.y[0].tolist()
-            velocities = solution.y[1].tolist()
-            phase_positions = [position / phase_position_scale for position in positions]
+            positions = solution.y[0]
+            velocities = solution.y[1]
+            phase_positions = positions / phase_position_scale
             sample_indices: list[int] = []
             sample_positions: list[float] = []
             sample_velocities: list[float] = []
@@ -323,30 +336,48 @@ def modify_document(document) -> None:
                 state["previous_velocity"] = velocity
 
             state["t"] = float(times[-1])
-            state["x"] = positions[-1]
-            state["velocity"] = velocities[-1]
+            state["x"] = float(positions[-1])
+            state["velocity"] = float(velocities[-1])
 
             cycles = times * frequency / (2 * np.pi) if frequency is not None else times
             trace_source.stream(
-                {"time": times.tolist(), "cycles": cycles.tolist(), "x": positions},
+                {
+                    "time": times.astype(np.float32),
+                    "cycles": cycles.astype(np.float32),
+                    "x": positions.astype(np.float32),
+                },
                 rollover=trace_history_limit,
             )
             phase_source.stream(
-                {"x": phase_positions, "velocity": velocities}, rollover=phase_history_limit
+                {
+                    "x": phase_positions.astype(np.float32),
+                    "velocity": velocities.astype(np.float32),
+                },
+                rollover=phase_history_limit,
             )
             phase_focus_source.stream(
-                {"x": phase_positions, "velocity": velocities}, rollover=phase_focus_limit
+                {
+                    "x": phase_positions.astype(np.float32),
+                    "velocity": velocities.astype(np.float32),
+                },
+                rollover=phase_focus_limit,
             )
             expand_phase_range()
             if sample_positions:
                 sample_source.stream(
-                    {"index": sample_indices, "x": sample_positions, "velocity": sample_velocities},
+                    {
+                        "index": np.asarray(sample_indices, dtype=np.int32),
+                        "x": np.asarray(sample_positions, dtype=np.float32),
+                        "velocity": np.asarray(sample_velocities, dtype=np.float32),
+                    },
                     rollover=500,
                 )
-            status.text = (
-                f"<p><strong>{state['n']:,}</strong> integration steps &nbsp; "
-                f"<strong>{len(sample_source.data['x'])}</strong> diagnostic samples</p>"
-            )
+            state["updates"] += 1
+            if state["updates"] % 5 == 0 or sample_positions:
+                status.text = (
+                    f"<p><strong>{state['n']:,}</strong> integration steps &nbsp; "
+                    f"<strong>{len(sample_source.data['x'])}</strong> diagnostic samples</p>"
+                )
 
         def parameters_changed(_attr: str, _old: object, _new: object) -> None:
             restart()
@@ -355,9 +386,9 @@ def modify_document(document) -> None:
             running.label = "Pause integration" if active else "Resume integration"
 
         for slider in controls:
-            slider.on_change("value_throttled", parameters_changed)
-        running.on_change("active", running_changed)
-        reset.on_click(restart)
+            slider.on_change("value_throttled", performance.measure(parameters_changed))
+        running.on_change("active", performance.measure(running_changed))
+        reset.on_click(performance.measure(restart))
         restart()
         advance()
         advances.append(advance)
@@ -543,8 +574,8 @@ def modify_document(document) -> None:
     tabs = Tabs(tabs=panels, active=0, sizing_mode="stretch_width", name="oscillator-tabs")
 
     def advance_active() -> None:
-        advances[tabs.active]()
+        advances[tabs.active](coalescer.due_ticks())
 
-    document.add_periodic_callback(advance_active, 100)
+    document.add_periodic_callback(performance.measure(advance_active), 100)
     document.add_root(tabs)
     prepare_document(document, "/chaotic-motion")

@@ -95,7 +95,7 @@ def test_market_streams_one_intraday_bar_at_each_update() -> None:
     assert source.data["index"] == previous_indices
     previous_date = source.data["date"][-1]
     speed.value = "Fast"
-    next(iter(document.session_callbacks)).callback()
+    min(document.session_callbacks, key=lambda callback: callback.period).callback()
     assert len(source.data["date"]) == 64
     assert source.data["index"] == [*previous_indices[1:], previous_indices[-1] + 1]
     assert source.data["date"][-1] > previous_date

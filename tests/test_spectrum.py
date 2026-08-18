@@ -30,8 +30,9 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     previous_history = history.data["image"][0].copy()
     previous_latest = latest.data["image"][0].copy()
     previous_response = response.data["gain"].copy()
-    document.session_callbacks[0].callback()
-    document.session_callbacks[0].callback()
+    periodic = min(document.session_callbacks, key=lambda callback: callback.period)
+    periodic.callback()
+    periodic.callback()
     assert np.array_equal(history.data["image"][0], previous_history)
     assert not np.array_equal(latest.data["image"][0], previous_latest)
     assert np.array_equal(response.data["gain"], previous_response)
@@ -73,8 +74,9 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     receiver_filter.value = "No filter"
     assert not np.array_equal(history.data["image"][0], notch_history)
     receiver_filter.value = "Notch"
-    document.session_callbacks[0].callback()
-    document.session_callbacks[0].callback()
+    periodic = min(document.session_callbacks, key=lambda callback: callback.period)
+    periodic.callback()
+    periodic.callback()
     assert not np.array_equal(power.data["raw"], power.data["filtered"])
     filter_histories = {}
     for option in receiver_filter.options:
@@ -107,6 +109,7 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     layout_updates = []
     specialized_controls.on_change("children", lambda _attr, _old, new: layout_updates.append(new))
     bandwidth.value += 5
+    bandwidth.trigger("value_throttled", bandwidth.value_throttled, bandwidth.value)
     assert layout_updates == []
     frequency = response.data["frequency"]
     first_index = int(np.argmin(np.abs(frequency - center.value)))
@@ -127,6 +130,7 @@ def test_spectrum_streams_float32_history_and_filtered_power() -> None:
     adaptive_latest = latest.data["image"][0].copy()
     adaptive_response = response.data["gain"].copy()
     bandwidth.value += 10
+    bandwidth.trigger("value_throttled", bandwidth.value_throttled, bandwidth.value)
     assert np.array_equal(history.data["image"][0], adaptive_history)
     assert np.array_equal(latest.data["image"][0], adaptive_latest)
     assert not np.array_equal(response.data["gain"], adaptive_response)

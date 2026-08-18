@@ -29,6 +29,7 @@ from apps._common import (
     match_background,
     metric,
     metric_row,
+    monitor_document,
     prepare_document,
     responsive_row,
     set_metric,
@@ -42,6 +43,7 @@ RAIN_PALETTE = ["#f7f3ec", "#d8d2bd", "#a9b9aa", "#6d9792", "#4f7b7c", "#2a1723"
 
 
 def modify_document(document) -> None:
+    performance = monitor_document(document, "/climate")
     frame = cast(pd.DataFrame, local_data.seattle_weather()).copy()
     frame["year"] = frame["date"].dt.year
     frame["day"] = [date.replace(year=2000).dayofyear for date in frame["date"]]
@@ -344,13 +346,17 @@ def modify_document(document) -> None:
         }
 
         outlines = [CORAL if value == year.value else PAPER for value in monthly["year_name"]]
-        monthly_source.data = {
-            **monthly_source.data,
-            "outline": outlines,
-            "outline_width": [
-                1.5 if value == year.value else 0.75 for value in monthly["year_name"]
-            ],
-        }
+        monthly_source.patch(
+            {
+                "outline": [(slice(len(outlines)), outlines)],
+                "outline_width": [
+                    (
+                        slice(len(outlines)),
+                        [1.5 if value == year.value else 0.75 for value in monthly["year_name"]],
+                    )
+                ],
+            }
+        )
 
         total_rain = float(selected["precipitation"].sum())
         rain_delta = total_rain / float(annual_rain.mean()) - 1
@@ -382,9 +388,9 @@ def modify_document(document) -> None:
     def update(_attr: str, _old: object, _new: object) -> None:
         calculate()
 
-    year.on_change("value", update)
-    smoothing.on_change("value", update)
-    heavy_rain.on_change("value", update)
+    year.on_change("value", performance.measure(update))
+    smoothing.on_change("value_throttled", performance.measure(update))
+    heavy_rain.on_change("value_throttled", performance.measure(update))
     calculate()
 
     attribution = Div(

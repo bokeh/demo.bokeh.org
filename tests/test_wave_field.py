@@ -46,6 +46,7 @@ def test_wave_field_uses_webgl() -> None:
         slider for slider in document.select({"type": Slider}) if slider.title == "Cross-section y"
     )
     cross_section.value = 0.05
+    cross_section.trigger("value_throttled", cross_section.value_throttled, cross_section.value)
     x = section.data["x"][0]
     expected = math.sin(1.8 * x) * math.cos(1.8 * cross_section.value) + 0.7 * math.sin(
         x * cross_section.value
