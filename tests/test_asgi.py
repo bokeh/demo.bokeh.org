@@ -5,9 +5,16 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from xml.etree import ElementTree
 
-from asgi import LEGACY_DEMO_ROUTES, _counts_as_public_request, _runtime_health, application
-from catalog import DEMOS
+from asgi import (
+    LEGACY_DEMO_ROUTES,
+    SITE_ORIGIN,
+    _counts_as_public_request,
+    _runtime_health,
+    application,
+)
+from catalog import DEMOS, LISTED_DEMOS
 
 
 async def request(path: str, *, method: str = "GET") -> tuple[int, dict[str, str], bytes]:
@@ -86,6 +93,8 @@ def test_public_request_counter_excludes_monitor_and_health_traffic() -> None:
     assert not _counts_as_public_request("/assets/site.css")
     assert not _counts_as_public_request("/favicon.ico")
     assert not _counts_as_public_request("/healthz")
+    assert not _counts_as_public_request("/robots.txt")
+    assert not _counts_as_public_request("/sitemap.xml")
     assert not _counts_as_public_request("/monitor")
     assert not _counts_as_public_request("/monitor/ws")
 
@@ -114,6 +123,38 @@ def test_favicon() -> None:
     assert status == 200
     assert headers["content-type"] == "image/svg+xml"
     assert b'<svg id="Layer_1"' in body
+
+
+def test_robots_points_to_the_catalog_sitemap_without_advertising_monitor() -> None:
+    status, headers, body = asyncio.run(request("/robots.txt"))
+
+    assert status == 200
+    assert headers["content-type"] == "text/plain; charset=utf-8"
+    assert headers["cache-control"] == "public, max-age=3600"
+    assert body.decode().splitlines() == [
+        "User-agent: *",
+        "Allow: /",
+        "",
+        f"Sitemap: {SITE_ORIGIN}/sitemap.xml",
+    ]
+    assert "/monitor" not in body.decode()
+
+
+def test_sitemap_contains_only_the_homepage_and_listed_catalog_demos() -> None:
+    status, headers, body = asyncio.run(request("/sitemap.xml"))
+
+    assert status == 200
+    assert headers["content-type"] == "application/xml; charset=utf-8"
+    assert headers["cache-control"] == "public, max-age=3600"
+    root = ElementTree.fromstring(body)
+    namespace = {"sitemap": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+    locations = [element.text for element in root.findall("sitemap:url/sitemap:loc", namespace)]
+    assert locations == [
+        f"{SITE_ORIGIN}/",
+        *(f"{SITE_ORIGIN}{demo.route}" for demo in LISTED_DEMOS),
+    ]
+    assert f"{SITE_ORIGIN}/monitor" not in locations
+    assert all(f"{SITE_ORIGIN}{route}" not in locations for route in LEGACY_DEMO_ROUTES)
 
 
 def test_every_catalog_preview_is_a_served_image() -> None:

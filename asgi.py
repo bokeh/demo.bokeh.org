@@ -9,11 +9,12 @@ import sys
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 from urllib.parse import parse_qs
+from xml.sax.saxutils import escape
 
 from bokeh.server.asgi import BokehASGI
 
 from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
-from catalog import DEMOS, load_applications
+from catalog import DEMOS, LISTED_DEMOS, load_applications
 from presentation import ROOT, render_index
 
 os.environ.setdefault("BOKEH_RESOURCES", "cdn")
@@ -26,6 +27,7 @@ type Scope = dict[str, Any]
 type Send = Callable[[Message], Awaitable[None]]
 
 ASSET_ROOT = ROOT / "site"
+SITE_ORIGIN = "https://demo.bokeh.org"
 LEGACY_DEMO_ROUTES = frozenset(
     {
         "/crossfilter",
@@ -39,6 +41,21 @@ LEGACY_DEMO_ROUTES = frozenset(
         "/weather",
     }
 )
+
+
+def _render_sitemap() -> bytes:
+    locations = (f"{SITE_ORIGIN}/", *(f"{SITE_ORIGIN}{demo.route}" for demo in LISTED_DEMOS))
+    urls = "\n".join(f"  <url><loc>{escape(location)}</loc></url>" for location in locations)
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"{urls}\n"
+        "</urlset>\n"
+    ).encode()
+
+
+SITEMAP = _render_sitemap()
+ROBOTS = (f"User-agent: *\nAllow: /\n\nSitemap: {SITE_ORIGIN}/sitemap.xml\n").encode()
 PUBLIC_PAGE_ROUTES = frozenset(
     {
         "/",
@@ -74,6 +91,22 @@ class DemoApplication:
             query = parse_qs(scope.get("query_string", b"").decode())
             index = self._legacy_index if "legacy-demo" in query else self._index
             await self._response(scope, send, index, "text/html; charset=utf-8")
+        elif scope_type == "http" and path == "/robots.txt":
+            await self._response(
+                scope,
+                send,
+                ROBOTS,
+                "text/plain; charset=utf-8",
+                cache_control="public, max-age=3600",
+            )
+        elif scope_type == "http" and path == "/sitemap.xml":
+            await self._response(
+                scope,
+                send,
+                SITEMAP,
+                "application/xml; charset=utf-8",
+                cache_control="public, max-age=3600",
+            )
         elif scope_type == "http" and path == "/healthz":
             await self._response(
                 scope,
