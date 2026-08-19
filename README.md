@@ -80,6 +80,8 @@ The public endpoints are:
 - `/`: generated gallery
 - `/404.html`: shared Bokeh 404 page
 - `/healthz`: runtime health and active Python GIL state
+- `/robots.txt`: crawler policy and sitemap discovery
+- `/sitemap.xml`: homepage and listed demo routes generated from the catalog
 - `/monitor`: directly accessible, sanitized view of the task or process serving
   the session, including anonymous activity counts and bounded timing summaries;
   it is not listed in the gallery yet
