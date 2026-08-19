@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 from bokeh.document import Document
-from bokeh.models import ColumnDataSource, DataRange1d, HoverTool, Select, TileRenderer
+from bokeh.models import ColumnDataSource, HoverTool, Range1d, Select, TileRenderer
 
 from catalog import load_applications
 
@@ -22,7 +22,6 @@ def test_airport_map_uses_tiles_and_links_the_selected_airport() -> None:
         select for select in document.select({"type": Select}) if select.title == "Anchor airport"
     )
     airports = document.select_one({"type": ColumnDataSource, "name": "airport-map"})
-    viewport = document.select_one({"type": ColumnDataSource, "name": "airport-map-viewport"})
     ranking = document.select_one({"type": ColumnDataSource, "name": "airport-neighbors"})
     access = document.select_one({"type": ColumnDataSource, "name": "airport-access-curve"})
     map_plot = document.select_one({"name": "airport-map-plot"})
@@ -30,14 +29,8 @@ def test_airport_map_uses_tiles_and_links_the_selected_airport() -> None:
     access_plot = document.select_one({"name": "airport-access-plot"})
     state_boundaries = document.select_one({"name": "airport-state-boundaries"})
     assert map_plot.match_aspect
-    assert isinstance(map_plot.x_range, DataRange1d)
-    assert isinstance(map_plot.y_range, DataRange1d)
-    assert map_plot.x_range.renderers == [
-        document.select_one({"name": "airport-map-viewport-renderer"})
-    ]
-    assert map_plot.y_range.renderers == [
-        document.select_one({"name": "airport-map-viewport-renderer"})
-    ]
+    assert isinstance(map_plot.x_range, Range1d)
+    assert isinstance(map_plot.y_range, Range1d)
     assert state_boundaries.glyph.line_width == 1.3
     assert state_boundaries.glyph.line_alpha == 0.55
     assert ranking_plot.toolbar.tools == []
@@ -51,7 +44,7 @@ def test_airport_map_uses_tiles_and_links_the_selected_airport() -> None:
     airport_count = len(airports.data["iata"])
     assert airport_count > 500
     assert (np.diff(access.data["count"]) >= 0).all()
-    previous_view = dict(viewport.data)
+    previous_view = (map_plot.x_range.start, map_plot.x_range.end)
     access_updates = []
     access.on_change("data", lambda _attr, _old, new: access_updates.append(new))
     state.value = "CA"
@@ -59,7 +52,9 @@ def test_airport_map_uses_tiles_and_links_the_selected_airport() -> None:
     assert len(airports.data["iata"]) == airport_count
     assert any(value != "CA" for value in airports.data["state"])
     assert len(ranking.data["distance"]) == 6
-    assert viewport.data != previous_view
+    assert (map_plot.x_range.start, map_plot.x_range.end) != previous_view
+    assert map_plot.x_range.reset_start == map_plot.x_range.start
+    assert map_plot.x_range.reset_end == map_plot.x_range.end
     adjacent_index = next(
         index for index, value in enumerate(airports.data["state"]) if value == "NV"
     )

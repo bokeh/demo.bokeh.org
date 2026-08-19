@@ -6,7 +6,7 @@ import asyncio
 import json
 import sys
 
-from asgi import LEGACY_DEMO_ROUTES, _runtime_health, application
+from asgi import LEGACY_DEMO_ROUTES, _counts_as_public_request, _runtime_health, application
 from catalog import DEMOS
 
 
@@ -78,6 +78,16 @@ def test_health_reports_an_unexpected_enabled_gil_as_degraded() -> None:
         "reason": "python_gil_enabled",
         "python_gil": "enabled",
     }
+
+
+def test_public_request_counter_excludes_monitor_and_health_traffic() -> None:
+    assert _counts_as_public_request("/")
+    assert _counts_as_public_request("/airport-access")
+    assert not _counts_as_public_request("/assets/site.css")
+    assert not _counts_as_public_request("/favicon.ico")
+    assert not _counts_as_public_request("/healthz")
+    assert not _counts_as_public_request("/monitor")
+    assert not _counts_as_public_request("/monitor/ws")
 
 
 def test_index_head_has_no_body() -> None:

@@ -56,6 +56,8 @@ def build_document(document, sampler: CoalescedSampler) -> None:
     memory_card = metric("Memory", "Sampling…", accent=TEAL)
     callbacks_card = metric("Python callbacks", "Sampling…", accent=GOLD)
     lag_card = metric("Event-loop lag", "Sampling…", accent=VIOLET)
+    sessions_card = metric("Active demo sessions", "Sampling…", accent=TEAL)
+    requests_card = metric("Page requests", "Sampling…", accent=CORAL)
     callback_apps = _table_panel("Callback latency by app", name="monitor-callback-apps")
     event_loop_apps = _table_panel("Event-loop lag by app", name="monitor-event-loop-apps")
     slowest_callbacks = _table_panel("Slowest callbacks", name="monitor-slowest-callbacks")
@@ -146,7 +148,9 @@ def build_document(document, sampler: CoalescedSampler) -> None:
             return
         state["generation"] = sample.generation
         source.stream(cast(Any, _stream_values(sample)), rollover=HISTORY_POINTS)
-        _update_cards(sample, cpu_card, memory_card, callbacks_card, lag_card)
+        _update_cards(
+            sample, cpu_card, memory_card, sessions_card, requests_card, callbacks_card, lag_card
+        )
         _update_timing_tables(sample, callback_apps, event_loop_apps, slowest_callbacks)
         if sample.source_label != state["source_label"]:
             status.text = _source_status(sample)
@@ -159,8 +163,10 @@ def build_document(document, sampler: CoalescedSampler) -> None:
         text=(
             "<h2>What this page measures</h2>"
             "<p>In production, CPU, memory, and network describe the ECS task handling this session. "
-            "Callback timing and event-loop lag come from that task's Python process. This is not a "
-            "service-wide view, so another visitor may see a different server.</p>"
+            "Active sessions, page requests, callback timing, and event-loop lag come from that task's Python "
+            "process. Sessions are open Bokeh documents, not unique people. Monitor and health-check "
+            "requests are excluded. This is not a service-wide view, so another visitor may see a different "
+            "server.</p>"
         ),
         styles={
             "background": WARM,
@@ -178,7 +184,8 @@ def build_document(document, sampler: CoalescedSampler) -> None:
             "fixed list in the source code. The page does not send task metadata, AWS identifiers, "
             "credentials, logs, IP addresses, request headers, referrers, or query strings. The server reads "
             "ECS stats at most once every two seconds and shares each reading among the monitor sessions on "
-            "that process.</p>"
+            "that process. The activity counters keep only request timestamps and the number of live Bokeh "
+            "documents.</p>"
         ),
         styles={
             "border-left": f"3px solid {GOLD}",
@@ -194,7 +201,13 @@ def build_document(document, sampler: CoalescedSampler) -> None:
         column(
             status,
             metric_row(
-                cpu_card, memory_card, callbacks_card, lag_card, sizing_mode="stretch_width"
+                cpu_card,
+                memory_card,
+                sessions_card,
+                requests_card,
+                callbacks_card,
+                lag_card,
+                sizing_mode="stretch_width",
             ),
             explanation,
             responsive_row(utilization, latency, sizing_mode="stretch_width"),
@@ -237,7 +250,7 @@ def _stream_values(sample: MonitorSample) -> dict[str, np.ndarray]:
     }
 
 
-def _update_cards(sample: MonitorSample, cpu, memory, callbacks, lag) -> None:
+def _update_cards(sample: MonitorSample, cpu, memory, sessions, requests, callbacks, lag) -> None:
     if sample.scope == "task":
         cpu_label = "Current task CPU"
         memory_label = "Current task memory"
@@ -253,6 +266,10 @@ def _update_cards(sample: MonitorSample, cpu, memory, callbacks, lag) -> None:
     else:
         memory_value = _mib(sample.memory_bytes)
     set_metric(memory, memory_value, label=memory_label)
+    set_metric(sessions, str(sample.active_sessions), label="Current process active sessions")
+    set_metric(
+        requests, f"{sample.requests_per_minute:.0f} / min", label="Current process page requests"
+    )
     set_metric(callbacks, f"{sample.callback_rate:.1f} / s", label="Current process callbacks")
     set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Current process loop-lag p95")
 

@@ -10,13 +10,17 @@ to describe the whole ECS service.
 | --- | --- | --- |
 | CPU and memory | Current serving ECS task | Current Python process |
 | Network receive/send rate | Current serving ECS task | Local container when available |
+| Active Bokeh sessions | Current Python process | Current Python process |
+| Page requests per minute | Current Python process | Current Python process |
 | Callback rate and p95 duration | Current Python process | Current Python process |
 | Callback latency by app and slowest named callbacks | Current Python process | Current Python process |
 | Event-loop lag p95 and app breakdown | Current Python process | Current Python process |
 
-Another ECS task may serve another visitor. Service-wide task count, request
-rate, errors, and load-balancer measurements remain private operational data and
-are not inferred or shown.
+Active sessions are open Bokeh documents, not unique people. The request rate
+counts gallery and demo page entries, excluding assets, health checks, and the
+monitor's own traffic. Another ECS task may serve another visitor. Service-wide
+task count, request rate, errors, and load-balancer measurements remain private
+operational data and are not inferred or shown.
 
 ## Production source
 
@@ -44,13 +48,15 @@ values when changing task size.
 The Bokeh document contains timestamps, numeric measurements, fixed generic
 source labels, public routes already listed in the site catalog, and callback
 identifiers from an explicit allowlist of functions in this public repository.
+The request counter retains only bounded timestamps, not request paths or
+contents. The session counter keeps weak references to live Bokeh documents.
 An unknown route or callback label is discarded before it can enter a public
 snapshot. The document contains no AWS account IDs, ARNs, resource names,
 endpoint URI, credentials, task/container IDs, raw logs, source IPs, user
 agents, referrers, request headers, or query strings.
 
 Existing callback-duration and event-loop-lag instrumentation feeds bounded
-60-second process aggregates. Sessions and log identity are always discarded.
+60-second process aggregates. Session and log identity are always discarded.
 Only catalog routes and explicitly allowlisted code-level callback names can be
 retained for the three performance tables. Event-loop observations are
 coalesced to at most one per process-wide one-second bucket for the headline

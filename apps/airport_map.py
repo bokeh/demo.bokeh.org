@@ -9,7 +9,6 @@ import pandas as pd
 from bokeh.layouts import column
 from bokeh.models import (
     ColumnDataSource,
-    DataRange1d,
     Div,
     FactorRange,
     HoverTool,
@@ -113,7 +112,6 @@ def modify_document(document) -> None:
         data={**airport_data, "distance": np.zeros(len(airports), dtype=np.float32)},
         name="airport-map",
     )
-    viewport_source = ColumnDataSource(data={"x": [], "y": []}, name="airport-map-viewport")
     anchor_source = ColumnDataSource(data={"x": [], "y": [], "iata": []}, name="airport-anchor")
     route_source = ColumnDataSource(data={"xs": [], "ys": []}, name="airport-routes")
     ranking_source = ColumnDataSource(data={"label": [], "distance": []}, name="airport-neighbors")
@@ -129,8 +127,8 @@ def modify_document(document) -> None:
         styles={"padding": "14px", "background": WARM, "border-left": f"4px solid {GOLD}"}
     )
 
-    map_x_range = DataRange1d(range_padding=0)
-    map_y_range = DataRange1d(range_padding=0)
+    map_x_range = Range1d()
+    map_y_range = Range1d()
     map_title = Title()
     map_plot = figure(
         title=map_title,
@@ -155,11 +153,6 @@ def modify_document(document) -> None:
         line_width=1.3,
         name="airport-state-boundaries",
     )
-    viewport = map_plot.scatter(
-        "x", "y", source=viewport_source, visible=False, name="airport-map-viewport-renderer"
-    )
-    map_x_range.renderers = [viewport]
-    map_y_range.renderers = [viewport]
     map_plot.multi_line(
         xs="xs", ys="ys", source=route_source, color=CORAL, line_width=2.5, line_alpha=0.68
     )
@@ -321,10 +314,12 @@ def modify_document(document) -> None:
         region_y = region["y"].to_numpy(dtype=float)
         x_padding = max(float(np.ptp(region_x)) * 0.18, 70_000)
         y_padding = max(float(np.ptp(region_y)) * 0.18, 70_000)
-        viewport_source.data = {
-            "x": [float(np.min(region_x)) - x_padding, float(np.max(region_x)) + x_padding],
-            "y": [float(np.min(region_y)) - y_padding, float(np.max(region_y)) + y_padding],
-        }
+        x_start = float(np.min(region_x)) - x_padding
+        x_end = float(np.max(region_x)) + x_padding
+        y_start = float(np.min(region_y)) - y_padding
+        y_end = float(np.max(region_y)) + y_padding
+        map_x_range.update(start=x_start, end=x_end, reset_start=x_start, reset_end=x_end)
+        map_y_range.update(start=y_start, end=y_end, reset_start=y_start, reset_end=y_end)
         set_metric(count_card, f"{len(region):,}")
 
         if anchor.value in set(region["iata"]):

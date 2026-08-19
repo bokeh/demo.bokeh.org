@@ -10,6 +10,7 @@ runtime = "Python / ASGI"
 tags = ["ECS task stats", "streaming", "event-loop lag", "privacy boundary", "live data"]
 accent = "coral"
 preview = "monitor-preview.jpg"
+listed = false
 
 [[demos]]
 route = "/mobility"

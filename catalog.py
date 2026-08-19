@@ -32,6 +32,7 @@ class Demo:
     tags: tuple[str, ...]
     accent: str
     preview: str
+    listed: bool = True
 
     @property
     def source_url(self) -> str:
@@ -66,6 +67,7 @@ def load_manifest() -> tuple[Demo, ...]:
 
 
 DEMOS = load_manifest()
+LISTED_DEMOS = tuple(demo for demo in DEMOS if demo.listed)
 
 
 def load_applications() -> Mapping[str, Callable[[Document], None]]:
