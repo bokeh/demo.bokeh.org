@@ -82,11 +82,24 @@ The public endpoints are:
 - `/healthz`: runtime health and active Python GIL state
 - `/robots.txt`: crawler policy and sitemap discovery
 - `/sitemap.xml`: homepage and listed demo routes generated from the catalog
+- `/.well-known/security.txt`: private vulnerability-reporting contact and policy
 - `/monitor`: directly accessible, sanitized view of the task or process serving
   the session, including anonymous activity counts and bounded timing summaries;
   it is not listed in the gallery yet
 - `/assets/*`: shared site CSS
 - every route declared in `catalog.DEMOS`
+
+All HTTP responses carry the same browser security policy. Stateful Bokeh
+documents are explicitly non-cacheable; static site assets, crawler files, and
+the security contact can be cached for one hour. Catalog and application pages
+also provide canonical, Open Graph, and large-card metadata using the shared
+`site/social-preview.png` image. Regenerate that PNG from the maintainable SVG
+with:
+
+```sh
+rsvg-convert --width 1200 --height 630 \
+  --output site/social-preview.png site/social-preview.svg
+```
 
 `site/404.html` is an exact copy of the page introduced by
 [`bokeh/infra#6`](https://github.com/bokeh/infra/pull/6) and maintained at

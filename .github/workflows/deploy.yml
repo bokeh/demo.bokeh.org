@@ -95,5 +95,5 @@ jobs:
           enable-ecs-managed-tags: true
           propagate-tags: SERVICE
 
-      - name: Verify production health
-        run: curl --fail --retry 8 --retry-delay 5 --retry-all-errors https://demo.bokeh.org/healthz
+      - name: Smoke test production
+        run: python scripts/smoke_production.py

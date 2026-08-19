@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <clipPath id="preview-top"><rect x="692" y="58" width="446" height="154" rx="2"/></clipPath>
+    <clipPath id="preview-middle"><rect x="692" y="238" width="446" height="154" rx="2"/></clipPath>
+    <clipPath id="preview-bottom"><rect x="692" y="418" width="446" height="154" rx="2"/></clipPath>
+    <linearGradient id="fade" x1="0" x2="1">
+      <stop offset="0" stop-color="#2a1723" stop-opacity=".92"/>
+      <stop offset="1" stop-color="#2a1723" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#2a1723"/>
+  <circle cx="65" cy="67" r="8" fill="#d95b43"/>
+  <circle cx="89" cy="67" r="8" fill="#ecd078"/>
+  <circle cx="113" cy="67" r="8" fill="#84a6a6"/>
+  <text x="142" y="77" fill="#f7f3ec" font-family="Arial, Helvetica, sans-serif" font-size="29" font-weight="700" letter-spacing="3">BOKEH</text>
+
+  <text x="64" y="205" fill="#ecd078" font-family="SFMono-Regular, Consolas, monospace" font-size="17" font-weight="700" letter-spacing="3">INTERACTIVE PYTHON APPLICATIONS</text>
+  <text x="60" y="302" fill="#f7f3ec" font-family="Georgia, 'Times New Roman', serif" font-size="76" letter-spacing="-3">Bokeh in action</text>
+  <text x="64" y="362" fill="#f7f3ec" fill-opacity=".72" font-family="Arial, Helvetica, sans-serif" font-size="25">Explore scientific models, live data,</text>
+  <text x="64" y="399" fill="#f7f3ec" fill-opacity=".72" font-family="Arial, Helvetica, sans-serif" font-size="25">image processing, finance, and networks.</text>
+
+  <rect x="64" y="481" width="285" height="58" fill="#d95b43"/>
+  <text x="91" y="518" fill="white" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="700">demo.bokeh.org</text>
+
+  <g clip-path="url(#preview-top)">
+    <image x="692" y="58" width="485" height="154" preserveAspectRatio="xMidYMid slice" xlink:href="spectrum-preview.jpg"/>
+  </g>
+  <g clip-path="url(#preview-middle)">
+    <image x="692" y="238" width="485" height="154" preserveAspectRatio="xMidYMid slice" xlink:href="network-preview.jpg"/>
+  </g>
+  <g clip-path="url(#preview-bottom)">
+    <image x="692" y="418" width="485" height="154" preserveAspectRatio="xMidYMid slice" xlink:href="terrain-preview.jpg"/>
+  </g>
+  <rect x="676" y="0" width="110" height="630" fill="url(#fade)"/>
+  <rect x="692" y="58" width="446" height="154" fill="none" stroke="#f7f3ec" stroke-opacity=".2"/>
+  <rect x="692" y="238" width="446" height="154" fill="none" stroke="#f7f3ec" stroke-opacity=".2"/>
+  <rect x="692" y="418" width="446" height="154" fill="none" stroke="#f7f3ec" stroke-opacity=".2"/>
+  <line x1="1164" y1="58" x2="1164" y2="572" stroke="#ecd078" stroke-width="3"/>
+</svg>

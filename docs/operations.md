@@ -16,7 +16,9 @@ Every merge to `main` starts the **Publish and deploy** workflow. It:
 3. resolves that tag to an image digest;
 4. registers a new `demo-bokeh-org` task-definition revision;
 5. updates ECS service `demo-bokeh-org/worker` and waits for stability; and
-6. requests `https://demo.bokeh.org/healthz` before reporting success.
+6. runs a production smoke check against the health endpoint, catalog, sitemap,
+   a representative application document, and its cookie-affined Bokeh
+   WebSocket before reporting success.
 
 Allow several minutes for an uncached ARM64 build and the ECS connection-drain
 period. The first end-to-end production rehearsal took about nine minutes; a
@@ -27,9 +29,10 @@ The workflow summary records the deployed digest. In AWS, follow the rollout at
 **Events** tab reports task-start, target-registration, and rollback failures.
 Application output is in CloudWatch log group `/ecs/demo-bokeh-org`.
 
-After the workflow succeeds, open the landing page and at least one streaming
-application. A useful smoke test is `/spectrum-monitor`: let the waterfall run,
-change a filter, and confirm that the page continues updating over its WebSocket.
+The automated WebSocket check opens and immediately closes one
+`/airport-access` session. After the workflow succeeds, a useful manual check is
+still `/spectrum-monitor`: let the waterfall run, change a filter, and confirm
+that the page continues updating.
 
 The expected health response is
 `{"status":"ok","python_gil":"disabled"}`. The endpoint still returns HTTP 200

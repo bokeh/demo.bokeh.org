@@ -7,6 +7,7 @@ import mimetypes
 import os
 import sys
 from collections.abc import Awaitable, Callable, Mapping
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from urllib.parse import parse_qs
 from xml.sax.saxutils import escape
@@ -15,7 +16,7 @@ from bokeh.server.asgi import BokehASGI
 
 from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
 from catalog import DEMOS, LISTED_DEMOS, load_applications
-from presentation import ROOT, render_index
+from presentation import ROOT, SITE_ORIGIN, render_index
 
 os.environ.setdefault("BOKEH_RESOURCES", "cdn")
 
@@ -27,7 +28,6 @@ type Scope = dict[str, Any]
 type Send = Callable[[Message], Awaitable[None]]
 
 ASSET_ROOT = ROOT / "site"
-SITE_ORIGIN = "https://demo.bokeh.org"
 LEGACY_DEMO_ROUTES = frozenset(
     {
         "/crossfilter",
@@ -56,6 +56,12 @@ def _render_sitemap() -> bytes:
 
 SITEMAP = _render_sitemap()
 ROBOTS = (f"User-agent: *\nAllow: /\n\nSitemap: {SITE_ORIGIN}/sitemap.xml\n").encode()
+STANDARD_HEADERS = (
+    (b"referrer-policy", b"strict-origin-when-cross-origin"),
+    (b"strict-transport-security", b"max-age=31536000"),
+    (b"x-content-type-options", b"nosniff"),
+    (b"x-frame-options", b"SAMEORIGIN"),
+)
 PUBLIC_PAGE_ROUTES = frozenset(
     {
         "/",
@@ -76,6 +82,7 @@ class DemoApplication:
         self._index = render_index()
         self._legacy_index = render_index(show_legacy_notice=True)
         self._not_found = (ASSET_ROOT / "404.html").read_bytes()
+        self._security = _render_security_txt()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         scope_type = scope["type"]
@@ -107,6 +114,14 @@ class DemoApplication:
                 "application/xml; charset=utf-8",
                 cache_control="public, max-age=3600",
             )
+        elif scope_type == "http" and path == "/.well-known/security.txt":
+            await self._response(
+                scope,
+                send,
+                self._security,
+                "text/plain; charset=utf-8",
+                cache_control="public, max-age=3600",
+            )
         elif scope_type == "http" and path == "/healthz":
             await self._response(
                 scope,
@@ -133,6 +148,11 @@ class DemoApplication:
             nonlocal not_found
             if message["type"] == "http.response.start":
                 not_found = message["status"] == 404
+                if not not_found:
+                    message = dict(message)
+                    message["headers"] = _with_standard_headers(
+                        message.get("headers", []), cache_control="no-store"
+                    )
             if not not_found:
                 await send(message)
 
@@ -169,7 +189,10 @@ class DemoApplication:
                 {
                     "type": "http.response.start",
                     "status": 405,
-                    "headers": [(b"allow", b"GET, HEAD"), (b"content-length", b"0")],
+                    "headers": _with_standard_headers(
+                        [(b"allow", b"GET, HEAD"), (b"content-length", b"0")],
+                        cache_control="no-store",
+                    ),
                 }
             )
             await send({"type": "http.response.body", "body": b""})
@@ -178,12 +201,14 @@ class DemoApplication:
         headers = [
             (b"content-type", content_type.encode()),
             (b"content-length", str(len(body)).encode()),
-            (b"cache-control", cache_control.encode()),
-            (b"referrer-policy", b"strict-origin-when-cross-origin"),
-            (b"x-content-type-options", b"nosniff"),
-            (b"x-frame-options", b"SAMEORIGIN"),
         ]
-        await send({"type": "http.response.start", "status": status, "headers": headers})
+        await send(
+            {
+                "type": "http.response.start",
+                "status": status,
+                "headers": _with_standard_headers(headers, cache_control=cache_control),
+            }
+        )
         await send({"type": "http.response.body", "body": b"" if method == "HEAD" else body})
 
     @staticmethod
@@ -194,7 +219,10 @@ class DemoApplication:
                 {
                     "type": "http.response.start",
                     "status": 405,
-                    "headers": [(b"allow", b"GET, HEAD"), (b"content-length", b"0")],
+                    "headers": _with_standard_headers(
+                        [(b"allow", b"GET, HEAD"), (b"content-length", b"0")],
+                        cache_control="no-store",
+                    ),
                 }
             )
         else:
@@ -202,11 +230,10 @@ class DemoApplication:
                 {
                     "type": "http.response.start",
                     "status": 302,
-                    "headers": [
-                        (b"location", location.encode()),
-                        (b"content-length", b"0"),
-                        (b"cache-control", b"no-store"),
-                    ],
+                    "headers": _with_standard_headers(
+                        [(b"location", location.encode()), (b"content-length", b"0")],
+                        cache_control="no-store",
+                    ),
                 }
             )
         await send({"type": "http.response.body", "body": b""})
@@ -226,6 +253,30 @@ def create_application() -> DemoApplication:
 def _counts_as_public_request(path: str) -> bool:
     """Count page entry requests without monitor, health, or asset traffic."""
     return path in PUBLIC_PAGE_ROUTES
+
+
+def _render_security_txt(now: datetime | None = None) -> bytes:
+    """Render an RFC 9116 contact whose expiry advances with each deployment."""
+    expires = (now or datetime.now(UTC)) + timedelta(days=364)
+    return (
+        "Contact: https://tidelift.com/security\n"
+        f"Expires: {expires.isoformat(timespec='seconds').replace('+00:00', 'Z')}\n"
+        f"Canonical: {SITE_ORIGIN}/.well-known/security.txt\n"
+        "Policy: https://github.com/bokeh/bokeh/security/policy\n"
+        "Preferred-Languages: en\n"
+    ).encode()
+
+
+def _with_standard_headers(
+    headers: list[tuple[bytes, bytes]], *, cache_control: str
+) -> list[tuple[bytes, bytes]]:
+    """Add browser policy headers without overriding an upstream response."""
+    result = list(headers)
+    names = {name.lower() for name, _value in result}
+    if b"cache-control" not in names:
+        result.append((b"cache-control", cache_control.encode()))
+    result.extend((name, value) for name, value in STANDARD_HEADERS if name not in names)
+    return result
 
 
 def _runtime_health(
