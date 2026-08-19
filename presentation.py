@@ -12,6 +12,7 @@ from catalog import LISTED_DEMOS, Demo
 
 ROOT = Path(__file__).parent
 SITE = ROOT / "site"
+SITE_ORIGIN = "https://demo.bokeh.org"
 
 TEMPLATE_ENVIRONMENT = Environment(
     loader=FileSystemLoader(SITE),
@@ -28,6 +29,7 @@ APP_TEMPLATE = (SITE / "application.html.jinja").read_text()
 def render_index(*, show_legacy_notice: bool = False) -> bytes:
     return INDEX_TEMPLATE.render(
         demos=LISTED_DEMOS,
+        site_origin=SITE_ORIGIN,
         site_header=SITE_HEADER,
         site_footer=SITE_FOOTER,
         show_legacy_notice=show_legacy_notice,
@@ -38,5 +40,10 @@ def configure_document(document: Document, demo: Demo) -> None:
     document.title = f"{demo.title} · Bokeh demos"
     document.template = cast(Any, APP_TEMPLATE)
     document.template_variables.update(
-        {"demo": demo, "site_header": SITE_HEADER, "site_footer": SITE_FOOTER}
+        {
+            "demo": demo,
+            "site_origin": SITE_ORIGIN,
+            "site_header": SITE_HEADER,
+            "site_footer": SITE_FOOTER,
+        }
     )

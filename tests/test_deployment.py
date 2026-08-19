@@ -40,3 +40,13 @@ def test_deployment_builds_the_matching_arm64_image() -> None:
     assert "docker/setup-qemu-action@v3" in workflow
     assert "docker/setup-buildx-action@v3" in workflow
     assert "docker buildx build --platform linux/arm64" in workflow
+
+
+def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
+    smoke = (ROOT / "scripts" / "smoke_production.py").read_text()
+
+    assert "python scripts/smoke_production.py" in workflow
+    assert 'route = "/airport-access"' in smoke
+    assert "Sec-WebSocket-Protocol: bokeh" in smoke
+    assert 'urljoin(base_url, "/sitemap.xml")' in smoke

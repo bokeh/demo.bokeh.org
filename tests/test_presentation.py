@@ -21,7 +21,14 @@ from bokeh.models import (
 
 import presentation
 from catalog import DEMOS, LISTED_DEMOS, load_applications
-from presentation import APP_TEMPLATE, SITE_FOOTER, SITE_HEADER, configure_document, render_index
+from presentation import (
+    APP_TEMPLATE,
+    SITE_FOOTER,
+    SITE_HEADER,
+    SITE_ORIGIN,
+    configure_document,
+    render_index,
+)
 
 
 def test_every_application_stacks_its_main_composition_on_narrow_screens() -> None:
@@ -73,6 +80,11 @@ def test_landing_page_comes_from_catalog() -> None:
         in html
     )
     assert '<link rel="icon" href="/favicon.ico?v=2" type="image/png" sizes="16x16">' in html
+    assert f'<link rel="canonical" href="{SITE_ORIGIN}/">' in html
+    assert (
+        f'<meta property="og:image" content="{SITE_ORIGIN}/assets/social-preview.png?v=1">' in html
+    )
+    assert '<meta name="twitter:card" content="summary_large_image">' in html
     assert '<section class="asgi-band"' in html
     assert 'id="run-locally"' in html
     assert "Bokeh in action" in html
@@ -120,6 +132,12 @@ def test_configure_document_installs_shared_application_chrome() -> None:
     assert "View demo source code" in document.template
     assert document.template_variables == {
         "demo": demo,
+        "site_origin": SITE_ORIGIN,
         "site_header": SITE_HEADER,
         "site_footer": SITE_FOOTER,
     }
+    assert '<meta name="description" content="{{ demo.description }}">' in document.template
+    assert '<link rel="canonical" href="{{ site_origin }}{{ demo.route }}">' in document.template
+    assert (
+        '<meta property="og:title" content="{{ demo.title }} · Bokeh demos">' in document.template
+    )

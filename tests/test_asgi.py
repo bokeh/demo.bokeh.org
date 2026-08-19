@@ -5,12 +5,14 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+from datetime import UTC, datetime
 from xml.etree import ElementTree
 
 from asgi import (
     LEGACY_DEMO_ROUTES,
     SITE_ORIGIN,
     _counts_as_public_request,
+    _render_security_txt,
     _runtime_health,
     application,
 )
@@ -75,6 +77,24 @@ def test_health() -> None:
         "status": "ok",
         "python_gil": "enabled" if sys._is_gil_enabled() else "disabled",
     }
+
+
+def test_every_http_response_has_the_shared_browser_policy() -> None:
+    expected = {
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "strict-transport-security": "max-age=31536000",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "SAMEORIGIN",
+    }
+
+    application_headers: dict[str, str] = {}
+    for path in ("/", "/airport-access", "/missing-demo", "/assets/site.css"):
+        _status, headers, _body = asyncio.run(request(path))
+        assert expected.items() <= headers.items()
+        if path == "/airport-access":
+            application_headers = headers
+
+    assert application_headers["cache-control"] == "no-store"
 
 
 def test_health_reports_an_unexpected_enabled_gil_as_degraded() -> None:
@@ -157,12 +177,36 @@ def test_sitemap_contains_only_the_homepage_and_listed_catalog_demos() -> None:
     assert all(f"{SITE_ORIGIN}{route}" not in locations for route in LEGACY_DEMO_ROUTES)
 
 
+def test_security_txt_uses_the_private_reporting_policy() -> None:
+    now = datetime(2026, 8, 19, 12, 0, tzinfo=UTC)
+    text = _render_security_txt(now).decode()
+
+    assert text.splitlines() == [
+        "Contact: https://tidelift.com/security",
+        "Expires: 2027-08-18T12:00:00Z",
+        f"Canonical: {SITE_ORIGIN}/.well-known/security.txt",
+        "Policy: https://github.com/bokeh/bokeh/security/policy",
+        "Preferred-Languages: en",
+    ]
+
+    status, headers, body = asyncio.run(request("/.well-known/security.txt"))
+    assert status == 200
+    assert headers["content-type"] == "text/plain; charset=utf-8"
+    assert headers["cache-control"] == "public, max-age=3600"
+    assert body.startswith(b"Contact: https://tidelift.com/security\n")
+
+
 def test_every_catalog_preview_is_a_served_image() -> None:
     for demo in DEMOS:
         status, headers, body = asyncio.run(request(f"/assets/{demo.preview}"))
         assert status == 200
         assert headers["content-type"] == "image/jpeg"
         assert len(body) > 8_000
+
+    status, headers, body = asyncio.run(request("/assets/social-preview.png"))
+    assert status == 200
+    assert headers["content-type"] == "image/png"
+    assert body.startswith(b"\x89PNG\r\n\x1a\n")
 
 
 def test_static_rejects_post() -> None:
