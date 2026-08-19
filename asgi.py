@@ -40,7 +40,12 @@ LEGACY_DEMO_ROUTES = frozenset(
     }
 )
 PUBLIC_PAGE_ROUTES = frozenset(
-    {"/", "/index.html", *LEGACY_DEMO_ROUTES, *(demo.route for demo in DEMOS if demo.listed)}
+    {
+        "/",
+        "/index.html",
+        *LEGACY_DEMO_ROUTES,
+        *(demo.route for demo in DEMOS if demo.route != "/monitor"),
+    }
 )
 
 
