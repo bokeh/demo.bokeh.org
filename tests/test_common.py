@@ -126,7 +126,7 @@ def test_style_figure_applies_shared_colors_and_toolbar_defaults() -> None:
     ("builder", "css_fragment"),
     [
         (responsive_row, "flex-direction: column"),
-        (metric_row, "calc(50% - 5px)"),
+        (metric_row, "flex: 1 1 180px"),
         (wrap_row, "flex: 1 1 140px"),
     ],
 )

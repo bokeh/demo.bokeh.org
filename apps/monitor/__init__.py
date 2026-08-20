@@ -1,13 +1,14 @@
-"""Show a privacy-bounded view of the demo service and serving task."""
+"""Show a privacy-bounded view of the whole demo service."""
 
 from __future__ import annotations
 
 from html import escape
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
 from bokeh.layouts import column
-from bokeh.models import ColumnDataSource, DataRange1d, Div, Range1d
+from bokeh.models import ColumnDataSource, DataRange1d, DatetimeTickFormatter, Div, Range1d, Title
 from bokeh.plotting import figure
 
 from apps._common import (
@@ -18,27 +19,28 @@ from apps._common import (
     set_metric,
     style_figure,
 )
-from apps._common.colors import CORAL, GOLD, MUTED, PLUM, TEAL, VIOLET, WARM
-from apps._common.performance import AppTiming, CallbackTiming
+from apps._common.colors import CORAL, GOLD, MUTED, PLUM, TEAL, VIOLET
+from apps._common.performance import PUBLIC_WINDOW_SECONDS, AppTiming, CallbackTiming
 
 from .global_metrics import ServiceMonitor, ServiceSample, create_service_monitor
-from .metrics import CoalescedSampler, MonitorSample, create_adapter
+from .metrics import CoalescedSampler, create_adapter
 
 ROUTE = "/monitor"
-HISTORY_POINTS = 90
+REFRESH_INTERVAL_MS = 2_000
+HISTORY_SECONDS = 300
+HISTORY_POINTS = HISTORY_SECONDS * 1_000 // REFRESH_INTERVAL_MS
 SAMPLER = CoalescedSampler(create_adapter())
 SERVICE_MONITOR = create_service_monitor(SAMPLER)
+DASHBOARD_METRIC_CSS = Path(__file__).with_name("dashboard_metric.css").read_text()
 
 
 def modify_document(document) -> None:
     """Build the public monitor using the process-wide coalesced sampler."""
-    build_document(document, SAMPLER, SERVICE_MONITOR)
+    build_document(document, SERVICE_MONITOR)
 
 
-def build_document(
-    document, sampler: CoalescedSampler, service_monitor: ServiceMonitor | None = None
-) -> None:
-    """Build a monitor document around an injectable sampler for tests."""
+def build_document(document, service_monitor: ServiceMonitor) -> None:
+    """Build a monitor document around an injectable service monitor for tests."""
     source = ColumnDataSource(
         data={
             "time": np.array([], dtype=np.float64),
@@ -51,11 +53,6 @@ def build_document(
         },
         name="monitor-history",
     )
-    task_status = Div(
-        name="monitor-task-source",
-        sizing_mode="stretch_width",
-        stylesheets=[".bk-clearfix { display: block; width: 100%; }"],
-    )
     service_status = Div(
         name="monitor-service-source",
         sizing_mode="stretch_width",
@@ -64,25 +61,30 @@ def build_document(
     tasks_card = metric("Reporting tasks", "Warming up", accent=GOLD)
     service_sessions_card = metric("Open sessions", "Warming up", accent=TEAL)
     service_pages_card = metric("Page entries", "Warming up", accent=CORAL)
-    service_cpu_card = metric("Combined CPU", "Warming up", accent=CORAL)
-    service_memory_card = metric("Combined memory", "Warming up", accent=TEAL)
-    service_network_card = metric("Combined network", "Warming up", accent=VIOLET)
-    service_callbacks_card = metric("Python callbacks", "Warming up", accent=GOLD)
+    service_cpu_card = metric("CPU usage", "Warming up", accent=CORAL)
+    service_memory_card = metric("Memory usage", "Warming up", accent=TEAL)
+    service_network_card = metric("Network traffic", "Warming up", accent=VIOLET)
     service_lag_card = metric("Event-loop lag", "Warming up", accent=VIOLET)
-    cpu_card = metric("CPU", "Sampling…", accent=CORAL)
-    memory_card = metric("Memory", "Sampling…", accent=TEAL)
-    callbacks_card = metric("Python callbacks", "Sampling…", accent=GOLD)
-    lag_card = metric("Event-loop lag", "Sampling…", accent=VIOLET)
-    sessions_card = metric("Active demo sessions", "Sampling…", accent=TEAL)
-    requests_card = metric("Page requests", "Sampling…", accent=CORAL)
+    for card in (
+        tasks_card,
+        service_sessions_card,
+        service_pages_card,
+        service_cpu_card,
+        service_memory_card,
+        service_network_card,
+        service_lag_card,
+    ):
+        card.stylesheets = [*card.stylesheets, DASHBOARD_METRIC_CSS]
     callback_apps = _table_panel("Callback latency by app", name="monitor-callback-apps")
     event_loop_apps = _table_panel("Event-loop lag by app", name="monitor-event-loop-apps")
     slowest_callbacks = _table_panel("Slowest callbacks", name="monitor-slowest-callbacks")
 
-    time_range = DataRange1d(follow="end", follow_interval=120_000, range_padding=0.02)
+    time_range = DataRange1d(
+        follow="end", follow_interval=HISTORY_SECONDS * 1_000, range_padding=0.02
+    )
     utilization = figure(
-        title="CPU and memory · last two minutes",
-        height=300,
+        title="CPU and memory usage · five minutes",
+        height=265,
         sizing_mode="stretch_width",
         x_axis_type="datetime",
         x_range=time_range,
@@ -97,14 +99,12 @@ def build_document(
         "time", "memory", source=source, color=TEAL, line_width=2.7, legend_label="Memory"
     )
     utilization.yaxis.axis_label = "Capacity used (%)"
-    utilization.legend.location = "top_left"
-    utilization.legend.orientation = "horizontal"
     utilization.legend.click_policy = "mute"
     style_figure(utilization)
 
     latency = figure(
-        title="Callback and event-loop latency · rolling p95",
-        height=300,
+        title="Callback and event-loop p95 · five minutes",
+        height=265,
         sizing_mode="stretch_width",
         x_axis_type="datetime",
         x_range=time_range,
@@ -132,14 +132,12 @@ def build_document(
         legend_label="Event-loop lag",
     )
     latency.yaxis.axis_label = "Milliseconds"
-    latency.legend.location = "top_left"
-    latency.legend.orientation = "horizontal"
     latency.legend.click_policy = "mute"
     style_figure(latency)
 
     network = figure(
-        title="Network traffic · this task or local container",
-        height=225,
+        title="Network traffic · five minutes",
+        height=265,
         sizing_mode="stretch_width",
         x_axis_type="datetime",
         x_range=time_range,
@@ -152,151 +150,121 @@ def build_document(
     )
     network.line("time", "tx_kib", source=source, color=CORAL, line_width=2.4, legend_label="Sent")
     network.yaxis.axis_label = "KiB / second"
-    network.legend.location = "top_left"
-    network.legend.orientation = "horizontal"
     network.legend.click_policy = "mute"
     style_figure(network)
+    for plot in (utilization, latency, network):
+        plot.background_fill_color = "#fffdf9"
+        plot.border_fill_color = "#fffdf9"
+        plot.outline_line_color = "#d8d2cb"
+        if isinstance(plot.title, Title):
+            plot.title.text_font = "Arial"
+            plot.title.text_font_size = "12px"
+            plot.title.text_font_style = "bold"
+        legend = plot.legend[0]
+        plot.add_layout(legend, "below")
+        legend.orientation = "horizontal"
+        legend.location = "center_left"
+        legend.margin = 0
+        legend.spacing = 8
+        legend.background_fill_alpha = 0
+        legend.border_line_alpha = 0
+        legend.label_text_font_size = "10px"
+        plot.xaxis.formatter = DatetimeTickFormatter(
+            microseconds="%H:%M:%S",
+            milliseconds="%H:%M:%S",
+            seconds="%H:%M:%S",
+            minsec="%H:%M:%S",
+            minutes="%H:%M",
+            hourmin="%H:%M",
+            hours="%H:%M",
+            days="%H:%M",
+            hide_repeats=True,
+        )
+        plot.axis.major_label_text_font_size = "9px"
+        plot.axis.axis_label_text_font_size = "10px"
 
-    state: dict[str, Any] = {
-        "task_generation": None,
-        "task_source_label": None,
-        "service_generation": None,
-    }
+    state: dict[str, int | None] = {"service_generation": None}
 
     def refresh() -> None:
-        task_sample = sampler.sample()
-        if task_sample.generation != state["task_generation"]:
-            state["task_generation"] = task_sample.generation
-            source.stream(cast(Any, _stream_values(task_sample)), rollover=HISTORY_POINTS)
-            _update_cards(
-                task_sample,
-                cpu_card,
-                memory_card,
-                sessions_card,
-                requests_card,
-                callbacks_card,
-                lag_card,
-            )
-            if task_sample.source_label != state["task_source_label"]:
-                task_status.text = _source_status(task_sample)
-                state["task_source_label"] = task_sample.source_label
-        if service_monitor is not None:
-            service_sample = service_monitor.sample()
-            if service_sample.generation != state["service_generation"]:
-                state["service_generation"] = service_sample.generation
-                service_status.text = _service_status(service_sample)
-                _update_service_cards(
-                    service_sample,
-                    tasks_card,
-                    service_sessions_card,
-                    service_pages_card,
-                    service_cpu_card,
-                    service_memory_card,
-                    service_network_card,
-                    service_callbacks_card,
-                    service_lag_card,
-                )
-                _update_timing_tables(
-                    service_sample, callback_apps, event_loop_apps, slowest_callbacks
-                )
-        elif task_sample.generation == state["task_generation"]:
-            _update_timing_tables(task_sample, callback_apps, event_loop_apps, slowest_callbacks)
+        service_sample = service_monitor.sample()
+        if service_sample.generation == state["service_generation"]:
+            return
+        state["service_generation"] = service_sample.generation
+        source.stream(cast(Any, _stream_values(service_sample)), rollover=HISTORY_POINTS)
+        service_status.text = _service_status(service_sample)
+        _update_service_cards(
+            service_sample,
+            tasks_card,
+            service_sessions_card,
+            service_pages_card,
+            service_cpu_card,
+            service_memory_card,
+            service_network_card,
+            service_lag_card,
+        )
+        _update_timing_tables(service_sample, callback_apps, event_loop_apps, slowest_callbacks)
 
     refresh()
-    document.add_periodic_callback(refresh, 2_000)
+    document.add_periodic_callback(refresh, REFRESH_INTERVAL_MS)
 
-    explanation = Div(
+    dashboard_heading = Div(
         text=(
-            "<h2>How to read this page</h2>"
-            "<p>The first section combines fresh reports from the running demo tasks. An open session is a "
-            "Bokeh document, not a unique person. Page entries count visits to demo pages, not static files "
-            "served by Cloudflare. The lower charts describe only the task handling this monitor session, "
-            "which makes short changes easier to see.</p>"
+            "<div style='display:flex;align-items:center;justify-content:space-between;gap:16px;"
+            "flex-wrap:wrap'>"
+            "<div><h2 style='font:600 18px Arial,sans-serif;margin:0'>Dashboard</h2>"
+            "<p style='margin:3px 0 0'>Every value combines all reporting tasks.</p></div>"
+            "<div style='font:600 11px monospace;letter-spacing:.04em;white-space:nowrap'>"
+            "REPORTS 30 S&nbsp;&nbsp;·&nbsp;&nbsp;WINDOW 5 MIN</div></div>"
         ),
         styles={
-            "background": WARM,
-            "border": "1px solid #ded7ce",
-            "color": MUTED,
-            "line-height": "1.65",
-            "padding": "18px 20px",
+            "background": PLUM,
+            "border-left": f"5px solid {GOLD}",
+            "box-sizing": "border-box",
+            "color": "#f7f3ec",
+            "line-height": "1.45",
+            "padding": "13px 16px",
         },
         sizing_mode="stretch_width",
     )
-    privacy = Div(
-        text=(
-            "<p><strong>What reaches your browser.</strong> Your browser receives only the numbers and labels "
-            "shown on this page. App routes come from the public catalog, and callback names come from a "
-            "fixed list in the source. The page does not send task metadata, AWS identifiers, credentials, "
-            "logs, IP addresses, request headers, referrers, or query strings. Each task exchanges one "
-            "sanitized report every 30 seconds. Browser sessions share the cached result and never query AWS "
-            "directly.</p>"
+    dashboard = column(
+        dashboard_heading,
+        service_status,
+        metric_row(
+            tasks_card, service_sessions_card, service_pages_card, sizing_mode="stretch_width"
         ),
-        styles={
-            "border-left": f"3px solid {GOLD}",
-            "color": MUTED,
-            "font-size": "12px",
-            "line-height": "1.65",
-            "padding": "8px 16px",
-        },
-        sizing_mode="stretch_width",
-    )
-
-    document.add_root(
-        column(
-            service_status,
-            metric_row(
-                tasks_card,
-                service_sessions_card,
-                service_pages_card,
-                service_callbacks_card,
-                sizing_mode="stretch_width",
-            ),
-            metric_row(
-                service_cpu_card,
-                service_memory_card,
-                service_network_card,
-                service_lag_card,
-                sizing_mode="stretch_width",
-            ),
-            explanation,
-            Div(
-                text=(
-                    "<h2 style='margin:8px 0 2px'>Service performance</h2>"
-                    "<p style='margin:0'>These tables combine the past 60 seconds reported by every fresh "
-                    "task. Percentiles come from merged fixed buckets, so they are approximate rather than "
-                    "averages of each task's p95.</p>"
-                ),
-                styles={"color": MUTED, "line-height": "1.55"},
-                sizing_mode="stretch_width",
-            ),
-            responsive_row(callback_apps, event_loop_apps, sizing_mode="stretch_width"),
-            slowest_callbacks,
-            Div(
-                text="<h2 style='margin:12px 0 2px'>This serving task</h2>",
-                styles={"color": MUTED},
-                sizing_mode="stretch_width",
-            ),
-            task_status,
-            metric_row(
-                cpu_card,
-                memory_card,
-                sessions_card,
-                requests_card,
-                callbacks_card,
-                lag_card,
-                sizing_mode="stretch_width",
-            ),
-            responsive_row(utilization, latency, sizing_mode="stretch_width"),
-            network,
-            privacy,
+        metric_row(
+            service_cpu_card,
+            service_memory_card,
+            service_network_card,
+            service_lag_card,
             sizing_mode="stretch_width",
-            spacing=16,
-        )
+        ),
+        responsive_row(utilization, latency, network, sizing_mode="stretch_width"),
+        Div(
+            text=(
+                f"<p style='margin:8px 0 0'>The tables below combine the past "
+                f"{PUBLIC_WINDOW_SECONDS / 60:.0f} minutes across all reporting tasks. "
+                "Percentiles come from merged fixed buckets, so they are approximate.</p>"
+            ),
+            styles={"color": MUTED, "line-height": "1.55"},
+            sizing_mode="stretch_width",
+        ),
+        responsive_row(callback_apps, event_loop_apps, sizing_mode="stretch_width"),
+        slowest_callbacks,
+        sizing_mode="stretch_width",
+        spacing=9,
+        styles={
+            "background": "#f1efec",
+            "border": "1px solid #d8d2cb",
+            "box-sizing": "border-box",
+            "padding": "10px",
+        },
     )
+    document.add_root(dashboard)
     prepare_document(document, ROUTE, measure_performance=False)
 
 
-def _stream_values(sample: MonitorSample) -> dict[str, np.ndarray]:
+def _stream_values(sample: ServiceSample) -> dict[str, np.ndarray]:
     def value(number: float | None) -> np.ndarray:
         return np.asarray([np.nan if number is None else number], dtype=np.float32)
 
@@ -315,46 +283,22 @@ def _stream_values(sample: MonitorSample) -> dict[str, np.ndarray]:
     }
 
 
-def _update_cards(sample: MonitorSample, cpu, memory, sessions, requests, callbacks, lag) -> None:
-    if sample.scope == "task":
-        cpu_label = "Current task CPU"
-        memory_label = "Current task memory"
-    elif sample.scope == "process":
-        cpu_label = "Current process CPU"
-        memory_label = "Process resident memory"
-    else:
-        cpu_label = "Simulated CPU"
-        memory_label = "Simulated memory"
-    set_metric(cpu, _percent(sample.cpu_percent), label=cpu_label)
-    if sample.memory_percent is not None:
-        memory_value = f"{sample.memory_percent:.1f}% · {_mib(sample.memory_bytes)}"
-    else:
-        memory_value = _mib(sample.memory_bytes)
-    set_metric(memory, memory_value, label=memory_label)
-    set_metric(sessions, str(sample.active_sessions), label="Current process active sessions")
-    set_metric(
-        requests, f"{sample.requests_per_minute:.0f} / min", label="Current process page requests"
-    )
-    set_metric(callbacks, f"{sample.callback_rate:.1f} / s", label="Current process callbacks")
-    set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Current process loop-lag p95")
-
-
 def _update_service_cards(
-    sample: ServiceSample, tasks, sessions, pages, cpu, memory, network, callbacks, lag
+    sample: ServiceSample, tasks, sessions, pages, cpu, memory, network, lag
 ) -> None:
-    set_metric(tasks, str(sample.reporting_tasks), label="Fresh task reports")
-    set_metric(sessions, str(sample.active_sessions), label="Open Bokeh documents")
-    set_metric(pages, f"{sample.page_entries_per_minute:.0f} / min", label="Demo page entries")
+    set_metric(tasks, str(sample.reporting_tasks), label="Reporting tasks")
+    set_metric(sessions, str(sample.active_sessions), label="Open sessions")
+    set_metric(pages, f"{sample.page_entries_per_minute:.0f} / min", label="Page entries")
     cpu_value = "Unavailable"
     if sample.cpu_vcpus is not None:
         cpu_value = f"{sample.cpu_vcpus:.2f} vCPU"
         if sample.cpu_percent is not None:
             cpu_value += f" · {sample.cpu_percent:.1f}%"
-    set_metric(cpu, cpu_value, label="CPU used across fresh tasks")
+    set_metric(cpu, cpu_value, label="CPU usage")
     memory_value = _mib(sample.memory_bytes)
     if sample.memory_percent is not None:
         memory_value += f" · {sample.memory_percent:.1f}%"
-    set_metric(memory, memory_value, label="Memory used across fresh tasks")
+    set_metric(memory, memory_value, label="Memory usage")
     if sample.rx_bytes_per_second is None or sample.tx_bytes_per_second is None:
         network_value = "Warming up"
     else:
@@ -362,28 +306,24 @@ def _update_service_cards(
             f"↓ {sample.rx_bytes_per_second / 1024:.0f} · "
             f"↑ {sample.tx_bytes_per_second / 1024:.0f} KiB/s"
         )
-    set_metric(network, network_value, label="Task network throughput")
-    callback_value = f"{sample.callback_rate:.1f} / s"
-    if sample.callback_p95_ms is not None:
-        callback_value += f" · p95 {sample.callback_p95_ms:.1f} ms"
-    set_metric(callbacks, callback_value, label="Callbacks across fresh tasks")
-    set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Service loop-lag p95")
+    set_metric(network, network_value, label="Network traffic")
+    set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Event-loop lag p95")
 
 
 def _service_status(sample: ServiceSample) -> str:
+    source_label = sample.source_label
     if sample.status == "simulated":
-        eyebrow = "SIMULATED WHOLE SERVICE"
-        detail = "Three repeatable task reports for local layout and interaction checks."
+        eyebrow = "SIMULATED SERVICE"
+        detail = "Three repeatable task reports for layout and interaction checks."
     elif sample.source_label == "Local process registry":
-        eyebrow = "LIVE LOCAL PROCESS"
-        detail = (
-            "The local registry contains this Python process only. No AWS credentials are in use."
-        )
+        eyebrow = "WHOLE DEVELOPMENT SERVICE"
+        source_label = "Development service aggregate"
+        detail = "Combined from every reporting process in this development run."
     elif sample.status == "degraded":
         eyebrow = "SERVICE VIEW DEGRADED"
         reasons = {
             "warming_up": "The first service report has not arrived yet.",
-            "no_fresh_heartbeats": "No task has published a fresh report in the last 75 seconds.",
+            "no_fresh_heartbeats": "No task has reported in the last 75 seconds.",
             "service_data_unavailable": "The sanitized service exchange is temporarily unavailable.",
         }
         detail = reasons.get(
@@ -392,16 +332,10 @@ def _service_status(sample: ServiceSample) -> str:
     else:
         eyebrow = "LIVE DATA · WHOLE DEMO SERVICE"
         detail = (
-            f"Combined from {sample.reporting_tasks} fresh task report"
-            f"{'s' if sample.reporting_tasks != 1 else ''}; refreshed every 30 seconds."
+            f"{sample.reporting_tasks} task{'s' if sample.reporting_tasks != 1 else ''} reported "
+            "within the last 75 seconds; updated every 30 seconds."
         )
-    return (
-        f'<div style="width:100%;box-sizing:border-box;background:{PLUM};color:#f7f3ec;padding:18px 20px;'
-        f'border-left:5px solid {GOLD}">'
-        f'<div style="color:{GOLD};font:700 10px monospace;letter-spacing:.12em">{eyebrow}</div>'
-        f'<div style="font:400 25px Georgia,serif;margin-top:5px">{sample.source_label}</div>'
-        f'<div style="color:rgba(247,243,236,.7);font-size:12px;margin-top:6px">{detail}</div></div>'
-    )
+    return _status_strip(eyebrow, source_label, detail, GOLD)
 
 
 def _table_panel(title: str, *, name: str) -> Div:
@@ -420,10 +354,7 @@ def _table_panel(title: str, *, name: str) -> Div:
 
 
 def _update_timing_tables(
-    sample: MonitorSample | ServiceSample,
-    callback_apps: Div,
-    event_loop_apps: Div,
-    slowest_callbacks: Div,
+    sample: ServiceSample, callback_apps: Div, event_loop_apps: Div, slowest_callbacks: Div
 ) -> None:
     callback_apps.text = _app_table(
         "Callback latency by app", sample.callbacks_by_app, count_label="callbacks"
@@ -472,7 +403,7 @@ def _callback_table(timings: tuple[CallbackTiming, ...]) -> str:
 
 def _empty_table(title: str) -> str:
     return (
-        f"<h3 style='color:{PLUM};font:600 18px Georgia,serif;margin:0 0 12px'>{title}</h3>"
+        f"<h3 style='color:{PLUM};font:600 15px Arial,sans-serif;margin:0 0 12px'>{title}</h3>"
         f"<p style='color:{MUTED};font-size:12px;margin:0'>No activity during the "
         "rolling window.</p>"
     )
@@ -482,7 +413,7 @@ def _table(title: str, headings: tuple[str, ...], rows: str, *, widths: tuple[st
     columns = "".join(f"<col style='width:{width}'>" for width in widths)
     header = "".join(f"<th style='{_TH_STYLE}'>{escape(heading)}</th>" for heading in headings)
     return (
-        f"<h3 style='color:{PLUM};font:600 18px Georgia,serif;margin:0 0 12px'>{title}</h3>"
+        f"<h3 style='color:{PLUM};font:600 15px Arial,sans-serif;margin:0 0 12px'>{title}</h3>"
         f"<table style='border-collapse:collapse;table-layout:fixed;width:100%;font-size:12px'>"
         f"<colgroup>{columns}</colgroup><thead><tr>{header}</tr></thead><tbody>{rows}</tbody></table>"
     )
@@ -502,29 +433,17 @@ def _table_row(*values: str) -> str:
     return "<tr>" + "".join(f"<td style='{_TD_STYLE}'>{value}</td>" for value in values) + "</tr>"
 
 
-def _source_status(sample: MonitorSample) -> str:
-    if sample.deterministic:
-        eyebrow = "SIMULATED DATA"
-        detail = "These repeatable values are for trying the page locally. They do not describe this server."
-    elif sample.scope == "task":
-        eyebrow = "LIVE DATA · THIS ECS TASK"
-        detail = (
-            "CPU, memory, and network cover this task. Callback timing covers its Python process."
-        )
-    else:
-        eyebrow = "LIVE DATA · THIS PYTHON PROCESS"
-        detail = "CPU and memory come from this process. Network appears when the local container exposes it."
+def _status_strip(eyebrow: str, source_label: str, detail: str, accent: str) -> str:
     return (
-        f'<div style="width:100%;box-sizing:border-box;background:{PLUM};color:#f7f3ec;padding:18px 20px;'
-        f'border-left:5px solid {CORAL}">'
-        f'<div style="color:{GOLD};font:700 10px monospace;letter-spacing:.12em">{eyebrow}</div>'
-        f'<div style="font:400 25px Georgia,serif;margin-top:5px">{sample.source_label}</div>'
-        f'<div style="color:rgba(247,243,236,.7);font-size:12px;margin-top:6px">{detail}</div></div>'
+        f'<div style="align-items:center;background:#fffdf9;border:1px solid #d8d2cb;'
+        f"border-left:4px solid {accent};box-sizing:border-box;display:flex;gap:10px 16px;"
+        f'padding:10px 13px;width:100%;flex-wrap:wrap">'
+        f'<div style="color:{accent};font:700 10px monospace;letter-spacing:.08em">'
+        f"{escape(eyebrow)}</div>"
+        f'<div style="color:{PLUM};font:600 13px Arial,sans-serif">{escape(source_label)}</div>'
+        f'<div style="color:{MUTED};font-size:12px;min-width:240px;flex:1">'
+        f"{escape(detail)}</div></div>"
     )
-
-
-def _percent(value: float | None) -> str:
-    return "Warming up" if value is None else f"{value:.1f}%"
 
 
 def _mib(value: float | None) -> str:

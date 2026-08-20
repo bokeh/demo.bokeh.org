@@ -159,7 +159,7 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     service_monitor.tick(now=100, sampled_at=2.0)
     document = Document()
 
-    build_document(document, sampler, service_monitor)
+    build_document(document, service_monitor)
 
     history = document.select_one({"name": "monitor-history"})
     assert history is not None
@@ -172,5 +172,9 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     assert "private-container" not in serialized
     assert METADATA_URI not in serialized
     assert "ECS_CONTAINER_METADATA_URI_V4" not in serialized
+    assert "monitor-task-source" not in serialized
+    assert "Current" not in serialized
+    assert "this task or local container" not in serialized
+    assert "Callbacks across fresh tasks" not in serialized
     assert "/market-monitor" in serialized
     assert "advance" in serialized
