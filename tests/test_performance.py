@@ -8,7 +8,13 @@ from time import perf_counter
 
 from bokeh.document import Document
 
-from apps._common.performance import LOGGER, PerformanceMonitor, PublicPerformance, monitor_document
+from apps._common.performance import (
+    LOGGER,
+    PUBLIC_WINDOW_SECONDS,
+    PerformanceMonitor,
+    PublicPerformance,
+    monitor_document,
+)
 
 
 def test_performance_monitor_reports_callback_duration(monkeypatch) -> None:
@@ -93,6 +99,15 @@ def test_public_performance_is_numeric_bounded_and_coalesces_loop_samples() -> N
     assert snapshot.event_loop_max_ms == 3.0
 
     assert performance.snapshot(now=20.0).callback_count == 0
+
+
+def test_public_performance_default_window_is_five_minutes() -> None:
+    performance = PublicPerformance()
+    performance.record_callback(2.0, now=1.0)
+
+    assert PUBLIC_WINDOW_SECONDS == 300
+    assert performance.snapshot(now=300.0).callback_count == 1
+    assert performance.snapshot(now=302.0).callback_count == 0
 
 
 def test_public_performance_exposes_only_catalog_and_allowlisted_labels() -> None:

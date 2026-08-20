@@ -1,12 +1,21 @@
-@media (max-width: 700px) {
-  :host {
-    flex-wrap: wrap !important;
-  }
+:host {
+  display: flex !important;
+  width: 100% !important;
+  flex-flow: row wrap !important;
+  align-items: stretch !important;
+}
 
+:host > * {
+  width: auto !important;
+  min-width: min(100%, 180px) !important;
+  max-width: none !important;
+  flex: 1 1 180px !important;
+  align-self: stretch !important;
+}
+
+@media (max-width: 420px) {
   :host > * {
-    width: calc(50% - 5px) !important;
-    min-width: calc(50% - 5px) !important;
-    max-width: calc(50% - 5px) !important;
-    flex: 1 1 calc(50% - 5px) !important;
+    min-width: 100% !important;
+    flex-basis: 100% !important;
   }
 }

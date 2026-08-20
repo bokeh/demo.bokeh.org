@@ -480,14 +480,14 @@ def _deterministic_performance(index: int) -> PerformanceSnapshot:
     event_loop_p95 = 1.6 + 0.9 * (1 + math.cos(phase * 1.3))
     callback_count = round(480 + 140 * (1 + math.sin(phase * 1.2)))
     return PerformanceSnapshot(
-        window_seconds=60.0,
+        window_seconds=300.0,
         callback_count=callback_count,
         callback_p95_ms=callback_p95,
         callback_max_ms=18 + 5 * (1 + math.sin(phase)),
         event_loop_p95_ms=event_loop_p95,
         event_loop_max_ms=5 + 2 * (1 + math.cos(phase)),
         callback_histogram=latency_histogram([callback_p95] * callback_count),
-        event_loop_histogram=latency_histogram([event_loop_p95] * 60),
+        event_loop_histogram=latency_histogram([event_loop_p95] * 300),
         callbacks_by_app=callbacks_by_app,
         event_loop_by_app=event_loop_by_app,
         slowest_callbacks=slowest_callbacks,
