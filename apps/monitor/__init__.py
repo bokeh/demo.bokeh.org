@@ -57,15 +57,12 @@ def build_document(document, service_monitor: ServiceMonitor) -> None:
     service_sessions_card = metric("Current viewers", "Warming up", accent=TEAL)
     service_pages_card = metric("Page views", "Warming up", accent=CORAL)
     service_lag_card = metric("Event-loop lag", "Warming up", accent=VIOLET)
-    for card in (
-        tasks_card,
-        service_sessions_card,
-        service_pages_card,
-        service_lag_card,
-    ):
+    for card in (tasks_card, service_sessions_card, service_pages_card, service_lag_card):
         card.stylesheets = [*card.stylesheets, DASHBOARD_METRIC_CSS]
     callback_apps = _table_panel("Callback latency by route · 5 min", name="monitor-callback-apps")
-    event_loop_apps = _table_panel("Event-loop lag by route · 5 min", name="monitor-event-loop-apps")
+    event_loop_apps = _table_panel(
+        "Event-loop lag by route · 5 min", name="monitor-event-loop-apps"
+    )
     slowest_callbacks = _table_panel("Slowest callbacks · 5 min", name="monitor-slowest-callbacks")
 
     time_range = DataRange1d(
@@ -177,11 +174,7 @@ def build_document(document, service_monitor: ServiceMonitor) -> None:
         state["service_generation"] = service_sample.generation
         source.stream(cast(Any, _stream_values(service_sample)), rollover=HISTORY_POINTS)
         _update_service_cards(
-            service_sample,
-            tasks_card,
-            service_sessions_card,
-            service_pages_card,
-            service_lag_card,
+            service_sample, tasks_card, service_sessions_card, service_pages_card, service_lag_card
         )
         _update_timing_tables(service_sample, callback_apps, event_loop_apps, slowest_callbacks)
 
@@ -262,7 +255,9 @@ def _update_timing_tables(
     event_loop_apps.text = _app_table(
         "Event-loop lag by route · 5 min", sample.event_loop_by_app, count_label="observations"
     )
-    slowest_callbacks.text = _callback_table(sample.slowest_callbacks, title="Slowest callbacks · 5 min")
+    slowest_callbacks.text = _callback_table(
+        sample.slowest_callbacks, title="Slowest callbacks · 5 min"
+    )
 
 
 def _app_table(title: str, timings: tuple[AppTiming, ...], *, count_label: str) -> str:
@@ -275,10 +270,7 @@ def _app_table(title: str, timings: tuple[AppTiming, ...], *, count_label: str) 
         for timing in timings
     )
     return _table(
-        title,
-        ("route", count_label, "p95 ms", "max ms"),
-        rows,
-        widths=("52%", "16%", "16%", "16%"),
+        title, ("route", count_label, "p95 ms", "max ms"), rows, widths=("52%", "16%", "16%", "16%")
     )
 
 
