@@ -12,6 +12,7 @@ from bokeh.document import Document
 
 from apps._common.performance import PublicPerformance
 from apps.monitor import build_document
+from apps.monitor.global_metrics import InMemoryHeartbeatStore, ServiceMonitor
 from apps.monitor.metrics import (
     CoalescedSampler,
     DeterministicAdapter,
@@ -114,6 +115,8 @@ def test_sampler_coalesces_viewers_into_one_source_read() -> None:
                 cpu_percent=now,
                 memory_bytes=1,
                 memory_percent=None,
+                cpu_capacity_vcpus=None,
+                memory_capacity_bytes=None,
                 rx_bytes_per_second=None,
                 tx_bytes_per_second=None,
             )
@@ -131,6 +134,7 @@ def test_sampler_coalesces_viewers_into_one_source_read() -> None:
     second = sampler.sample(now=12, wall_time=102)
 
     assert adapter.calls == 2
+    assert first.deterministic is False
     assert same_generation is first
     assert second.generation == first.generation + 1
 
@@ -151,9 +155,11 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     performance.record_callback(99.0, route=TASK_ARN, callback="private-container-name", now=1.0)
     performance.record_event_loop(2.1, route="/market-monitor", now=1.0)
     sampler = CoalescedSampler(adapter, performance=performance)
+    service_monitor = ServiceMonitor(sampler, InMemoryHeartbeatStore())
+    service_monitor.tick(now=100, sampled_at=2.0)
     document = Document()
 
-    build_document(document, sampler)
+    build_document(document, sampler, service_monitor)
 
     history = document.select_one({"name": "monitor-history"})
     assert history is not None

@@ -1,4 +1,4 @@
-"""Show a privacy-bounded view of the server currently serving this session."""
+"""Show a privacy-bounded view of the demo service and serving task."""
 
 from __future__ import annotations
 
@@ -21,19 +21,23 @@ from apps._common import (
 from apps._common.colors import CORAL, GOLD, MUTED, PLUM, TEAL, VIOLET, WARM
 from apps._common.performance import AppTiming, CallbackTiming
 
+from .global_metrics import ServiceMonitor, ServiceSample, create_service_monitor
 from .metrics import CoalescedSampler, MonitorSample, create_adapter
 
 ROUTE = "/monitor"
 HISTORY_POINTS = 90
 SAMPLER = CoalescedSampler(create_adapter())
+SERVICE_MONITOR = create_service_monitor(SAMPLER)
 
 
 def modify_document(document) -> None:
     """Build the public monitor using the process-wide coalesced sampler."""
-    build_document(document, SAMPLER)
+    build_document(document, SAMPLER, SERVICE_MONITOR)
 
 
-def build_document(document, sampler: CoalescedSampler) -> None:
+def build_document(
+    document, sampler: CoalescedSampler, service_monitor: ServiceMonitor | None = None
+) -> None:
     """Build a monitor document around an injectable sampler for tests."""
     source = ColumnDataSource(
         data={
@@ -47,11 +51,24 @@ def build_document(document, sampler: CoalescedSampler) -> None:
         },
         name="monitor-history",
     )
-    status = Div(
-        name="monitor-source",
+    task_status = Div(
+        name="monitor-task-source",
         sizing_mode="stretch_width",
         stylesheets=[".bk-clearfix { display: block; width: 100%; }"],
     )
+    service_status = Div(
+        name="monitor-service-source",
+        sizing_mode="stretch_width",
+        stylesheets=[".bk-clearfix { display: block; width: 100%; }"],
+    )
+    tasks_card = metric("Reporting tasks", "Warming up", accent=GOLD)
+    service_sessions_card = metric("Open sessions", "Warming up", accent=TEAL)
+    service_pages_card = metric("Page entries", "Warming up", accent=CORAL)
+    service_cpu_card = metric("Combined CPU", "Warming up", accent=CORAL)
+    service_memory_card = metric("Combined memory", "Warming up", accent=TEAL)
+    service_network_card = metric("Combined network", "Warming up", accent=VIOLET)
+    service_callbacks_card = metric("Python callbacks", "Warming up", accent=GOLD)
+    service_lag_card = metric("Event-loop lag", "Warming up", accent=VIOLET)
     cpu_card = metric("CPU", "Sampling…", accent=CORAL)
     memory_card = metric("Memory", "Sampling…", accent=TEAL)
     callbacks_card = metric("Python callbacks", "Sampling…", accent=GOLD)
@@ -140,33 +157,61 @@ def build_document(document, sampler: CoalescedSampler) -> None:
     network.legend.click_policy = "mute"
     style_figure(network)
 
-    state: dict[str, Any] = {"generation": None, "source_label": None}
+    state: dict[str, Any] = {
+        "task_generation": None,
+        "task_source_label": None,
+        "service_generation": None,
+    }
 
     def refresh() -> None:
-        sample = sampler.sample()
-        if sample.generation == state["generation"]:
-            return
-        state["generation"] = sample.generation
-        source.stream(cast(Any, _stream_values(sample)), rollover=HISTORY_POINTS)
-        _update_cards(
-            sample, cpu_card, memory_card, sessions_card, requests_card, callbacks_card, lag_card
-        )
-        _update_timing_tables(sample, callback_apps, event_loop_apps, slowest_callbacks)
-        if sample.source_label != state["source_label"]:
-            status.text = _source_status(sample)
-            state["source_label"] = sample.source_label
+        task_sample = sampler.sample()
+        if task_sample.generation != state["task_generation"]:
+            state["task_generation"] = task_sample.generation
+            source.stream(cast(Any, _stream_values(task_sample)), rollover=HISTORY_POINTS)
+            _update_cards(
+                task_sample,
+                cpu_card,
+                memory_card,
+                sessions_card,
+                requests_card,
+                callbacks_card,
+                lag_card,
+            )
+            if task_sample.source_label != state["task_source_label"]:
+                task_status.text = _source_status(task_sample)
+                state["task_source_label"] = task_sample.source_label
+        if service_monitor is not None:
+            service_sample = service_monitor.sample()
+            if service_sample.generation != state["service_generation"]:
+                state["service_generation"] = service_sample.generation
+                service_status.text = _service_status(service_sample)
+                _update_service_cards(
+                    service_sample,
+                    tasks_card,
+                    service_sessions_card,
+                    service_pages_card,
+                    service_cpu_card,
+                    service_memory_card,
+                    service_network_card,
+                    service_callbacks_card,
+                    service_lag_card,
+                )
+                _update_timing_tables(
+                    service_sample, callback_apps, event_loop_apps, slowest_callbacks
+                )
+        elif task_sample.generation == state["task_generation"]:
+            _update_timing_tables(task_sample, callback_apps, event_loop_apps, slowest_callbacks)
 
     refresh()
     document.add_periodic_callback(refresh, 2_000)
 
     explanation = Div(
         text=(
-            "<h2>What this page measures</h2>"
-            "<p>In production, CPU, memory, and network describe the ECS task handling this session. "
-            "Active sessions, page requests, callback timing, and event-loop lag come from that task's Python "
-            "process. Sessions are open Bokeh documents, not unique people. Monitor and health-check "
-            "requests are excluded. This is not a service-wide view, so another visitor may see a different "
-            "server.</p>"
+            "<h2>How to read this page</h2>"
+            "<p>The first section combines fresh reports from the running demo tasks. An open session is a "
+            "Bokeh document, not a unique person. Page entries count visits to demo pages, not static files "
+            "served by Cloudflare. The lower charts describe only the task handling this monitor session, "
+            "which makes short changes easier to see.</p>"
         ),
         styles={
             "background": WARM,
@@ -180,12 +225,11 @@ def build_document(document, sampler: CoalescedSampler) -> None:
     privacy = Div(
         text=(
             "<p><strong>What reaches your browser.</strong> Your browser receives only the numbers and labels "
-            "shown on this page. App routes come from the public gallery, and callback names come from a "
-            "fixed list in the source code. The page does not send task metadata, AWS identifiers, "
-            "credentials, logs, IP addresses, request headers, referrers, or query strings. The server reads "
-            "ECS stats at most once every two seconds and shares each reading among the monitor sessions on "
-            "that process. The activity counters keep only request timestamps and the number of live Bokeh "
-            "documents.</p>"
+            "shown on this page. App routes come from the public catalog, and callback names come from a "
+            "fixed list in the source. The page does not send task metadata, AWS identifiers, credentials, "
+            "logs, IP addresses, request headers, referrers, or query strings. Each task exchanges one "
+            "sanitized report every 30 seconds. Browser sessions share the cached result and never query AWS "
+            "directly.</p>"
         ),
         styles={
             "border-left": f"3px solid {GOLD}",
@@ -199,7 +243,40 @@ def build_document(document, sampler: CoalescedSampler) -> None:
 
     document.add_root(
         column(
-            status,
+            service_status,
+            metric_row(
+                tasks_card,
+                service_sessions_card,
+                service_pages_card,
+                service_callbacks_card,
+                sizing_mode="stretch_width",
+            ),
+            metric_row(
+                service_cpu_card,
+                service_memory_card,
+                service_network_card,
+                service_lag_card,
+                sizing_mode="stretch_width",
+            ),
+            explanation,
+            Div(
+                text=(
+                    "<h2 style='margin:8px 0 2px'>Service performance</h2>"
+                    "<p style='margin:0'>These tables combine the past 60 seconds reported by every fresh "
+                    "task. Percentiles come from merged fixed buckets, so they are approximate rather than "
+                    "averages of each task's p95.</p>"
+                ),
+                styles={"color": MUTED, "line-height": "1.55"},
+                sizing_mode="stretch_width",
+            ),
+            responsive_row(callback_apps, event_loop_apps, sizing_mode="stretch_width"),
+            slowest_callbacks,
+            Div(
+                text="<h2 style='margin:12px 0 2px'>This serving task</h2>",
+                styles={"color": MUTED},
+                sizing_mode="stretch_width",
+            ),
+            task_status,
             metric_row(
                 cpu_card,
                 memory_card,
@@ -209,19 +286,7 @@ def build_document(document, sampler: CoalescedSampler) -> None:
                 lag_card,
                 sizing_mode="stretch_width",
             ),
-            explanation,
             responsive_row(utilization, latency, sizing_mode="stretch_width"),
-            Div(
-                text=(
-                    "<h2 style='margin:8px 0 2px'>Where Python time is going</h2>"
-                    "<p style='margin:0'>These tables summarize the past 60 seconds of work handled by this "
-                    "Python process. App routes and callback names come from a fixed public list.</p>"
-                ),
-                styles={"color": MUTED, "line-height": "1.55"},
-                sizing_mode="stretch_width",
-            ),
-            responsive_row(callback_apps, event_loop_apps, sizing_mode="stretch_width"),
-            slowest_callbacks,
             network,
             privacy,
             sizing_mode="stretch_width",
@@ -274,6 +339,77 @@ def _update_cards(sample: MonitorSample, cpu, memory, sessions, requests, callba
     set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Current process loop-lag p95")
 
 
+def _update_service_cards(
+    sample: ServiceSample,
+    tasks,
+    sessions,
+    pages,
+    cpu,
+    memory,
+    network,
+    callbacks,
+    lag,
+) -> None:
+    set_metric(tasks, str(sample.reporting_tasks), label="Fresh task reports")
+    set_metric(sessions, str(sample.active_sessions), label="Open Bokeh documents")
+    set_metric(pages, f"{sample.page_entries_per_minute:.0f} / min", label="Demo page entries")
+    cpu_value = "Unavailable"
+    if sample.cpu_vcpus is not None:
+        cpu_value = f"{sample.cpu_vcpus:.2f} vCPU"
+        if sample.cpu_percent is not None:
+            cpu_value += f" · {sample.cpu_percent:.1f}%"
+    set_metric(cpu, cpu_value, label="CPU used across fresh tasks")
+    memory_value = _mib(sample.memory_bytes)
+    if sample.memory_percent is not None:
+        memory_value += f" · {sample.memory_percent:.1f}%"
+    set_metric(memory, memory_value, label="Memory used across fresh tasks")
+    if sample.rx_bytes_per_second is None or sample.tx_bytes_per_second is None:
+        network_value = "Warming up"
+    else:
+        network_value = (
+            f"↓ {sample.rx_bytes_per_second / 1024:.0f} · "
+            f"↑ {sample.tx_bytes_per_second / 1024:.0f} KiB/s"
+        )
+    set_metric(network, network_value, label="Task network throughput")
+    callback_value = f"{sample.callback_rate:.1f} / s"
+    if sample.callback_p95_ms is not None:
+        callback_value += f" · p95 {sample.callback_p95_ms:.1f} ms"
+    set_metric(callbacks, callback_value, label="Callbacks across fresh tasks")
+    set_metric(lag, _milliseconds(sample.event_loop_p95_ms), label="Service loop-lag p95")
+
+
+def _service_status(sample: ServiceSample) -> str:
+    if sample.status == "simulated":
+        eyebrow = "SIMULATED WHOLE SERVICE"
+        detail = "Three repeatable task reports for local layout and interaction checks."
+    elif sample.source_label == "Local process registry":
+        eyebrow = "LIVE LOCAL PROCESS"
+        detail = "The local registry contains this Python process only. No AWS credentials are in use."
+    elif sample.status == "degraded":
+        eyebrow = "SERVICE VIEW DEGRADED"
+        reasons = {
+            "warming_up": "The first service report has not arrived yet.",
+            "no_fresh_heartbeats": "No task has published a fresh report in the last 75 seconds.",
+            "service_data_unavailable": "The sanitized service exchange is temporarily unavailable.",
+        }
+        detail = reasons.get(
+            sample.reason or "", "The service aggregate is temporarily unavailable."
+        )
+    else:
+        eyebrow = "LIVE DATA · WHOLE DEMO SERVICE"
+        detail = (
+            f"Combined from {sample.reporting_tasks} fresh task report"
+            f"{'s' if sample.reporting_tasks != 1 else ''}; refreshed every 30 seconds."
+        )
+    return (
+        f'<div style="width:100%;box-sizing:border-box;background:{PLUM};color:#f7f3ec;padding:18px 20px;'
+        f'border-left:5px solid {GOLD}">'
+        f'<div style="color:{GOLD};font:700 10px monospace;letter-spacing:.12em">{eyebrow}</div>'
+        f'<div style="font:400 25px Georgia,serif;margin-top:5px">{sample.source_label}</div>'
+        f'<div style="color:rgba(247,243,236,.7);font-size:12px;margin-top:6px">{detail}</div></div>'
+    )
+
+
 def _table_panel(title: str, *, name: str) -> Div:
     return Div(
         text=_empty_table(title),
@@ -290,7 +426,10 @@ def _table_panel(title: str, *, name: str) -> Div:
 
 
 def _update_timing_tables(
-    sample: MonitorSample, callback_apps: Div, event_loop_apps: Div, slowest_callbacks: Div
+    sample: MonitorSample | ServiceSample,
+    callback_apps: Div,
+    event_loop_apps: Div,
+    slowest_callbacks: Div,
 ) -> None:
     callback_apps.text = _app_table(
         "Callback latency by app", sample.callbacks_by_app, count_label="callbacks"
@@ -340,7 +479,7 @@ def _callback_table(timings: tuple[CallbackTiming, ...]) -> str:
 def _empty_table(title: str) -> str:
     return (
         f"<h3 style='color:{PLUM};font:600 18px Georgia,serif;margin:0 0 12px'>{title}</h3>"
-        f"<p style='color:{MUTED};font-size:12px;margin:0'>No activity in this process during the "
+        f"<p style='color:{MUTED};font-size:12px;margin:0'>No activity during the "
         "rolling window.</p>"
     )
 
