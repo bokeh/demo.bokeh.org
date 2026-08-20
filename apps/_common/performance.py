@@ -40,6 +40,7 @@ PUBLIC_CALLBACK_SAMPLE_LIMIT = 4096
 PUBLIC_EVENT_LOOP_SAMPLE_LIMIT = 1024
 PUBLIC_APP_ROW_LIMIT = 8
 PUBLIC_CALLBACK_ROW_LIMIT = 12
+PUBLIC_LATENCY_BUCKETS_MS = (0.5, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0)
 
 # Callback labels are code identifiers from this public repository, but they are
 # still explicitly allowlisted so an accidental runtime label can never become
@@ -149,6 +150,7 @@ class AppTiming:
     count: int
     p95_ms: float
     max_ms: float
+    histogram: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,6 +162,7 @@ class CallbackTiming:
     count: int
     p95_ms: float
     max_ms: float
+    histogram: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -172,6 +175,8 @@ class PerformanceSnapshot:
     callback_max_ms: float | None
     event_loop_p95_ms: float | None
     event_loop_max_ms: float | None
+    callback_histogram: tuple[int, ...] = ()
+    event_loop_histogram: tuple[int, ...] = ()
     callbacks_by_app: tuple[AppTiming, ...] = ()
     event_loop_by_app: tuple[AppTiming, ...] = ()
     slowest_callbacks: tuple[CallbackTiming, ...] = ()
@@ -244,6 +249,8 @@ class PublicPerformance:
             callback_max_ms=max(callbacks, default=None),
             event_loop_p95_ms=self._percentile(event_loop),
             event_loop_max_ms=max(event_loop, default=None),
+            callback_histogram=latency_histogram(callbacks),
+            event_loop_histogram=latency_histogram(event_loop),
             callbacks_by_app=callbacks_by_app,
             event_loop_by_app=event_loop_by_app,
             slowest_callbacks=slowest_callbacks,
@@ -282,6 +289,7 @@ class PublicPerformance:
                 count=len(values),
                 p95_ms=cls._percentile(values) or 0.0,
                 max_ms=max(values),
+                histogram=latency_histogram(values),
             )
             for app, values in grouped.items()
         )
@@ -304,6 +312,7 @@ class PublicPerformance:
                 count=len(values),
                 p95_ms=cls._percentile(values) or 0.0,
                 max_ms=max(values),
+                histogram=latency_histogram(values),
             )
             for (app, callback), values in grouped.items()
         )
@@ -317,6 +326,37 @@ class PublicPerformance:
             return None
         ordered = sorted(values)
         return ordered[max(0, ceil(0.95 * len(ordered)) - 1)]
+
+
+def latency_histogram(values: list[float]) -> tuple[int, ...]:
+    """Return mergeable counts using fixed, public millisecond boundaries."""
+    counts = [0] * (len(PUBLIC_LATENCY_BUCKETS_MS) + 1)
+    for value in values:
+        for index, boundary in enumerate(PUBLIC_LATENCY_BUCKETS_MS):
+            if value <= boundary:
+                counts[index] += 1
+                break
+        else:
+            counts[-1] += 1
+    return tuple(counts)
+
+
+def histogram_percentile(
+    histogram: tuple[int, ...], *, percentile: float = 0.95, maximum: float | None = None
+) -> float | None:
+    """Estimate a percentile from merged fixed buckets."""
+    total = sum(histogram)
+    if total <= 0:
+        return None
+    target = max(1, ceil(percentile * total))
+    cumulative = 0
+    for index, count in enumerate(histogram):
+        cumulative += count
+        if cumulative >= target:
+            if index < len(PUBLIC_LATENCY_BUCKETS_MS):
+                return PUBLIC_LATENCY_BUCKETS_MS[index]
+            return maximum if maximum is not None else PUBLIC_LATENCY_BUCKETS_MS[-1]
+    return maximum
 
 
 PUBLIC_PERFORMANCE = PublicPerformance()

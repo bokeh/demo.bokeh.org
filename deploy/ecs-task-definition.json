@@ -5,6 +5,7 @@
   "cpu": "1024",
   "memory": "2048",
   "executionRoleArn": "arn:aws:iam::562605262404:role/demo-bokeh-org-task-execution",
+  "taskRoleArn": "arn:aws:iam::562605262404:role/demo-bokeh-org-task",
   "runtimePlatform": {
     "cpuArchitecture": "ARM64",
     "operatingSystemFamily": "LINUX"
@@ -33,6 +34,7 @@
         {"name": "BOKEH_RESOURCES", "value": "cdn"},
         {"name": "DEMO_MONITOR_TASK_CPU_LIMIT", "value": "1"},
         {"name": "DEMO_MONITOR_TASK_MEMORY_LIMIT_MIB", "value": "2048"},
+        {"name": "DEMO_MONITOR_TABLE", "value": "demo-bokeh-org-monitor"},
         {"name": "PORT", "value": "5006"},
         {"name": "PYTHONDONTWRITEBYTECODE", "value": "1"}
       ],

@@ -24,6 +24,7 @@ from apps._common.performance import (
     CallbackTiming,
     PerformanceSnapshot,
     PublicPerformance,
+    latency_histogram,
 )
 
 LOGGER = logging.getLogger("demo.monitor")
@@ -43,6 +44,8 @@ class SystemSample:
     cpu_percent: float | None
     memory_bytes: float | None
     memory_percent: float | None
+    cpu_capacity_vcpus: float | None
+    memory_capacity_bytes: float | None
     rx_bytes_per_second: float | None
     tx_bytes_per_second: float | None
 
@@ -59,13 +62,21 @@ class MonitorSample:
     cpu_percent: float | None
     memory_bytes: float | None
     memory_percent: float | None
+    cpu_capacity_vcpus: float | None
+    memory_capacity_bytes: float | None
     rx_bytes_per_second: float | None
     tx_bytes_per_second: float | None
     active_sessions: int
     requests_per_minute: float
     callback_rate: float
+    callback_count: int
+    callback_window_seconds: float
     callback_p95_ms: float | None
+    callback_max_ms: float | None
+    callback_histogram: tuple[int, ...]
     event_loop_p95_ms: float | None
+    event_loop_max_ms: float | None
+    event_loop_histogram: tuple[int, ...]
     callbacks_by_app: tuple[AppTiming, ...]
     event_loop_by_app: tuple[AppTiming, ...]
     slowest_callbacks: tuple[CallbackTiming, ...]
@@ -159,6 +170,8 @@ class EcsTaskStatsAdapter:
             cpu_percent=max(0.0, task_cpu_percent / self._cpu_limit),
             memory_bytes=memory_bytes,
             memory_percent=max(0.0, 100 * memory_bytes / self._memory_limit_bytes),
+            cpu_capacity_vcpus=self._cpu_limit,
+            memory_capacity_bytes=self._memory_limit_bytes,
             rx_bytes_per_second=rx_rate,
             tx_bytes_per_second=tx_rate,
         )
@@ -264,6 +277,8 @@ class LocalProcessAdapter:
             cpu_percent=cpu_percent,
             memory_bytes=self._resident_memory(),
             memory_percent=None,
+            cpu_capacity_vcpus=None,
+            memory_capacity_bytes=None,
             rx_bytes_per_second=rx_rate,
             tx_bytes_per_second=tx_rate,
         )
@@ -312,6 +327,8 @@ class DeterministicAdapter:
             cpu_percent=31 + 13 * math.sin(phase) + 4 * math.sin(phase * 2.7),
             memory_bytes=(790 + 28 * math.sin(phase / 2)) * MIB,
             memory_percent=38.5 + 1.4 * math.sin(phase / 2),
+            cpu_capacity_vcpus=1.0,
+            memory_capacity_bytes=2048 * MIB,
             rx_bytes_per_second=42_000 + 24_000 * (1 + math.sin(phase * 1.4)),
             tx_bytes_per_second=18_000 + 11_000 * (1 + math.cos(phase * 1.1)),
         )
@@ -373,13 +390,21 @@ class CoalescedSampler:
                 cpu_percent=system.cpu_percent,
                 memory_bytes=system.memory_bytes,
                 memory_percent=system.memory_percent,
+                cpu_capacity_vcpus=system.cpu_capacity_vcpus,
+                memory_capacity_bytes=system.memory_capacity_bytes,
                 rx_bytes_per_second=system.rx_bytes_per_second,
                 tx_bytes_per_second=system.tx_bytes_per_second,
                 active_sessions=active_sessions,
                 requests_per_minute=requests_per_minute,
                 callback_rate=performance.callback_count / performance.window_seconds,
+                callback_count=performance.callback_count,
+                callback_window_seconds=performance.window_seconds,
                 callback_p95_ms=performance.callback_p95_ms,
+                callback_max_ms=performance.callback_max_ms,
+                callback_histogram=performance.callback_histogram,
                 event_loop_p95_ms=performance.event_loop_p95_ms,
+                event_loop_max_ms=performance.event_loop_max_ms,
+                event_loop_histogram=performance.event_loop_histogram,
                 callbacks_by_app=performance.callbacks_by_app,
                 event_loop_by_app=performance.event_loop_by_app,
                 slowest_callbacks=performance.slowest_callbacks,
@@ -434,34 +459,49 @@ def _optional_number(value: object) -> float | None:
 def _deterministic_performance(index: int) -> PerformanceSnapshot:
     phase = index / 6
     callbacks_by_app = (
-        AppTiming("/image-processing", 18, 24.8 + 3 * math.sin(phase), 41.2),
-        AppTiming("/market-monitor", 84, 5.2 + math.sin(phase), 8.7),
-        AppTiming("/chaotic-motion", 126, 2.8 + 0.5 * math.sin(phase), 4.9),
-        AppTiming("/cellular-automata", 210, 1.1 + 0.2 * math.sin(phase), 1.8),
+        _deterministic_app("/image-processing", 18, 24.8 + 3 * math.sin(phase), 41.2),
+        _deterministic_app("/market-monitor", 84, 5.2 + math.sin(phase), 8.7),
+        _deterministic_app("/chaotic-motion", 126, 2.8 + 0.5 * math.sin(phase), 4.9),
+        _deterministic_app("/cellular-automata", 210, 1.1 + 0.2 * math.sin(phase), 1.8),
     )
     event_loop_by_app = (
-        AppTiming("/chaotic-motion", 34, 8.4 + 2 * math.sin(phase), 13.7),
-        AppTiming("/climate", 18, 4.2 + math.sin(phase), 7.9),
-        AppTiming("/image-processing", 42, 1.3 + 0.2 * math.sin(phase), 2.4),
-        AppTiming("/market-monitor", 52, 0.8 + 0.1 * math.sin(phase), 1.4),
+        _deterministic_app("/chaotic-motion", 34, 8.4 + 2 * math.sin(phase), 13.7),
+        _deterministic_app("/climate", 18, 4.2 + math.sin(phase), 7.9),
+        _deterministic_app("/image-processing", 42, 1.3 + 0.2 * math.sin(phase), 2.4),
+        _deterministic_app("/market-monitor", 52, 0.8 + 0.1 * math.sin(phase), 1.4),
     )
     slowest_callbacks = (
-        CallbackTiming("/image-processing", "update_strength", 18, 24.8, 41.2),
-        CallbackTiming("/market-monitor", "advance", 78, 5.4, 8.7),
-        CallbackTiming("/chaotic-motion", "advance_active", 121, 2.9, 4.9),
-        CallbackTiming("/cellular-automata", "advance", 204, 1.1, 1.8),
+        _deterministic_callback("/image-processing", "update_strength", 18, 24.8, 41.2),
+        _deterministic_callback("/market-monitor", "advance", 78, 5.4, 8.7),
+        _deterministic_callback("/chaotic-motion", "advance_active", 121, 2.9, 4.9),
+        _deterministic_callback("/cellular-automata", "advance", 204, 1.1, 1.8),
     )
+    callback_p95 = 7.5 + 2.8 * (1 + math.sin(phase * 1.7))
+    event_loop_p95 = 1.6 + 0.9 * (1 + math.cos(phase * 1.3))
+    callback_count = round(480 + 140 * (1 + math.sin(phase * 1.2)))
     return PerformanceSnapshot(
         window_seconds=60.0,
-        callback_count=round(480 + 140 * (1 + math.sin(phase * 1.2))),
-        callback_p95_ms=7.5 + 2.8 * (1 + math.sin(phase * 1.7)),
+        callback_count=callback_count,
+        callback_p95_ms=callback_p95,
         callback_max_ms=18 + 5 * (1 + math.sin(phase)),
-        event_loop_p95_ms=1.6 + 0.9 * (1 + math.cos(phase * 1.3)),
+        event_loop_p95_ms=event_loop_p95,
         event_loop_max_ms=5 + 2 * (1 + math.cos(phase)),
+        callback_histogram=latency_histogram([callback_p95] * callback_count),
+        event_loop_histogram=latency_histogram([event_loop_p95] * 60),
         callbacks_by_app=callbacks_by_app,
         event_loop_by_app=event_loop_by_app,
         slowest_callbacks=slowest_callbacks,
     )
+
+
+def _deterministic_app(app: str, count: int, p95_ms: float, max_ms: float) -> AppTiming:
+    return AppTiming(app, count, p95_ms, max_ms, latency_histogram([p95_ms] * count))
+
+
+def _deterministic_callback(
+    app: str, callback: str, count: int, p95_ms: float, max_ms: float
+) -> CallbackTiming:
+    return CallbackTiming(app, callback, count, p95_ms, max_ms, latency_histogram([p95_ms] * count))
 
 
 def _deterministic_activity(index: int) -> tuple[int, float]:

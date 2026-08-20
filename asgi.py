@@ -15,6 +15,7 @@ from xml.sax.saxutils import escape
 from bokeh.server.asgi import BokehASGI
 
 from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
+from apps.monitor import SERVICE_MONITOR
 from catalog import DEMOS, LISTED_DEMOS, load_applications
 from presentation import ROOT, SITE_ORIGIN, render_index
 
@@ -91,7 +92,11 @@ class DemoApplication:
             self._activity.record_request()
 
         if scope_type == "lifespan":
-            await self._bokeh(scope, receive, send)
+            SERVICE_MONITOR.start()
+            try:
+                await self._bokeh(scope, receive, send)
+            finally:
+                SERVICE_MONITOR.stop()
         elif scope_type == "http" and path.rstrip("/") in LEGACY_DEMO_ROUTES:
             await self._redirect(scope, send, "/?legacy-demo=1#demos")
         elif scope_type == "http" and path in ("/", "/index.html"):
