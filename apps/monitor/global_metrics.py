@@ -290,11 +290,11 @@ def create_service_monitor(
         "deterministic",
     }
     if mode == "deterministic" or deterministic:
-        return ServiceMonitor(
-            sampler, DeterministicHeartbeatStore(), allow_deterministic=True
-        )
+        return ServiceMonitor(sampler, DeterministicHeartbeatStore(), allow_deterministic=True)
     if mode not in {"auto", "dynamodb", "local"}:
-        raise ValueError("DEMO_MONITOR_GLOBAL_SOURCE must be auto, dynamodb, local, or deterministic")
+        raise ValueError(
+            "DEMO_MONITOR_GLOBAL_SOURCE must be auto, dynamodb, local, or deterministic"
+        )
     table_name = environment.get("DEMO_MONITOR_TABLE")
     if mode != "local" and table_name:
         return ServiceMonitor(sampler, DynamoHeartbeatStore(table_name))
@@ -347,9 +347,7 @@ def aggregate_heartbeats(
     )
     memory = _sum_optional(heartbeat.memory_bytes for heartbeat in heartbeats)
     memory_capacity = _sum_optional(heartbeat.memory_capacity_bytes for heartbeat in heartbeats)
-    callback_histogram = _merge_histograms(
-        heartbeat.callback_histogram for heartbeat in heartbeats
-    )
+    callback_histogram = _merge_histograms(heartbeat.callback_histogram for heartbeat in heartbeats)
     event_loop_histogram = _merge_histograms(
         heartbeat.event_loop_histogram for heartbeat in heartbeats
     )
@@ -382,8 +380,7 @@ def aggregate_heartbeats(
             heartbeat.tx_bytes_per_second for heartbeat in heartbeats
         ),
         callback_rate=sum(
-            heartbeat.callback_count / heartbeat.callback_window_seconds
-            for heartbeat in heartbeats
+            heartbeat.callback_count / heartbeat.callback_window_seconds for heartbeat in heartbeats
         ),
         callback_p95_ms=histogram_percentile(callback_histogram, maximum=callback_max),
         event_loop_p95_ms=histogram_percentile(event_loop_histogram, maximum=event_loop_max),
@@ -547,9 +544,7 @@ def _merge_callback_timings(timings: Any) -> tuple[CallbackTiming, ...]:
     grouped: dict[tuple[str, str], tuple[int, float, tuple[int, ...]]] = {}
     for timing in timings:
         key = (timing.app, timing.callback)
-        count, maximum, histogram = grouped.get(
-            key, (0, 0.0, tuple(0 for _ in timing.histogram))
-        )
+        count, maximum, histogram = grouped.get(key, (0, 0.0, tuple(0 for _ in timing.histogram)))
         grouped[key] = (
             count + timing.count,
             max(maximum, timing.max_ms),
@@ -570,10 +565,7 @@ def _merge_callback_timings(timings: Any) -> tuple[CallbackTiming, ...]:
 
 
 def _histogram(value: object) -> tuple[int, ...]:
-    if (
-        not isinstance(value, (list, tuple))
-        or len(value) != len(PUBLIC_LATENCY_BUCKETS_MS) + 1
-    ):
+    if not isinstance(value, (list, tuple)) or len(value) != len(PUBLIC_LATENCY_BUCKETS_MS) + 1:
         raise ValueError("latency histogram has an invalid shape")
     result = tuple(int(_finite(count)) for count in value)
     if any(count < 0 for count in result):

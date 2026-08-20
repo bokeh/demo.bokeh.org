@@ -44,12 +44,8 @@ def heartbeat(*, published_at: float = 100, cpu_percent: float = 50) -> Heartbea
         callback_histogram=callback_histogram,
         event_loop_max_ms=2.0,
         event_loop_histogram=loop_histogram,
-        callbacks_by_app=(
-            AppTiming("/market-monitor", 4, 8.0, 8.0, callback_histogram),
-        ),
-        event_loop_by_app=(
-            AppTiming("/market-monitor", 3, 2.0, 2.0, loop_histogram),
-        ),
+        callbacks_by_app=(AppTiming("/market-monitor", 4, 8.0, 8.0, callback_histogram),),
+        event_loop_by_app=(AppTiming("/market-monitor", 3, 2.0, 2.0, loop_histogram),),
         slowest_callbacks=(
             CallbackTiming("/market-monitor", "advance", 4, 8.0, 8.0, callback_histogram),
         ),
@@ -68,9 +64,7 @@ def test_heartbeat_round_trip_preserves_only_public_aggregates() -> None:
 
 def test_maximum_public_tables_keep_the_compressed_payload_below_one_kibibyte() -> None:
     histogram = latency_histogram([0.5, 1, 2, 4, 8, 16, 32, 64])
-    apps = tuple(
-        AppTiming(route, 8, 64, 64, histogram) for route in sorted(PUBLIC_APP_ROUTES)[:8]
-    )
+    apps = tuple(AppTiming(route, 8, 64, 64, histogram) for route in sorted(PUBLIC_APP_ROUTES)[:8])
     callback_labels = (
         (route, callback)
         for route, callbacks in sorted(PUBLIC_CALLBACKS_BY_ROUTE.items())
@@ -81,10 +75,7 @@ def test_maximum_public_tables_keep_the_compressed_payload_below_one_kibibyte() 
         for route, callback in list(callback_labels)[:12]
     )
     maximum = replace(
-        heartbeat(),
-        callbacks_by_app=apps,
-        event_loop_by_app=apps,
-        slowest_callbacks=callbacks,
+        heartbeat(), callbacks_by_app=apps, event_loop_by_app=apps, slowest_callbacks=callbacks
     )
 
     assert len(encode_heartbeat(maximum)) < 900
@@ -136,9 +127,7 @@ def test_service_monitor_ignores_stale_rows_before_ttl_deletes_them() -> None:
     class Adapter:
         def sample(self, *, now: float) -> SystemSample:
             del now
-            return SystemSample(
-                "Live test process", "process", False, 25, 10, None, 1, 100, 2, 1
-            )
+            return SystemSample("Live test process", "process", False, 25, 10, None, 1, 100, 2, 1)
 
     class Store:
         source_label = "Test service"

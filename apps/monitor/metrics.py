@@ -501,9 +501,7 @@ def _deterministic_app(app: str, count: int, p95_ms: float, max_ms: float) -> Ap
 def _deterministic_callback(
     app: str, callback: str, count: int, p95_ms: float, max_ms: float
 ) -> CallbackTiming:
-    return CallbackTiming(
-        app, callback, count, p95_ms, max_ms, latency_histogram([p95_ms] * count)
-    )
+    return CallbackTiming(app, callback, count, p95_ms, max_ms, latency_histogram([p95_ms] * count))
 
 
 def _deterministic_activity(index: int) -> tuple[int, float]:

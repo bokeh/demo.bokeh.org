@@ -340,15 +340,7 @@ def _update_cards(sample: MonitorSample, cpu, memory, sessions, requests, callba
 
 
 def _update_service_cards(
-    sample: ServiceSample,
-    tasks,
-    sessions,
-    pages,
-    cpu,
-    memory,
-    network,
-    callbacks,
-    lag,
+    sample: ServiceSample, tasks, sessions, pages, cpu, memory, network, callbacks, lag
 ) -> None:
     set_metric(tasks, str(sample.reporting_tasks), label="Fresh task reports")
     set_metric(sessions, str(sample.active_sessions), label="Open Bokeh documents")
@@ -384,7 +376,9 @@ def _service_status(sample: ServiceSample) -> str:
         detail = "Three repeatable task reports for local layout and interaction checks."
     elif sample.source_label == "Local process registry":
         eyebrow = "LIVE LOCAL PROCESS"
-        detail = "The local registry contains this Python process only. No AWS credentials are in use."
+        detail = (
+            "The local registry contains this Python process only. No AWS credentials are in use."
+        )
     elif sample.status == "degraded":
         eyebrow = "SERVICE VIEW DEGRADED"
         reasons = {
