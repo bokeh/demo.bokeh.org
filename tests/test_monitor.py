@@ -9,6 +9,7 @@ from urllib.request import Request
 
 import pytest
 from bokeh.document import Document
+from bokeh.models import GlyphRenderer
 
 from apps._common.performance import PublicPerformance
 from apps.monitor import build_document
@@ -164,6 +165,14 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     history = document.select_one({"name": "monitor-history"})
     assert history is not None
     assert len(history.data["time"]) == 1
+    for plot_name in ("monitor-utilization", "monitor-latency"):
+        plot = document.select_one({"name": plot_name})
+        assert plot is not None
+        assert {
+            type(renderer.glyph).__name__
+            for renderer in plot.renderers
+            if isinstance(renderer, GlyphRenderer)
+        } == {"Line"}
     assert len(document.session_callbacks) == 1
     assert document.session_callbacks[0].period == 2_000
     serialized = json.dumps(document.to_json(), default=str)
@@ -173,8 +182,13 @@ def test_document_serialization_never_contains_aws_or_container_identifiers() ->
     assert METADATA_URI not in serialized
     assert "ECS_CONTAINER_METADATA_URI_V4" not in serialized
     assert "monitor-task-source" not in serialized
-    assert "Current" not in serialized
+    assert "Current task" not in serialized
     assert "this task or local container" not in serialized
     assert "Callbacks across fresh tasks" not in serialized
+    assert "Dashboard" not in serialized
+    assert "LIVE DATA" not in serialized
+    assert "Running containers" in serialized
+    assert "Current viewers" in serialized
+    assert "Callback latency by route" in serialized
     assert "/market-monitor" in serialized
     assert "advance" in serialized
