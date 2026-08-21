@@ -131,6 +131,13 @@ uv run --locked uvicorn asgi:application
 
 Open `http://127.0.0.1:8000`.
 
+The biomass explorer uses the subscribed Arraylake Icechunk repository for
+native 100 m detail when `ARRAYLAKE_API_TOKEN` is set. Keep that service-account
+token in the runtime environment or deployment secret store, never in this
+repository. Without it, the application remains usable through the public CTrees
+COG source; broad world views always use COG overviews to avoid scanning the
+26 TB native Icechunk array.
+
 Outside ECS, the monitor uses real current-process measurements and an in-memory
 service registry. For deterministic screenshots or UI development, run it with
 three clearly labeled simulated task reports:

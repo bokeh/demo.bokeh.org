@@ -13,6 +13,21 @@ preview = "monitor-preview.jpg"
 listed = false
 
 [[demos]]
+route = "/biomass-change"
+module = "apps.biomass"
+source = "apps/biomass/__init__.py"
+title = "Global biomass change explorer"
+eyebrow = "Live Icechunk + Datashader"
+description = "Pan and zoom a live Datashader world view, scrub any two years, then tap into native 100 m biomass through Arraylake Icechunk."
+domain = "Forest carbon"
+runtime = "Python / ASGI"
+tags = ["Icechunk", "Arraylake", "Datashader", "COG overviews", "deep zoom", "server callbacks", "Earthmover", "real data"]
+accent = "coral"
+preview = "biomass-preview.jpg"
+listed = false
+wide = true
+
+[[demos]]
 route = "/mobility"
 module = "apps.mobility"
 source = "apps/mobility.py"

@@ -16,12 +16,12 @@
 <meta name="twitter:image" content="{{ site_origin }}/assets/social-preview.png?v=1">
 <link rel="icon" href="/assets/bokeh-icon.svg?v=2" type="image/svg+xml" sizes="any">
 <link rel="icon" href="/favicon.ico?v=2" type="image/png" sizes="16x16">
-<link rel="stylesheet" href="/assets/site.css?v=13">
+<link rel="stylesheet" href="/assets/site.css?v=14">
 {% endblock %}
 
 {% block contents %}
 {{ site_header | safe }}
-<main class="application-page" id="main-content">
+<main class="application-page{% if demo.wide %} application-page-wide{% endif %}" id="main-content">
   <section class="application-intro">
     <div>
       <p class="section-kicker"><span></span>{{ demo.eyebrow }}</p>

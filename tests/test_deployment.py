@@ -49,5 +49,14 @@ def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
 
     assert "python scripts/smoke_production.py" in workflow
     assert 'route = "/airport-access"' in smoke
+    assert 'biomass_route = "/biomass-change"' in smoke
     assert "Sec-WebSocket-Protocol: bokeh" in smoke
     assert 'urljoin(base_url, "/sitemap.xml")' in smoke
+
+
+def test_deployment_injects_arraylake_token_without_committing_it() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
+    task = (ROOT / "deploy" / "ecs-task-definition.json").read_text()
+
+    assert "ARRAYLAKE_API_TOKEN=${{ secrets.ARRAYLAKE_API_TOKEN }}" in workflow
+    assert "ARRAYLAKE_API_TOKEN" not in task
