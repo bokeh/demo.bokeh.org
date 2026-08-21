@@ -40,8 +40,25 @@ jobs:
         run: uv run --locked python -m compileall -q asgi.py catalog.py presentation.py apps tests
 
   container:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v6
       - name: Build container
         run: docker build --tag bokeh-demo:test .
+      - name: Start container
+        run: docker run --detach --read-only --name bokeh-demo --publish 5006:5006 bokeh-demo:test
+      - name: Wait for container health
+        run: |
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:5006/healthz; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+      - name: Show container logs after failure
+        if: failure()
+        run: docker logs bokeh-demo
+      - name: Stop container
+        if: always()
+        run: docker rm --force bokeh-demo

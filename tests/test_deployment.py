@@ -53,6 +53,15 @@ def test_container_builds_native_free_threaded_dependencies_off_image() -> None:
     assert "COPY --from=build /app/.venv /app/.venv" in dockerfile
 
 
+def test_arm_container_starts_with_the_production_filesystem_constraint() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+
+    assert "runs-on: ubuntu-24.04-arm" in workflow
+    assert "docker run --detach --read-only" in workflow
+    assert "curl --fail --silent http://127.0.0.1:5006/healthz" in workflow
+    assert "if: failure()\n        run: docker logs bokeh-demo" in workflow
+
+
 def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
     workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
     smoke = (ROOT / "scripts" / "smoke_production.py").read_text()
