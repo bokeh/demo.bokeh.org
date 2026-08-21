@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from importlib import import_module
 from math import ceil, floor
+from threading import Lock
 from time import perf_counter
 from typing import Any
 
@@ -22,11 +23,23 @@ from .cog import (
     Bounds,
     ChangeQuery,
     Window,
+    bounds_around,
 )
 
 TOKEN_ENV = "ARRAYLAKE_API_TOKEN"
 REPO_ENV = "BIOMASS_ARRAYLAKE_REPO"
 DEFAULT_REPO = "bokeh/aboveground_biomass_100m_global_open-subscription"
+DEFAULT_DETAIL_BOUNDS = bounds_around(-53.5, -6.5, 0.5)
+DEFAULT_WARM_WORKERS = 8
+
+
+class _ArrayState:
+    def __init__(self) -> None:
+        self.lock = Lock()
+        self.array: Any | None = None
+
+
+_ARRAY_STATE = _ArrayState()
 
 
 def configured() -> bool:
@@ -34,9 +47,8 @@ def configured() -> bool:
     return bool(os.environ.get(TOKEN_ENV))
 
 
-@lru_cache(maxsize=1)
-def _agb_array() -> Any:
-    """Open and cache the native-resolution Zarr array backed by Icechunk."""
+def _open_agb_array() -> Any:
+    """Open the native-resolution Zarr array backed by Icechunk."""
     token = os.environ.get(TOKEN_ENV)
     if not token:
         raise RuntimeError(f"{TOKEN_ENV} is required for the subscribed Icechunk repository")
@@ -55,6 +67,45 @@ def _agb_array() -> Any:
     session = repository.readonly_session("main")
     root = zarr.open_group(session.store, mode="r")
     return root["aboveground_biomass"]["agb"]
+
+
+def _agb_array() -> Any:
+    """Return the process-wide array, opening it exactly once across concurrent queries."""
+    if _ARRAY_STATE.array is not None:
+        return _ARRAY_STATE.array
+    with _ARRAY_STATE.lock:
+        if _ARRAY_STATE.array is None:
+            _ARRAY_STATE.array = _open_agb_array()
+        return _ARRAY_STATE.array
+
+
+def warm_repository() -> float | None:
+    """Resolve and cache repository metadata before user sessions can issue queries."""
+    if not configured():
+        return None
+    started = perf_counter()
+    _agb_array()
+    return perf_counter() - started
+
+
+def warm_default_windows() -> float | None:
+    """Cache every annual window for the demo's initial detail footprint."""
+    if not configured():
+        return None
+    started = perf_counter()
+    years = range(BASELINE_YEAR, LATEST_YEAR + 1)
+    with ThreadPoolExecutor(
+        max_workers=DEFAULT_WARM_WORKERS, thread_name_prefix="ctrees-icechunk-warm"
+    ) as executor:
+        list(executor.map(lambda year: read_year_window(year, DEFAULT_DETAIL_BOUNDS), years))
+    return perf_counter() - started
+
+
+def _reset_caches_for_testing() -> None:
+    """Clear process caches for deterministic tests and live benchmarks."""
+    with _ARRAY_STATE.lock:
+        _ARRAY_STATE.array = None
+    read_year_window.cache_clear()
 
 
 def _window_slices(bounds: Bounds) -> tuple[slice, slice]:

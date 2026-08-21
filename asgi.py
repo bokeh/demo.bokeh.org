@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import mimetypes
 import os
@@ -15,6 +16,7 @@ from xml.sax.saxutils import escape
 from bokeh.server.asgi import BokehASGI
 
 from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
+from apps.biomass import icechunk_source
 from apps.monitor import SERVICE_MONITOR
 from catalog import DEMOS, LISTED_DEMOS, load_applications
 from presentation import ROOT, SITE_ORIGIN, render_index
@@ -22,6 +24,7 @@ from presentation import ROOT, SITE_ORIGIN, render_index
 os.environ.setdefault("BOKEH_RESOURCES", "cdn")
 
 logging.basicConfig(level=os.environ.get("BOKEH_LOG_LEVEL", "info").upper())
+LOGGER = logging.getLogger(__name__)
 
 type Message = dict[str, Any]
 type Receive = Callable[[], Awaitable[Message]]
@@ -75,11 +78,17 @@ PUBLIC_PAGE_ROUTES = frozenset(
 
 class DemoApplication:
     def __init__(
-        self, bokeh: BokehASGI, runtime_health: bytes, *, activity: PublicActivity = PUBLIC_ACTIVITY
+        self,
+        bokeh: BokehASGI,
+        runtime_health: bytes,
+        *,
+        activity: PublicActivity = PUBLIC_ACTIVITY,
+        warmup: Callable[[], float | None] = icechunk_source.warm_default_windows,
     ) -> None:
         self._bokeh = bokeh
         self._runtime_health = runtime_health
         self._activity = activity
+        self._warmup = warmup
         self._index = render_index()
         self._legacy_index = render_index(show_legacy_notice=True)
         self._not_found = (ASSET_ROOT / "404.html").read_bytes()
@@ -94,6 +103,12 @@ class DemoApplication:
         if scope_type == "lifespan":
             SERVICE_MONITOR.start()
             try:
+                try:
+                    elapsed = await asyncio.to_thread(self._warmup)
+                    if elapsed is not None:
+                        LOGGER.info("Warmed default Arraylake Icechunk windows in %.3f s", elapsed)
+                except Exception:
+                    LOGGER.exception("Arraylake Icechunk default-window warmup failed")
                 await self._bokeh(scope, receive, send)
             finally:
                 SERVICE_MONITOR.stop()

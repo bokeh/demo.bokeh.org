@@ -8,9 +8,11 @@ import sys
 from datetime import UTC, datetime
 from xml.etree import ElementTree
 
+import asgi
 from asgi import (
     LEGACY_DEMO_ROUTES,
     SITE_ORIGIN,
+    DemoApplication,
     _counts_as_public_request,
     _render_security_txt,
     _runtime_health,
@@ -77,6 +79,36 @@ def test_health() -> None:
         "status": "ok",
         "python_gil": "enabled" if sys._is_gil_enabled() else "disabled",
     }
+
+
+def test_lifespan_warms_data_before_starting_bokeh(monkeypatch) -> None:
+    events: list[str] = []
+
+    class Monitor:
+        def start(self) -> None:
+            events.append("monitor-start")
+
+        def stop(self) -> None:
+            events.append("monitor-stop")
+
+    async def bokeh(_scope, _receive, _send) -> None:
+        events.append("bokeh-start")
+
+    async def receive() -> dict:
+        return {"type": "lifespan.startup"}
+
+    async def send(_event: dict) -> None:
+        pass
+
+    monkeypatch.setattr(asgi, "SERVICE_MONITOR", Monitor())
+    app = DemoApplication(
+        bokeh,
+        b"{}",
+        warmup=lambda: events.append("icechunk-warm") or 0.25,  # type: ignore[arg-type]
+    )
+    asyncio.run(app({"type": "lifespan"}, receive, send))
+
+    assert events == ["monitor-start", "icechunk-warm", "bokeh-start", "monitor-stop"]
 
 
 def test_every_http_response_has_the_shared_browser_policy() -> None:
