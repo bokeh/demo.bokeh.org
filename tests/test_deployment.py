@@ -51,6 +51,16 @@ def test_container_builds_native_free_threaded_dependencies_off_image() -> None:
     assert "apt-get install --yes --no-install-recommends build-essential" in dockerfile
     assert "COPY --from=build /opt/python /opt/python" in dockerfile
     assert "COPY --from=build /app/.venv /app/.venv" in dockerfile
+    assert "NUMBA_CACHE_DIR=/dev/shm/numba-cache" in dockerfile
+
+
+def test_arm_container_starts_with_the_production_filesystem_constraint() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text()
+
+    assert "runs-on: ubuntu-24.04-arm" in workflow
+    assert "docker run --detach --read-only" in workflow
+    assert "curl --fail --silent http://127.0.0.1:5006/healthz" in workflow
+    assert "if: failure()\n        run: docker logs bokeh-demo" in workflow
 
 
 def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
@@ -62,6 +72,25 @@ def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
     assert 'biomass_route = "/biomass-change"' in smoke
     assert "Sec-WebSocket-Protocol: bokeh" in smoke
     assert 'urljoin(base_url, "/sitemap.xml")' in smoke
+
+
+def test_deployment_can_report_ecs_failures_without_mutating_the_service() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
+
+    assert "diagnose:" in workflow
+    assert "aws ecs describe-services" in workflow
+    assert "if: ${{ inputs.diagnose }}" in workflow
+    assert "if: ${{ failure() && !inputs.diagnose }}" in workflow
+    mutating_steps = (
+        "Log in to Amazon ECR",
+        "Set up Docker Buildx",
+        "Build or reuse immutable image",
+        "Render ECS task definition",
+        "Deploy to ECS",
+        "Smoke test production",
+    )
+    for name in mutating_steps:
+        assert f"- name: {name}\n        if: ${{{{ !inputs.diagnose }}}}" in workflow
 
 
 def test_deployment_injects_arraylake_token_without_committing_it() -> None:

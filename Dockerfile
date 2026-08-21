@@ -46,6 +46,7 @@ RUN chown -R bokeh:bokeh /app
 USER 10001:10001
 
 ENV PATH="/app/.venv/bin:$PATH" \
+    NUMBA_CACHE_DIR=/dev/shm/numba-cache \
     PYTHON_GIL=0 \
     UV_PYTHON_DOWNLOADS=never
 
