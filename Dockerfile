@@ -1,15 +1,8 @@
-FROM python:3.14-slim-trixie
+FROM python:3.14-slim-trixie AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /uvx /bin/
 
-LABEL org.opencontainers.image.authors="Bokeh <info@bokeh.org>"
-LABEL org.opencontainers.image.source="https://github.com/bokeh/demo.bokeh.org"
-
-ENV BOKEH_LOG_LEVEL=info \
-    BOKEH_RESOURCES=cdn \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_COMPILE_BYTECODE=1 \
+ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_NO_DEV=1 \
     UV_PYTHON=3.14t \
@@ -17,13 +10,32 @@ ENV BOKEH_LOG_LEVEL=info \
 
 RUN uv python install --no-bin "$UV_PYTHON"
 
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+RUN --mount=type=cache,target=/root/.cache/uv \
+    apt-get update \
+    && apt-get install --yes --no-install-recommends gcc \
+    && UV_PYTHON_DOWNLOADS=never uv sync --locked \
+    && rm -rf /var/lib/apt/lists/*
+
+FROM python:3.14-slim-trixie
+
+LABEL org.opencontainers.image.authors="Bokeh <info@bokeh.org>"
+LABEL org.opencontainers.image.source="https://github.com/bokeh/demo.bokeh.org"
+
+ENV BOKEH_LOG_LEVEL=info \
+    BOKEH_RESOURCES=cdn \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 RUN groupadd --gid 10001 bokeh \
     && useradd --create-home --gid bokeh --uid 10001 bokeh
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
-RUN --mount=type=cache,target=/root/.cache/uv UV_PYTHON_DOWNLOADS=never uv sync --locked
+COPY --from=build /opt/python /opt/python
+COPY --from=build /app/.venv /app/.venv
 
 COPY apps ./apps
 COPY site ./site

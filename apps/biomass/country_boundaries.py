@@ -41,6 +41,6 @@ def _extract_boundaries(collection: dict[str, Any]) -> dict[str, list[list[float
 def load_country_boundaries() -> dict[str, list[list[float]]]:
     """Fetch and cache Natural Earth 1:110m boundaries for this server process."""
     request = Request(NATURAL_EARTH_URL, headers={"User-Agent": "demo.bokeh.org"})
-    with urlopen(request, timeout=8) as response:  # noqa: S310
+    with urlopen(request, timeout=8) as response:
         collection = json.load(response)
     return _extract_boundaries(collection)

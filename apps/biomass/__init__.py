@@ -286,7 +286,7 @@ class BiomassExplorer:
             ys="ys",
             source=self.boundary_source,
             line_color="#f6e8df",
-            line_alpha=0.58,
+            line_alpha=0.44,
             line_width=0.8,
         )
         plot.add_layout(self.selection)
@@ -686,7 +686,8 @@ class BiomassExplorer:
         note = Div(
             text=(
                 "<p><strong>Data and method:</strong> CTrees Global Aboveground Biomass, annual "
-                "100 m estimates for 2000-2025, scaled to Mg/ha. Native detail and close zooms slice "
+                "100 m estimates for 2000-2025, scaled to Mg/ha (metric tonnes per hectare). "
+                "Native detail and close zooms slice "
                 "the subscribed Arraylake Icechunk/Zarr cube; broad views use the same dataset's "
                 "public COG overviews so a world pan never scans the 26 TB native array. Datashader "
                 "aggregates to exactly 900 × 450 pixels without stretching the geographic extent. "
