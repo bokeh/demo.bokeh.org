@@ -15,7 +15,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     apt-get update \
-    && apt-get install --yes --no-install-recommends gcc \
+    && apt-get install --yes --no-install-recommends build-essential \
     && UV_PYTHON_DOWNLOADS=never uv sync --locked \
     && rm -rf /var/lib/apt/lists/*
 

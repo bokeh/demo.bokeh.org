@@ -47,7 +47,7 @@ def test_container_builds_native_free_threaded_dependencies_off_image() -> None:
     dockerfile = (ROOT / "Dockerfile").read_text()
 
     assert "FROM python:3.14-slim-trixie AS build" in dockerfile
-    assert "apt-get install --yes --no-install-recommends gcc" in dockerfile
+    assert "apt-get install --yes --no-install-recommends build-essential" in dockerfile
     assert "COPY --from=build /opt/python /opt/python" in dockerfile
     assert "COPY --from=build /app/.venv /app/.venv" in dockerfile
 
