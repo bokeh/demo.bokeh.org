@@ -201,10 +201,10 @@ The `bokeh/infra` repository owns the AWS resources under
 `terraform/stacks/aws-demo`. This repository contains no Terraform.
 
 The **Publish and deploy** workflow runs for every push to `main` and may also
-be started manually. It uses GitHub OIDC to cross-build a Linux ARM64 image,
-push it to ECR under an immutable `sha-*` tag, register a new ECS task
-definition, update the `worker` service, wait for stability, and verify the
-production health endpoint.
+be started manually. It uses GitHub OIDC to build a Linux ARM64 image natively
+on GitHub's ARM64 runner, push it to ECR under an immutable `sha-*` tag,
+register a new ECS task definition, update the `worker` service, wait for
+stability, and verify the production health endpoint.
 
 Pull requests run all checks and build the container without publishing or
 deploying it. Merging to `main` is therefore the normal release action; no
