@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      diagnose:
+        description: Describe the current ECS service without deploying
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: demo-bokeh-org-production
@@ -41,13 +47,16 @@ jobs:
           allowed-account-ids: "562605262404"
 
       - name: Log in to Amazon ECR
+        if: ${{ !inputs.diagnose }}
         id: ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Set up Docker Buildx
+        if: ${{ !inputs.diagnose }}
         uses: docker/setup-buildx-action@v3
 
       - name: Build or reuse immutable image
+        if: ${{ !inputs.diagnose }}
         id: image
         env:
           ECR_REGISTRY: ${{ steps.ecr.outputs.registry }}
@@ -78,6 +87,7 @@ jobs:
           echo "\`$image\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Render ECS task definition
+        if: ${{ !inputs.diagnose }}
         id: task-definition
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
@@ -88,6 +98,7 @@ jobs:
             ARRAYLAKE_API_TOKEN=${{ secrets.ARRAYLAKE_API_TOKEN }}
 
       - name: Deploy to ECS
+        if: ${{ !inputs.diagnose }}
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-definition.outputs.task-definition }}
@@ -98,4 +109,23 @@ jobs:
           propagate-tags: SERVICE
 
       - name: Smoke test production
+        if: ${{ !inputs.diagnose }}
         run: python scripts/smoke_production.py
+
+      - name: Diagnose ECS service
+        if: ${{ inputs.diagnose }}
+        run: |
+          aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --query 'services[0].{taskDefinition:taskDefinition,runningCount:runningCount,pendingCount:pendingCount,deployments:deployments[].{id:id,status:status,taskDefinition:taskDefinition,rolloutState:rolloutState,rolloutStateReason:rolloutStateReason,runningCount:runningCount,pendingCount:pendingCount,failedTasks:failedTasks},events:events[0:20].{createdAt:createdAt,message:message}}' \
+            --output json
+
+      - name: Report ECS deployment failure
+        if: ${{ failure() && !inputs.diagnose }}
+        run: |
+          aws ecs describe-services \
+            --cluster "$ECS_CLUSTER" \
+            --services "$ECS_SERVICE" \
+            --query 'services[0].{taskDefinition:taskDefinition,runningCount:runningCount,pendingCount:pendingCount,deployments:deployments[].{id:id,status:status,taskDefinition:taskDefinition,rolloutState:rolloutState,rolloutStateReason:rolloutStateReason,runningCount:runningCount,pendingCount:pendingCount,failedTasks:failedTasks},events:events[0:20].{createdAt:createdAt,message:message}}' \
+            --output json

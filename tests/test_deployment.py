@@ -64,6 +64,25 @@ def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
     assert 'urljoin(base_url, "/sitemap.xml")' in smoke
 
 
+def test_deployment_can_report_ecs_failures_without_mutating_the_service() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
+
+    assert "diagnose:" in workflow
+    assert "aws ecs describe-services" in workflow
+    assert "if: ${{ inputs.diagnose }}" in workflow
+    assert "if: ${{ failure() && !inputs.diagnose }}" in workflow
+    mutating_steps = (
+        "Log in to Amazon ECR",
+        "Set up Docker Buildx",
+        "Build or reuse immutable image",
+        "Render ECS task definition",
+        "Deploy to ECS",
+        "Smoke test production",
+    )
+    for name in mutating_steps:
+        assert f"- name: {name}\n        if: ${{{{ !inputs.diagnose }}}}" in workflow
+
+
 def test_deployment_injects_arraylake_token_without_committing_it() -> None:
     workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
     task = (ROOT / "deploy" / "ecs-task-definition.json").read_text()
