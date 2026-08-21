@@ -38,7 +38,8 @@ def test_monitor_receives_sanitized_exchange_configuration() -> None:
 def test_deployment_builds_the_matching_arm64_image() -> None:
     workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
 
-    assert "docker/setup-qemu-action@v3" in workflow
+    assert "runs-on: ubuntu-24.04-arm" in workflow
+    assert "docker/setup-qemu-action@v3" not in workflow
     assert "docker/setup-buildx-action@v3" in workflow
     assert "docker buildx build --platform linux/arm64" in workflow
 
