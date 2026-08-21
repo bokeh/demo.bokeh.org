@@ -51,6 +51,7 @@ def test_container_builds_native_free_threaded_dependencies_off_image() -> None:
     assert "apt-get install --yes --no-install-recommends build-essential" in dockerfile
     assert "COPY --from=build /opt/python /opt/python" in dockerfile
     assert "COPY --from=build /app/.venv /app/.venv" in dockerfile
+    assert "NUMBA_CACHE_DIR=/dev/shm/numba-cache" in dockerfile
 
 
 def test_arm_container_starts_with_the_production_filesystem_constraint() -> None:
