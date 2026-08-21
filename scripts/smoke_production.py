@@ -110,9 +110,13 @@ def check(base_url: str) -> None:
     _index_response, index = fetch(urljoin(base_url, "/"))
     if b"Bokeh in action" not in index:
         raise RuntimeError("catalog marker was not present")
+    if b"/biomass-change" in index:
+        raise RuntimeError("unlisted biomass application appeared in the catalog")
 
     _sitemap_response, sitemap = fetch(urljoin(base_url, "/sitemap.xml"))
     ElementTree.fromstring(sitemap)
+    if b"/biomass-change" in sitemap:
+        raise RuntimeError("unlisted biomass application appeared in the sitemap")
 
     route = "/airport-access"
     app_response, app_page = fetch(urljoin(base_url, route))
@@ -120,6 +124,13 @@ def check(base_url: str) -> None:
         raise RuntimeError("representative application marker was not present")
     token, session_id = session_token(app_page)
     websocket_handshake(base_url, route, token, session_id, cookies(app_response))
+
+    biomass_route = "/biomass-change"
+    biomass_response, biomass_page = fetch(urljoin(base_url, biomass_route))
+    if b"Global biomass change explorer" not in biomass_page:
+        raise RuntimeError("biomass application marker was not present")
+    token, session_id = session_token(biomass_page)
+    websocket_handshake(base_url, biomass_route, token, session_id, cookies(biomass_response))
 
 
 def main() -> None:

@@ -33,6 +33,7 @@ class Demo:
     accent: str
     preview: str
     listed: bool = True
+    wide: bool = False
 
     @property
     def source_url(self) -> str:
