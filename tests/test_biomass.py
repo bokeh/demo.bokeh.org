@@ -7,7 +7,15 @@ from bokeh.document import Document
 from bokeh.models import ColumnDataSource, RangeSlider
 
 from apps._common.performance import PerformanceMonitor
-from apps.biomass import BiomassExplorer, cog, histogram_data, icechunk_source, rgba_image, shading
+from apps.biomass import (
+    BiomassExplorer,
+    cog,
+    country_boundaries,
+    histogram_data,
+    icechunk_source,
+    rgba_image,
+    shading,
+)
 from apps.biomass.cog import (
     ChangeQuery,
     Window,
@@ -24,14 +32,19 @@ def test_biomass_application_constructs_without_network_access() -> None:
 
     global_image = document.select_one({"type": ColumnDataSource, "name": "biomass-global-image"})
     local_image = document.select_one({"type": ColumnDataSource, "name": "biomass-local-image"})
+    boundaries = document.select_one(
+        {"type": ColumnDataSource, "name": "biomass-country-boundaries"}
+    )
     years = document.select_one({"type": RangeSlider, "name": "biomass-years"})
 
     assert isinstance(global_image, ColumnDataSource)
     assert isinstance(local_image, ColumnDataSource)
+    assert isinstance(boundaries, ColumnDataSource)
     assert isinstance(years, RangeSlider)
     assert years.value == (2000, 2025)
     assert global_image.data["image"][0].shape == (791, 1582)
     assert local_image.data["image"][0].shape == (2, 2)
+    assert boundaries.data == {"xs": [], "ys": []}
     assert any(callback.callback.__name__ == "start" for callback in document.session_callbacks)
 
 
@@ -44,19 +57,43 @@ def test_biomass_application_uses_wide_page_layout() -> None:
     assert biomass.wide
 
 
+def test_country_boundaries_extract_polygon_and_multipolygon_rings() -> None:
+    collection = {
+        "features": [
+            {"geometry": {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [0, 0]]]}},
+            {"geometry": {"type": "MultiPolygon", "coordinates": [[[[2, 2], [3, 2], [2, 2]]]]}},
+        ]
+    }
+
+    boundaries = country_boundaries._extract_boundaries(collection)
+
+    assert boundaries == {
+        "xs": [[0.0, 1.0, 0.0], [2.0, 3.0, 2.0]],
+        "ys": [[0.0, 0.0, 0.0], [2.0, 2.0, 2.0]],
+    }
+
+
 def test_rgba_image_maps_loss_gain_and_missing_pixels() -> None:
-    delta = np.array([[-25.0, -3.0, 0.0, 3.0, 25.0, np.nan]], dtype=np.float32)
-    valid = np.array([[True, True, True, True, True, False]])
+    delta = np.array([[-25.0, -12.0, -3.0, 0.0, 3.0, 12.0, 25.0, np.nan]], dtype=np.float32)
+    valid = np.array([[True, True, True, True, True, True, True, False]])
     packed = rgba_image(delta, valid, limit=25)
-    rgba = np.flipud(packed).view(np.uint8).reshape(1, 6, 4)
+    rgba = np.flipud(packed).view(np.uint8).reshape(1, 8, 4)
 
     assert rgba[0, 0, 0] > rgba[0, 0, 1]
-    assert np.linalg.norm(rgba[0, 1, :3].astype(float) - rgba[0, 2, :3]) > 45
-    assert np.ptp(rgba[0, 2, :3]) < 10
-    assert np.linalg.norm(rgba[0, 3, :3].astype(float) - rgba[0, 2, :3]) > 45
-    assert rgba[0, 4, 2] > rgba[0, 4, 0]
-    assert rgba[0, 2, 3] == 72
-    assert rgba[0, 5, 3] == 0
+    assert rgba[0, 6, 2] > rgba[0, 6, 0]
+    assert np.ptp(rgba[0, 3, :3]) < 10
+    loss_distance = [
+        np.linalg.norm(rgba[0, index, :3].astype(float) - rgba[0, 3, :3]) for index in (2, 1, 0)
+    ]
+    gain_distance = [
+        np.linalg.norm(rgba[0, index, :3].astype(float) - rgba[0, 3, :3]) for index in (4, 5, 6)
+    ]
+    assert loss_distance[0] > 45
+    assert gain_distance[0] > 45
+    assert loss_distance == sorted(loss_distance)
+    assert gain_distance == sorted(gain_distance)
+    assert rgba[0, 3, 3] == 72
+    assert rgba[0, 7, 3] == 0
 
 
 def test_histogram_counts_only_comparable_pixels() -> None:

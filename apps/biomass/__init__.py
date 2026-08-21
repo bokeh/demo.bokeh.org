@@ -35,7 +35,7 @@ from apps._common import (
 )
 from apps._common.colors import GOLD, GRID, INK, PAPER, PLUM, WARM
 
-from . import cog, icechunk_source
+from . import cog, country_boundaries, icechunk_source
 from .cog import BASELINE_YEAR, LATEST_YEAR, Bounds, ChangeQuery, bounds_around
 from .shading import ViewportQuery, query_viewport
 
@@ -46,10 +46,12 @@ LOCAL_COLOR_LIMIT = 60.0
 VIEWPORT_WIDTH = 900
 VIEWPORT_HEIGHT = 450
 COLOR_DEADBAND = 2.0
-MIN_COLOR_STRENGTH = 0.55
+MIN_COLOR_STRENGTH = 0.32
 LOSS_HEX = "#ff5a36"
 GAIN_HEX = "#00c2e0"
 NEUTRAL_HEX = "#6c6871"
+LOSS_SOFT_HEX = "#9b635e"
+GAIN_SOFT_HEX = "#498595"
 LOSS = np.array([255, 90, 54], dtype=np.float32)
 GAIN = np.array([0, 194, 224], dtype=np.float32)
 NEUTRAL = np.array([108, 104, 113], dtype=np.float32)
@@ -70,7 +72,7 @@ def rgba_image(delta: np.ndarray, valid: np.ndarray, *, limit: float) -> np.ndar
     magnitude = np.where(
         absolute <= COLOR_DEADBAND,
         0,
-        MIN_COLOR_STRENGTH + (1 - MIN_COLOR_STRENGTH) * np.sqrt(scaled),
+        MIN_COLOR_STRENGTH + (1 - MIN_COLOR_STRENGTH) * np.power(scaled, 0.75),
     )[..., None]
     target = np.where((delta < 0)[..., None], LOSS, GAIN)
     rgb = NEUTRAL + (target - NEUTRAL) * magnitude
@@ -128,6 +130,7 @@ class BiomassExplorer:
         self.viewport_generation = 0
         self.last_detail_query: Future[ChangeQuery] | None = None
         self.last_viewport_query: Future[ViewportQuery] | None = None
+        self.last_boundary_query: Future[dict[str, list[list[float]]]] | None = None
         self.viewport_callback = None
         self.center_longitude = -53.5
         self.center_latitude = -6.5
@@ -205,6 +208,9 @@ class BiomassExplorer:
             },
             name="biomass-global-image",
         )
+        self.boundary_source = ColumnDataSource(
+            data={"xs": [], "ys": []}, name="biomass-country-boundaries"
+        )
         self.global_plot = self._build_global_plot()
 
         empty = np.zeros((2, 2), dtype=np.uint32)
@@ -230,6 +236,14 @@ class BiomassExplorer:
             name="biomass-change-histogram",
         )
         self.histogram = self._build_histogram()
+        self.histogram_note = Div(
+            text=(
+                "<p style='margin:0'><strong>How to read this:</strong> each bar counts comparable "
+                "100 m grid cells in a biomass-change interval. Orange is loss, cyan is gain, and "
+                "the outer bins include more extreme values. Counts are not area-weighted.</p>"
+            ),
+            styles={"padding": "10px 14px", "background": PAPER, "color": "#6f686c"},
+        )
         self.reading = Div(
             text="<p>Pixel-level losses and gains will appear after the live source query.</p>",
             name="biomass-reading",
@@ -267,6 +281,14 @@ class BiomassExplorer:
             name="biomass-global-plot",
         )
         plot.image_rgba(image="image", x="x", y="y", dw="dw", dh="dh", source=self.global_source)
+        plot.multi_line(
+            xs="xs",
+            ys="ys",
+            source=self.boundary_source,
+            line_color="#f6e8df",
+            line_alpha=0.58,
+            line_width=0.8,
+        )
         plot.add_layout(self.selection)
         style_figure(plot)
         plot.background_fill_color = PLUM
@@ -300,7 +322,7 @@ class BiomassExplorer:
 
     def _build_histogram(self):
         plot = figure(
-            title=Title(text="Distribution of pixel change"),
+            title=Title(text="Distribution of 100 m pixel change"),
             height=310,
             width=390,
             sizing_mode="stretch_width",
@@ -327,7 +349,7 @@ class BiomassExplorer:
             )
         )
         plot.xaxis.axis_label = "Change in aboveground biomass (Mg/ha)"
-        plot.yaxis.axis_label = "Pixels"
+        plot.yaxis.axis_label = "Comparable 100 m pixels"
         style_figure(plot)
         return plot
 
@@ -406,9 +428,23 @@ class BiomassExplorer:
 
     def start(self) -> None:
         """Launch the initial detail and viewport queries after session startup."""
+        boundary_query = QUERY_EXECUTOR.submit(country_boundaries.load_country_boundaries)
+        self.last_boundary_query = boundary_query
+        boundary_query.add_done_callback(self._boundary_query_finished)
         self._submit_detail_query()
         self.viewport_generation += 1
         self._submit_viewport_query(self.viewport_generation)
+
+    def _boundary_query_finished(self, future: Future[dict[str, list[list[float]]]]) -> None:
+        try:
+            data = future.result()
+        except Exception:  # noqa: BLE001
+            return
+        with suppress(RuntimeError):
+            self.document.add_next_tick_callback(partial(self._show_boundaries, data))
+
+    def _show_boundaries(self, data: dict[str, list[list[float]]]) -> None:
+        self.boundary_source.data = cast(Any, data)
 
     def _submit_detail_query(self) -> None:
         self.detail_generation += 1
@@ -642,7 +678,7 @@ class BiomassExplorer:
             text=(
                 "<div style='display:flex;align-items:center;gap:10px;justify-content:center'>"
                 f"<strong style='color:{LOSS_HEX}'>orange · biomass loss</strong>"
-                f"<span style='width:min(340px,45vw);height:12px;background:linear-gradient(90deg,{LOSS_HEX} 0%,{LOSS_HEX} 44%,{NEUTRAL_HEX} 44%,{NEUTRAL_HEX} 56%,{GAIN_HEX} 56%,{GAIN_HEX} 100%)'></span>"
+                f"<span style='width:min(340px,45vw);height:12px;background:linear-gradient(90deg,{LOSS_HEX} 0%,{LOSS_SOFT_HEX} 43%,{NEUTRAL_HEX} 49%,{NEUTRAL_HEX} 51%,{GAIN_SOFT_HEX} 57%,{GAIN_HEX} 100%)'></span>"
                 f"<strong style='color:{GAIN_HEX}'>cyan · biomass gain</strong></div>"
                 "<p style='text-align:center;color:#6f686c;margin:6px 0 0'>Gray marks change within ±2 Mg/ha. Color ranges adapt to the selected interval; geographic pixels retain a 2:1 world aspect.</p>"
             )
@@ -654,10 +690,13 @@ class BiomassExplorer:
                 "the subscribed Arraylake Icechunk/Zarr cube; broad views use the same dataset's "
                 "public COG overviews so a world pan never scans the 26 TB native array. Datashader "
                 "aggregates to exactly 900 × 450 pixels without stretching the geographic extent. "
+                "Country outlines use Natural Earth 1:110m administrative boundaries. "
                 "<a href='https://app.earthmover.io/marketplace/69e00e1c21faca8bf36879d2' target='_blank' rel='noreferrer'>"
                 "Earthmover listing</a> · "
                 "<a href='https://registry.opendata.aws/ctrees-agb-100m-global/' target='_blank' rel='noreferrer'>"
                 "AWS Open Data registry</a> · "
+                "<a href='https://www.naturalearthdata.com/downloads/110m-cultural-vectors/110m-admin-0-countries/' target='_blank' rel='noreferrer'>"
+                "Natural Earth boundaries</a> · "
                 "<a href='https://doi.org/10.31223/X5KJ4Q' target='_blank' rel='noreferrer'>methodology</a></p>"
             )
         )
@@ -673,7 +712,9 @@ class BiomassExplorer:
             legend,
             responsive_row(
                 self.local_plot,
-                column(self.reading, self.histogram, sizing_mode="stretch_width"),
+                column(
+                    self.reading, self.histogram, self.histogram_note, sizing_mode="stretch_width"
+                ),
                 sizing_mode="stretch_width",
             ),
             note,
