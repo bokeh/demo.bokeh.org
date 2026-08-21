@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
+from time import sleep
+
 import numpy as np
 from bokeh.document import Document
 from bokeh.models import ColumnDataSource, RangeSlider
@@ -209,6 +212,53 @@ def test_icechunk_window_slices_follow_native_grid() -> None:
     assert rows.stop == 101_813
     assert columns.start == 201_937
     assert columns.stop == 203_063
+
+
+def test_icechunk_array_initialization_is_single_flight(monkeypatch) -> None:
+    icechunk_source._reset_caches_for_testing()
+    opened: list[object] = []
+    expected = object()
+
+    def fake_open() -> object:
+        opened.append(expected)
+        sleep(0.05)
+        return expected
+
+    monkeypatch.setattr(icechunk_source, "_open_agb_array", fake_open)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(icechunk_source._agb_array) for _ in range(2)]
+
+    assert [future.result() for future in futures] == [expected, expected]
+    assert opened == [expected]
+    icechunk_source._reset_caches_for_testing()
+
+
+def test_icechunk_startup_warms_every_default_year_for_immediate_comparison(monkeypatch) -> None:
+    requested_years: list[int] = []
+
+    class Array:
+        def __getitem__(self, key) -> np.ndarray:
+            requested_years.append(int(key[0]) + icechunk_source.BASELINE_YEAR)
+            return np.ones((2, 2), dtype=np.int16)
+
+    monkeypatch.setattr(icechunk_source, "configured", lambda: True)
+    monkeypatch.setattr(icechunk_source, "_agb_array", Array)
+    monkeypatch.setattr(
+        icechunk_source, "_window_slices", lambda _bounds: (slice(0, 2), slice(0, 2))
+    )
+    icechunk_source.read_year_window.cache_clear()
+
+    elapsed = icechunk_source.warm_default_windows()
+
+    assert elapsed is not None
+    assert sorted(requested_years) == list(
+        range(icechunk_source.BASELINE_YEAR, icechunk_source.LATEST_YEAR + 1)
+    )
+    assert icechunk_source.read_year_window.cache_info().currsize == 26
+
+    icechunk_source.query_change(2007, 2019, icechunk_source.DEFAULT_DETAIL_BOUNDS)
+    assert len(requested_years) == 26
+    icechunk_source.read_year_window.cache_clear()
 
 
 def test_icechunk_query_compares_native_array_values(monkeypatch) -> None:

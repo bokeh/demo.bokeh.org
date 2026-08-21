@@ -136,7 +136,18 @@ native 100 m detail when `ARRAYLAKE_API_TOKEN` is set. Keep that service-account
 token in the runtime environment or deployment secret store, never in this
 repository. Without it, the application remains usable through the public CTrees
 COG source; broad world views always use COG overviews to avoid scanning the
-26 TB native Icechunk array.
+26 TB native Icechunk array. At service startup, the app caches all 26 annual
+windows for its initial Pará footprint (about 16.5 MB), making every initial
+year comparison immediate without preloading arbitrary locations.
+
+Measure that user-visible speedup against a cold query with:
+
+```sh
+ARRAYLAKE_API_TOKEN=... uv run --locked python scripts/benchmark_biomass.py
+```
+
+The benchmark exits unsuccessfully unless startup warming makes the same
+native-detail comparison at least five times faster.
 
 Outside ECS, the monitor uses real current-process measurements and an in-memory
 service registry. For deterministic screenshots or UI development, run it with
