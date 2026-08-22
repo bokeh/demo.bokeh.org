@@ -132,6 +132,14 @@ def check(base_url: str) -> None:
     token, session_id = session_token(biomass_page)
     websocket_handshake(base_url, biomass_route, token, session_id, cookies(biomass_response))
 
+    tile_response, tile = fetch(urljoin(base_url, "/biomass-tiles/2000/2025/0/0/0.webp"))
+    if (
+        tile_response.headers.get_content_type() != "image/webp"
+        or not tile.startswith(b"RIFF")
+        or tile[8:12] != b"WEBP"
+    ):
+        raise RuntimeError("biomass TileRenderer endpoint did not return lossless WebP")
+
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(message)s")

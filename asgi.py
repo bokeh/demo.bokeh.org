@@ -6,9 +6,12 @@ import asyncio
 import logging
 import mimetypes
 import os
+import re
 import sys
 from collections.abc import Awaitable, Callable, Mapping
 from datetime import UTC, datetime, timedelta
+from threading import BoundedSemaphore
+from time import perf_counter
 from typing import Any
 from urllib.parse import parse_qs
 from xml.sax.saxutils import escape
@@ -16,7 +19,7 @@ from xml.sax.saxutils import escape
 from bokeh.server.asgi import BokehASGI
 
 from apps._common.activity import PUBLIC_ACTIVITY, PublicActivity
-from apps.biomass import icechunk_source
+from apps.biomass import icechunk_source, shading
 from apps.monitor import SERVICE_MONITOR
 from catalog import DEMOS, LISTED_DEMOS, load_applications
 from presentation import ROOT, SITE_ORIGIN, render_index
@@ -74,6 +77,19 @@ PUBLIC_PAGE_ROUTES = frozenset(
         *(demo.route for demo in DEMOS if demo.route != "/monitor"),
     }
 )
+BIOMASS_TILE_PATH = re.compile(
+    r"^/biomass-tiles/(?P<start>\d{4})/(?P<end>\d{4})/"
+    r"(?P<zoom>\d+)/(?P<column>-?\d+)/(?P<row>-?\d+)\.(?P<format>png|webp)$"
+)
+
+
+def _warm_biomass() -> float:
+    """Warm renderer, detail, and the initial world tile before readiness."""
+    started = perf_counter()
+    shading.warm_renderer()
+    icechunk_source.warm_default_windows()
+    shading.warm_initial_tiles()
+    return perf_counter() - started
 
 
 class DemoApplication:
@@ -83,12 +99,14 @@ class DemoApplication:
         runtime_health: bytes,
         *,
         activity: PublicActivity = PUBLIC_ACTIVITY,
-        warmup: Callable[[], float | None] = icechunk_source.warm_default_windows,
+        warmup: Callable[[], float | None] = _warm_biomass,
+        tile_concurrency: int = 6,
     ) -> None:
         self._bokeh = bokeh
         self._runtime_health = runtime_health
         self._activity = activity
         self._warmup = warmup
+        self._tile_slots = BoundedSemaphore(tile_concurrency)
         self._index = render_index()
         self._legacy_index = render_index(show_legacy_notice=True)
         self._not_found = (ASSET_ROOT / "404.html").read_bytes()
@@ -106,9 +124,12 @@ class DemoApplication:
                 try:
                     elapsed = await asyncio.to_thread(self._warmup)
                     if elapsed is not None:
-                        LOGGER.info("Warmed default Arraylake Icechunk windows in %.3f s", elapsed)
+                        LOGGER.info(
+                            "Warmed biomass renderer and default Icechunk windows in %.3f s",
+                            elapsed,
+                        )
                 except Exception:
-                    LOGGER.exception("Arraylake Icechunk default-window warmup failed")
+                    LOGGER.exception("Biomass renderer or default Icechunk warmup failed")
                 await self._bokeh(scope, receive, send)
             finally:
                 SERVICE_MONITOR.stop()
@@ -154,6 +175,8 @@ class DemoApplication:
             await self._asset(scope, send, "favicon.png")
         elif scope_type == "http" and path == "/404.html":
             await self._response(scope, send, self._not_found, "text/html; charset=utf-8")
+        elif scope_type == "http" and path.startswith("/biomass-tiles/"):
+            await self._biomass_tile(scope, send, path)
         elif scope_type == "http" and path.startswith("/assets/"):
             await self._asset(scope, send, path.removeprefix("/assets/"))
         elif scope_type == "http":
@@ -192,6 +215,57 @@ class DemoApplication:
 
     async def _not_found_response(self, scope: Scope, send: Send) -> None:
         await self._response(scope, send, self._not_found, "text/html; charset=utf-8", status=404)
+
+    async def _biomass_tile(self, scope: Scope, send: Send, path: str) -> None:
+        match = BIOMASS_TILE_PATH.fullmatch(path)
+        if match is None:
+            await self._not_found_response(scope, send)
+            return
+        values = {name: int(value) for name, value in match.groupdict().items() if name != "format"}
+        try:
+            result = await asyncio.to_thread(
+                self._render_biomass_tile,
+                values["start"],
+                values["end"],
+                values["zoom"],
+                values["column"],
+                values["row"],
+                match.group("format"),
+            )
+        except ValueError as error:
+            await self._response(
+                scope,
+                send,
+                str(error).encode(),
+                "text/plain; charset=utf-8",
+                status=400,
+                cache_control="no-store",
+            )
+            return
+        except Exception:
+            LOGGER.exception("Biomass tile render failed for %s", path)
+            await self._response(
+                scope,
+                send,
+                b"Biomass tile render failed",
+                "text/plain; charset=utf-8",
+                status=500,
+                cache_control="no-store",
+            )
+            return
+        await self._response(
+            scope,
+            send,
+            result.image,
+            result.media_type,
+            cache_control="public, max-age=31536000, immutable",
+        )
+
+    def _render_biomass_tile(
+        self, start_year: int, end_year: int, zoom: int, column: int, row: int, image_format: str
+    ) -> shading.TileQuery:
+        with self._tile_slots:
+            return shading.query_tile(start_year, end_year, zoom, column, row, image_format)
 
     @staticmethod
     async def _response(

@@ -71,7 +71,13 @@ jobs:
               --output text 2>/dev/null || true
           )"
           if [[ "$digest" != sha256:* ]]; then
-            docker buildx build --platform linux/arm64 --tag "$image_tag" --push .
+            cache_ref="$ECR_REGISTRY/$ECR_REPOSITORY:buildcache"
+            docker buildx build \
+              --platform linux/arm64 \
+              --cache-from "type=registry,ref=$cache_ref" \
+              --cache-to "type=registry,ref=$cache_ref,mode=max,compression=zstd,oci-mediatypes=true,image-manifest=true" \
+              --output "type=image,name=$image_tag,push=true,compression=zstd,compression-level=3,force-compression=true,oci-mediatypes=true" \
+              .
             digest="$(
               aws ecr describe-images \
                 --repository-name "$ECR_REPOSITORY" \
@@ -110,7 +116,13 @@ jobs:
 
       - name: Smoke test production
         if: ${{ !inputs.diagnose }}
-        run: python scripts/smoke_production.py
+        run: |
+          for observation in {1..6}; do
+            python scripts/smoke_production.py --attempts 1
+            if [[ "$observation" != 6 ]]; then
+              sleep 10
+            fi
+          done
 
       - name: Diagnose ECS service
         if: ${{ inputs.diagnose }}
@@ -129,3 +141,19 @@ jobs:
             --services "$ECS_SERVICE" \
             --query 'services[0].{taskDefinition:taskDefinition,runningCount:runningCount,pendingCount:pendingCount,deployments:deployments[].{id:id,status:status,taskDefinition:taskDefinition,rolloutState:rolloutState,rolloutStateReason:rolloutStateReason,runningCount:runningCount,pendingCount:pendingCount,failedTasks:failedTasks},events:events[0:20].{createdAt:createdAt,message:message}}' \
             --output json
+          read -r -a stopped_tasks <<< "$(
+            aws ecs list-tasks \
+              --cluster "$ECS_CLUSTER" \
+              --service-name "$ECS_SERVICE" \
+              --desired-status STOPPED \
+              --max-results 10 \
+              --query 'taskArns' \
+              --output text
+          )"
+          if [[ "${stopped_tasks[0]:-}" == arn:* ]]; then
+            aws ecs describe-tasks \
+              --cluster "$ECS_CLUSTER" \
+              --tasks "${stopped_tasks[@]}" \
+              --query 'tasks[].{taskArn:taskArn,taskDefinitionArn:taskDefinitionArn,createdAt:createdAt,startedAt:startedAt,stoppedAt:stoppedAt,stopCode:stopCode,stoppedReason:stoppedReason,containers:containers[].{name:name,lastStatus:lastStatus,exitCode:exitCode,reason:reason}}' \
+              --output json
+          fi

@@ -6,12 +6,13 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import lru_cache
 from math import ceil, floor, log2
-from time import perf_counter
+from time import perf_counter, sleep
 from typing import BinaryIO, cast
 
 import fsspec
 import numpy as np
 import tifffile
+from fsspec.exceptions import FSTimeoutError
 
 BASE_URL = "https://ctrees-agb-100m-global.s3.us-west-2.amazonaws.com/cogs"
 COG_NAME = "global_agb_100m_landsat0024_all_{year}_densenet_l1_agb_mosaic_100m_base_cd_ts.tif"
@@ -165,11 +166,18 @@ def read_year_window(year: int, bounds: Bounds, overview_level: int = 0) -> Wind
     """Range-read and decode only the source tiles intersecting ``bounds``."""
     if overview_level < 0 or overview_level >= OVERVIEW_LEVELS:
         raise ValueError(f"overview_level must be between 0 and {OVERVIEW_LEVELS - 1}")
-    with (
-        fsspec.open(url_for(year), "rb", block_size=HTTP_BLOCK_SIZE) as stream,
-        tifffile.TiffFile(cast(BinaryIO, stream)) as tif,
-    ):
-        return _read_tiles(cast(tifffile.TiffPage, tif.pages[overview_level]), bounds)
+    for attempt in range(3):
+        try:
+            with (
+                fsspec.open(url_for(year), "rb", block_size=HTTP_BLOCK_SIZE) as stream,
+                tifffile.TiffFile(cast(BinaryIO, stream)) as tif,
+            ):
+                return _read_tiles(cast(tifffile.TiffPage, tif.pages[overview_level]), bounds)
+        except (TimeoutError, FSTimeoutError):
+            if attempt == 2:
+                raise
+            sleep(0.5 * 2**attempt)
+    raise AssertionError("unreachable")
 
 
 def query_change(

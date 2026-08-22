@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 from datetime import UTC, datetime
+from types import SimpleNamespace
 from xml.etree import ElementTree
 
 import asgi
@@ -16,6 +17,7 @@ from asgi import (
     _counts_as_public_request,
     _render_security_txt,
     _runtime_health,
+    _warm_biomass,
     application,
 )
 from catalog import DEMOS, LISTED_DEMOS
@@ -81,6 +83,49 @@ def test_health() -> None:
     }
 
 
+def test_biomass_tiles_are_lossless_webp_with_immutable_year_pair_urls(monkeypatch) -> None:
+    requested: list[tuple[int, int, int, int, int, str]] = []
+
+    def render(start: int, end: int, zoom: int, column: int, row: int, image_format: str):
+        requested.append((start, end, zoom, column, row, image_format))
+        return SimpleNamespace(image=b"RIFF\x08\x00\x00\x00WEBPrendered", media_type="image/webp")
+
+    monkeypatch.setattr(asgi.shading, "query_tile", render)
+    status, headers, body = asyncio.run(request("/biomass-tiles/2001/2024/3/4/2.webp"))
+
+    assert status == 200
+    assert headers["content-type"] == "image/webp"
+    assert headers["cache-control"] == "public, max-age=31536000, immutable"
+    assert body.startswith(b"RIFF")
+    assert body[8:12] == b"WEBP"
+    assert requested == [(2001, 2024, 3, 4, 2, "webp")]
+
+
+def test_biomass_tile_route_keeps_png_compatibility(monkeypatch) -> None:
+    def render(start: int, end: int, zoom: int, column: int, row: int, image_format: str):
+        assert (start, end, zoom, column, row, image_format) == (2001, 2024, 3, 4, 2, "png")
+        return SimpleNamespace(image=b"\x89PNG\r\n\x1a\nrendered", media_type="image/png")
+
+    monkeypatch.setattr(asgi.shading, "query_tile", render)
+    status, headers, body = asyncio.run(request("/biomass-tiles/2001/2024/3/4/2.png"))
+
+    assert status == 200
+    assert headers["content-type"] == "image/png"
+    assert body.startswith(b"\x89PNG\r\n\x1a\n")
+
+
+def test_biomass_tile_route_rejects_invalid_coordinates(monkeypatch) -> None:
+    def render(*_args):
+        raise ValueError("tile row is outside the selected zoom")
+
+    monkeypatch.setattr(asgi.shading, "query_tile", render)
+    status, headers, body = asyncio.run(request("/biomass-tiles/2000/2025/1/0/4.png"))
+
+    assert status == 400
+    assert headers["cache-control"] == "no-store"
+    assert body == b"tile row is outside the selected zoom"
+
+
 def test_lifespan_warms_data_before_starting_bokeh(monkeypatch) -> None:
     events: list[str] = []
 
@@ -109,6 +154,22 @@ def test_lifespan_warms_data_before_starting_bokeh(monkeypatch) -> None:
     asyncio.run(app({"type": "lifespan"}, receive, send))
 
     assert events == ["monitor-start", "icechunk-warm", "bokeh-start", "monitor-stop"]
+
+
+def test_biomass_warmup_compiles_renderer_before_loading_default_windows(monkeypatch) -> None:
+    events: list[str] = []
+    monkeypatch.setattr(asgi.shading, "warm_renderer", lambda: events.append("renderer") or 0.1)
+    monkeypatch.setattr(
+        asgi.icechunk_source, "warm_default_windows", lambda: events.append("icechunk") or 0.2
+    )
+    monkeypatch.setattr(
+        asgi.shading, "warm_initial_tiles", lambda: events.append("initial-tiles") or 0.3
+    )
+
+    elapsed = _warm_biomass()
+
+    assert events == ["renderer", "icechunk", "initial-tiles"]
+    assert elapsed >= 0
 
 
 def test_every_http_response_has_the_shared_browser_policy() -> None:

@@ -12,7 +12,11 @@ from apps.biomass import icechunk_source
 
 def _timed_query() -> float:
     started = perf_counter()
-    icechunk_source.query_change(2007, 2019, icechunk_source.DEFAULT_DETAIL_BOUNDS)
+    icechunk_source.query_change(
+        icechunk_source.BASELINE_YEAR,
+        icechunk_source.LATEST_YEAR,
+        icechunk_source.DEFAULT_DETAIL_BOUNDS,
+    )
     return perf_counter() - started
 
 
@@ -21,7 +25,7 @@ def main() -> None:
     parser.add_argument("--minimum-speedup", type=float, default=5.0)
     args = parser.parse_args()
     if not icechunk_source.configured():
-        parser.error(f"{icechunk_source.TOKEN_ENV} is required")
+        parser.error(f"{icechunk_source.TOKEN_ENV} or {icechunk_source.CLI_AUTH_ENV}=1 is required")
 
     icechunk_source._reset_caches_for_testing()
     cold_seconds = _timed_query()

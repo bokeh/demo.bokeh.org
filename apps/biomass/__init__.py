@@ -1,27 +1,30 @@
-"""Explore live CTrees aboveground-biomass change through Icechunk and COGs."""
+"""Explore CTrees biomass change through tile-aligned Icechunk overviews."""
 
 from __future__ import annotations
 
 from concurrent.futures import Future, ThreadPoolExecutor
 from contextlib import suppress
 from functools import partial
-from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
-from bokeh.events import Event, Tap
+from bokeh.events import DocumentReady, Event, RangesUpdate, Tap
 from bokeh.layouts import column
 from bokeh.models import (
     BoxAnnotation,
     ColumnDataSource,
+    CustomJS,
     Div,
     HoverTool,
     Range1d,
     RangeSlider,
     Select,
     Title,
+    WheelZoomTool,
+    WMTSTileSource,
 )
 from bokeh.plotting import figure
+from bokeh.server.callbacks import TimeoutCallback
 
 from apps._common import (
     match_background,
@@ -37,24 +40,25 @@ from apps._common.colors import GOLD, GRID, INK, PAPER, PLUM, WARM
 
 from . import cog, country_boundaries, icechunk_source
 from .cog import BASELINE_YEAR, LATEST_YEAR, Bounds, ChangeQuery, bounds_around
-from .shading import ViewportQuery, query_viewport
+from .color import (
+    GAIN_HEX,
+    GAIN_SOFT_HEX,
+    LOSS_HEX,
+    LOSS_SOFT_HEX,
+    NEUTRAL_HEX,
+    color_limits,
+    rgba_image,
+)
+from .shading import (
+    INITIAL_VISIBLE_TILES,
+    MAX_TILE_ZOOM,
+    TILE_SIZE,
+    TILE_VERSION,
+    WEB_MERCATOR_LIMIT,
+    inverse_web_mercator,
+    web_mercator,
+)
 
-ASSETS = Path(__file__).parent
-GLOBAL_NO_DATA = -128
-GLOBAL_COLOR_LIMIT = 25.0
-LOCAL_COLOR_LIMIT = 60.0
-VIEWPORT_WIDTH = 900
-VIEWPORT_HEIGHT = 450
-COLOR_DEADBAND = 2.0
-MIN_COLOR_STRENGTH = 0.32
-LOSS_HEX = "#ff5a36"
-GAIN_HEX = "#00c2e0"
-NEUTRAL_HEX = "#6c6871"
-LOSS_SOFT_HEX = "#9b635e"
-GAIN_SOFT_HEX = "#498595"
-LOSS = np.array([255, 90, 54], dtype=np.float32)
-GAIN = np.array([0, 194, 224], dtype=np.float32)
-NEUTRAL = np.array([108, 104, 113], dtype=np.float32)
 QUERY_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="biomass-query")
 PRESETS = {
     "para": ("Pará, Brazil", -53.50, -6.50),
@@ -64,24 +68,38 @@ PRESETS = {
     "sumatra": ("Sumatra, Indonesia", 101.50, -0.50),
 }
 
+KEEP_VISIBLE_TILES_JS = """
+const source = renderer.tile_source
+if (source.__biomass_descendant_fallback__ === true)
+  return
 
-def rgba_image(delta: np.ndarray, valid: np.ndarray, *, limit: float) -> np.ndarray:
-    """Encode a colorblind-safe, high-contrast raster for ``image_rgba``."""
-    absolute = np.abs(np.nan_to_num(delta))
-    scaled = np.clip((absolute - COLOR_DEADBAND) / (limit - COLOR_DEADBAND), 0, 1)
-    magnitude = np.where(
-        absolute <= COLOR_DEADBAND,
-        0,
-        MIN_COLOR_STRENGTH + (1 - MIN_COLOR_STRENGTH) * np.power(scaled, 0.75),
-    )[..., None]
-    target = np.where((delta < 0)[..., None], LOSS, GAIN)
-    rgb = NEUTRAL + (target - NEUTRAL) * magnitude
-    rgba = np.empty((*delta.shape, 4), dtype=np.uint8)
-    rgba[..., :3] = np.clip(rgb, 0, 255).astype(np.uint8)
-    rgba[..., 3] = np.where(valid, np.where(absolute <= COLOR_DEADBAND, 72, 245), 0).astype(
-        np.uint8
-    )
-    return np.ascontiguousarray(np.flipud(rgba)).view(np.uint32).reshape(delta.shape)
+const direct_children = source.children_by_tile_xyz.bind(source)
+source.children_by_tile_xyz = function(x, y, z) {
+  const children = direct_children(x, y, z)
+  const direct_keys = new Set(
+    children.map(([cx, cy, cz]) => this.tile_xyz_to_key(cx, cy, cz)),
+  )
+  const [nx, ny, nz] = this.normalize_xyz(x, y, z)
+  const prefix = this.tile_xyz_to_quadkey(nx, ny, nz)
+  const descendants = []
+
+  for (const [key, tile] of this.tiles) {
+    if (direct_keys.has(key) || tile.loaded !== true)
+      continue
+    const [cx, cy, cz] = this.key_to_tile_xyz(key)
+    if (cz <= z + 1)
+      continue
+    const [ncx, ncy, ncz] = this.normalize_xyz(cx, cy, cz)
+    if (ncz > nz && this.tile_xyz_to_quadkey(ncx, ncy, ncz).startsWith(prefix))
+      descendants.push([cx, cy, cz, this.get_tile_meter_bounds(cx, cy, cz)])
+  }
+
+  descendants.sort((left, right) => left[2] - right[2])
+  children.push(...descendants)
+  return children
+}
+source.__biomass_descendant_fallback__ = true
+"""
 
 
 def histogram_data(
@@ -99,39 +117,16 @@ def histogram_data(
     }
 
 
-def _global_image() -> np.ndarray:
-    with np.load(ASSETS / "global_delta_2025.npz") as archive:
-        values = archive["delta"]
-    valid = values != GLOBAL_NO_DATA
-    delta = np.where(valid, values, np.nan).astype(np.float32)
-    return rgba_image(delta, valid, limit=GLOBAL_COLOR_LIMIT)
-
-
-GLOBAL_IMAGE = _global_image()
-
-
-def color_limits(start_year: int, end_year: int) -> tuple[float, float, float]:
-    """Scale global, detail, and histogram ranges to the comparison interval."""
-    years = max(abs(end_year - start_year), 1)
-    return (
-        max(5.0, GLOBAL_COLOR_LIMIT * years / 25),
-        max(12.0, LOCAL_COLOR_LIMIT * years / 25),
-        max(20.0, 100 * years / 25),
-    )
-
-
 class BiomassExplorer:
-    """Coordinate Bokeh models and nonblocking Icechunk/COG queries."""
+    """Coordinate Bokeh models and nonblocking Icechunk overview queries."""
 
     def __init__(self, document, performance) -> None:
         self.document = document
         self.performance = performance
         self.detail_generation = 0
-        self.viewport_generation = 0
         self.last_detail_query: Future[ChangeQuery] | None = None
-        self.last_viewport_query: Future[ViewportQuery] | None = None
         self.last_boundary_query: Future[dict[str, list[list[float]]]] | None = None
-        self.viewport_callback = None
+        self.viewport_callback: TimeoutCallback | None = None
         self.center_longitude = -53.5
         self.center_latitude = -6.5
 
@@ -166,7 +161,7 @@ class BiomassExplorer:
         )
         self.status = Div(
             text=(
-                "<p><strong>Preparing native 100 m detail…</strong><br>"
+                "<p><strong>Preparing tile-aligned Icechunk detail…</strong><br>"
                 "The selected footprint updates without a query button.</p>"
             ),
             name="biomass-query-status",
@@ -174,8 +169,9 @@ class BiomassExplorer:
         )
         self.viewport_status = Div(
             text=(
-                "<p><strong>Preparing live Datashader view…</strong><br>"
-                "Pan or zoom to query the best cloud source for this scale.</p>"
+                "<p><strong>Live Web Mercator tiles are ready.</strong><br>"
+                "Pan or zoom to fetch only the visible 256 px tiles; released year changes "
+                "replace the tile URL immediately.</p>"
             ),
             name="biomass-viewport-status",
             styles={"padding": "12px 14px", "background": PAPER},
@@ -184,34 +180,40 @@ class BiomassExplorer:
         self.before_card = metric(f"Mean biomass · {BASELINE_YEAR}", "…", accent=GOLD)
         self.after_card = metric(f"Mean biomass · {LATEST_YEAR}", "…", accent=GAIN_HEX)
         self.change_card = metric("Mean change", "…", accent=LOSS_HEX)
-        self.pixel_card = metric("Live source pixels", "…", accent=PLUM)
+        self.pixel_card = metric("Comparable overview pixels", "…", accent=PLUM)
 
         default_bounds = self.bounds
-        self.selection = BoxAnnotation(
-            left=default_bounds[0],
-            bottom=default_bounds[1],
-            right=default_bounds[2],
-            top=default_bounds[3],
-            fill_color=GOLD,
-            fill_alpha=0.12,
-            line_color=GOLD,
-            line_width=2.5,
-            name="biomass-selection",
+        selection_west, selection_south, selection_east, selection_north = (
+            self._web_mercator_bounds(default_bounds)
         )
-        self.global_source = ColumnDataSource(
-            data={
-                "image": [GLOBAL_IMAGE],
-                "x": [-180.0],
-                "y": [-90.0],
-                "dw": [360.0],
-                "dh": [180.0],
-            },
-            name="biomass-global-image",
+        self.selection_halo = BoxAnnotation(
+            left=selection_west,
+            bottom=selection_south,
+            right=selection_east,
+            top=selection_north,
+            fill_alpha=0,
+            line_color=PLUM,
+            line_alpha=0.9,
+            line_width=7,
+            name="biomass-selection-halo",
+        )
+        self.selection = BoxAnnotation(
+            left=selection_west,
+            bottom=selection_south,
+            right=selection_east,
+            top=selection_north,
+            fill_color=GOLD,
+            fill_alpha=0.08,
+            line_color=PAPER,
+            line_alpha=0.98,
+            line_width=3,
+            name="biomass-selection",
         )
         self.boundary_source = ColumnDataSource(
             data={"xs": [], "ys": []}, name="biomass-country-boundaries"
         )
         self.global_plot = self._build_global_plot()
+        self._keep_visible_tiles_while_zooming()
 
         empty = np.zeros((2, 2), dtype=np.uint32)
         self.local_source = ColumnDataSource(
@@ -224,7 +226,7 @@ class BiomassExplorer:
             },
             name="biomass-local-image",
         )
-        self.local_title = Title(text="Waiting for live 100 m source pixels")
+        self.local_title = Title(text="Waiting for live overview pixels")
         self.local_plot = self._build_local_plot(default_bounds)
         self.histogram_source = ColumnDataSource(
             data={
@@ -239,7 +241,7 @@ class BiomassExplorer:
         self.histogram_note = Div(
             text=(
                 "<p style='margin:0'><strong>How to read this:</strong> each bar counts comparable "
-                "100 m grid cells in a biomass-change interval. Orange is loss, cyan is gain, and "
+                "overview grid cells in a biomass-change interval. Orange is loss, cyan is gain, and "
                 "the outer bins include more extreme values. Counts are not area-weighted.</p>"
             ),
             styles={"padding": "10px 14px", "background": PAPER, "color": "#6f686c"},
@@ -254,9 +256,6 @@ class BiomassExplorer:
         self.years.on_change("value_throttled", self._years_changed)
         self.span.on_change("value", self._footprint_changed)
         self.global_plot.on_event(Tap, self._select_map_point)
-        for axis_range in (self.global_plot.x_range, self.global_plot.y_range):
-            axis_range.on_change("start", self._viewport_changed)
-            axis_range.on_change("end", self._viewport_changed)
 
     @property
     def bounds(self) -> Bounds:
@@ -267,20 +266,63 @@ class BiomassExplorer:
         start_year, end_year = self.years.value
         return int(start_year), int(end_year)
 
+    @staticmethod
+    def _web_mercator_bounds(bounds: Bounds) -> Bounds:
+        west, south, east, north = bounds
+        x, y = web_mercator(np.array([west, east]), np.array([south, north]))
+        return (float(x[0]), float(y[0]), float(x[1]), float(y[1]))
+
+    def _tile_source(self) -> WMTSTileSource:
+        start_year, end_year = self.year_pair
+        return WMTSTileSource(
+            url=(f"/biomass-tiles/{start_year}/{end_year}/{{Z}}/{{X}}/{{Y}}.webp?v={TILE_VERSION}"),
+            tile_size=TILE_SIZE,
+            initial_resolution=2 * WEB_MERCATOR_LIMIT / TILE_SIZE,
+            min_zoom=0,
+            max_zoom=MAX_TILE_ZOOM,
+            wrap_around=True,
+            attribution="CTrees Global Aboveground Biomass · Earthmover Arraylake",
+        )
+
+    def _keep_visible_tiles_while_zooming(self) -> None:
+        """Retain any cached descendant level until zoomed-out tiles arrive."""
+        fallback = CustomJS(
+            args={"renderer": self.global_tile_renderer}, code=KEEP_VISIBLE_TILES_JS
+        )
+        self.global_tile_renderer.js_on_change("tile_source", fallback)
+        self.document.js_on_event(DocumentReady, fallback)
+
     def _build_global_plot(self):
-        self.global_title = Title(text="Live Datashader view · pan, zoom, or tap anywhere")
+        start_year, end_year = self.year_pair
+        self.global_title = Title(
+            text=f"Live Web Mercator tiles · {start_year} → {end_year} · pan, zoom, or tap"
+        )
         plot = figure(
             title=self.global_title,
-            height=520,
-            sizing_mode="stretch_width",
-            x_range=Range1d(start=-180, end=180, bounds=(-180, 180)),
-            y_range=Range1d(start=-90, end=90, bounds=(-90, 90)),
+            width=760,
+            height=760,
+            sizing_mode="scale_width",
+            x_axis_type="mercator",
+            y_axis_type="mercator",
+            x_range=Range1d(
+                start=-WEB_MERCATOR_LIMIT,
+                end=WEB_MERCATOR_LIMIT,
+                bounds=(-WEB_MERCATOR_LIMIT, WEB_MERCATOR_LIMIT),
+            ),
+            y_range=Range1d(
+                start=-WEB_MERCATOR_LIMIT,
+                end=WEB_MERCATOR_LIMIT,
+                bounds=(-WEB_MERCATOR_LIMIT, WEB_MERCATOR_LIMIT),
+            ),
             tools="tap,pan,wheel_zoom,reset",
             active_drag="pan",
+            active_scroll="wheel_zoom",
             match_aspect=True,
             name="biomass-global-plot",
         )
-        plot.image_rgba(image="image", x="x", y="y", dw="dw", dh="dh", source=self.global_source)
+        self.global_tile_renderer = plot.add_tile(
+            self._tile_source(), render_parents=True, name="biomass-global-tiles"
+        )
         plot.multi_line(
             xs="xs",
             ys="ys",
@@ -289,8 +331,12 @@ class BiomassExplorer:
             line_alpha=0.44,
             line_width=0.8,
         )
+        plot.add_layout(self.selection_halo)
         plot.add_layout(self.selection)
         style_figure(plot)
+        wheel_zoom = next(tool for tool in plot.tools if isinstance(tool, WheelZoomTool))
+        wheel_zoom.speed = 0.0025
+        plot.toolbar.active_scroll = wheel_zoom
         plot.background_fill_color = PLUM
         plot.grid.grid_line_color = "#6b5862"
         plot.grid.grid_line_alpha = 0.42
@@ -308,11 +354,15 @@ class BiomassExplorer:
             y_range=Range1d(start=bounds[1], end=bounds[3]),
             tools="pan,wheel_zoom,reset",
             active_drag="pan",
+            active_scroll="wheel_zoom",
             match_aspect=True,
             name="biomass-local-plot",
         )
         plot.image_rgba(image="image", x="x", y="y", dw="dw", dh="dh", source=self.local_source)
         style_figure(plot)
+        wheel_zoom = next(tool for tool in plot.tools if isinstance(tool, WheelZoomTool))
+        wheel_zoom.speed = 0.0025
+        plot.toolbar.active_scroll = wheel_zoom
         plot.background_fill_color = PLUM
         plot.grid.grid_line_color = "#6b5862"
         plot.grid.grid_line_alpha = 0.34
@@ -322,7 +372,7 @@ class BiomassExplorer:
 
     def _build_histogram(self):
         plot = figure(
-            title=Title(text="Distribution of 100 m pixel change"),
+            title=Title(text="Distribution of overview-pixel change"),
             height=310,
             width=390,
             sizing_mode="stretch_width",
@@ -349,7 +399,7 @@ class BiomassExplorer:
             )
         )
         plot.xaxis.axis_label = "Change in aboveground biomass (Mg/ha)"
-        plot.yaxis.axis_label = "Comparable 100 m pixels"
+        plot.yaxis.axis_label = "Comparable overview pixels"
         style_figure(plot)
         return plot
 
@@ -357,12 +407,13 @@ class BiomassExplorer:
         return (
             f"<p style='margin:0'><strong>{label}</strong><br>"
             f"{self.center_latitude:+.2f}° latitude · {self.center_longitude:+.2f}° longitude<br>"
-            "Tap the map to move the detail footprint.</p>"
+            "Pan or zoom to follow the viewport; tap for an exact point.</p>"
         )
 
     def _update_selection(self, label: str) -> None:
-        bounds = self.bounds
-        self.selection.update(left=bounds[0], bottom=bounds[1], right=bounds[2], top=bounds[3])
+        west, south, east, north = self._web_mercator_bounds(self.bounds)
+        self.selection_halo.update(left=west, bottom=south, right=east, top=north)
+        self.selection.update(left=west, bottom=south, right=east, top=north)
         self.location.text = self._location_text(label)
 
     def _choose_preset(self, _attr: str, _old: object, new: str) -> None:
@@ -372,19 +423,66 @@ class BiomassExplorer:
         self.center_longitude = longitude
         self.center_latitude = latitude
         self._update_selection(label)
-        west = min(max(longitude - 12, -180), 156)
-        south = min(max(latitude - 6, -90), 78)
-        self.global_plot.x_range.update(start=west, end=west + 24)
-        self.global_plot.y_range.update(start=south, end=south + 12)
+        self._focus_global_plot(longitude, latitude)
         self._submit_detail_query()
+
+    def _focus_global_plot(self, longitude: float, latitude: float) -> None:
+        """Move the global plot to a preset-sized Web Mercator footprint."""
+        west = min(max(longitude - 12, -180), 156)
+        south = min(max(latitude - 6, -84), 72)
+        x0, y0, x1, y1 = self._web_mercator_bounds((west, south, west + 24, south + 12))
+        self.global_plot.x_range.update(start=x0, end=x1)
+        self.global_plot.y_range.update(start=y0, end=y1)
 
     def _select_map_point(self, event: Event) -> None:
         if not isinstance(event, Tap) or event.x is None or event.y is None:
             return
+        longitude, latitude = inverse_web_mercator(float(event.x), float(event.y))
         self.preset.value = "custom"
-        self.center_longitude = round(float(np.clip(event.x, -179.5, 179.5)), 2)
-        self.center_latitude = round(float(np.clip(event.y, -89.5, 89.5)), 2)
+        self.center_longitude = round(float(np.clip(longitude, -179.5, 179.5)), 2)
+        self.center_latitude = round(float(np.clip(latitude, -84.5, 84.5)), 2)
         self._update_selection("Custom map point")
+        self._submit_detail_query()
+
+    def _viewport_changed(self, event: Event) -> None:
+        if not isinstance(event, RangesUpdate):
+            return
+        if self.viewport_callback is not None:
+            with suppress(ValueError, RuntimeError):
+                self.document.remove_timeout_callback(self.viewport_callback)
+        self.viewport_callback = self.document.add_timeout_callback(
+            self._sync_detail_to_viewport, 220
+        )
+
+    def _sync_detail_to_viewport(self) -> None:
+        self.viewport_callback = None
+        x_range = cast(Range1d, self.global_plot.x_range)
+        y_range = cast(Range1d, self.global_plot.y_range)
+        values = np.asarray(
+            [x_range.start, x_range.end, y_range.start, y_range.end], dtype=np.float64
+        )
+        if not np.all(np.isfinite(values)) or values[0] >= values[1] or values[2] >= values[3]:
+            return
+
+        longitude, latitude = inverse_web_mercator(
+            float((values[0] + values[1]) / 2), float((values[2] + values[3]) / 2)
+        )
+        longitude = float(np.clip(longitude, -179.5, 179.5))
+        latitude = float(np.clip(latitude, -84.5, 84.5))
+        if (
+            abs(longitude - self.center_longitude) < 0.02
+            and abs(latitude - self.center_latitude) < 0.02
+        ):
+            return
+
+        self.preset.value = "custom"
+        self.center_longitude = round(longitude, 2)
+        self.center_latitude = round(latitude, 2)
+        self._update_selection("Viewport center")
+        self.viewport_status.text = (
+            "<p><strong>Detail footprint followed the settled viewport.</strong><br>"
+            "Its Icechunk overview query is updating at the new map center.</p>"
+        )
         self._submit_detail_query()
 
     def _years_changed(self, _attr: str, _old: object, _new: object) -> None:
@@ -393,8 +491,16 @@ class BiomassExplorer:
             f"<p><strong>Updating detail · {start_year} → {end_year}</strong><br>"
             "The released year handles launch the query automatically.</p>"
         )
+        self.global_tile_renderer.tile_source = self._tile_source()
+        self.global_title.text = (
+            f"Live Web Mercator tiles · {start_year} → {end_year} · pan, zoom, or tap"
+        )
+        self.viewport_status.text = (
+            f"<p><strong>Visible tiles switched to {start_year} → {end_year}.</strong><br>"
+            "The browser is fetching the new year-pair URL in parallel and reusing cached "
+            "tiles where possible.</p>"
+        )
         self._submit_detail_query()
-        self._schedule_viewport_query()
 
     def _footprint_changed(self, _attr: str, _old: object, _new: object) -> None:
         self._update_selection(
@@ -402,38 +508,23 @@ class BiomassExplorer:
         )
         self._submit_detail_query()
 
-    def _viewport_changed(self, _attr: str, _old: object, _new: object) -> None:
-        self._schedule_viewport_query()
-
-    def _schedule_viewport_query(self) -> None:
-        if self.viewport_callback is not None:
-            with suppress(ValueError, RuntimeError):
-                self.document.remove_timeout_callback(self.viewport_callback)
-        self.viewport_generation += 1
-        generation = self.viewport_generation
-        self.viewport_callback = self.document.add_timeout_callback(
-            partial(self._submit_viewport_query, generation), 240
-        )
-
-    def _viewport_bounds(self) -> Bounds:
-        x_range = cast(Range1d, self.global_plot.x_range)
-        y_range = cast(Range1d, self.global_plot.y_range)
-        west = max(float(cast(float, x_range.start)), -180)
-        east = min(float(cast(float, x_range.end)), 180)
-        south = max(float(cast(float, y_range.start)), -90)
-        north = min(float(cast(float, y_range.end)), 90)
-        if west >= east or south >= north:
-            return (-180, -90, 180, 90)
-        return (west, south, east, north)
-
     def start(self) -> None:
-        """Launch the initial detail and viewport queries after session startup."""
+        """Launch the initial detail and boundary queries after session startup."""
         boundary_query = QUERY_EXECUTOR.submit(country_boundaries.load_country_boundaries)
         self.last_boundary_query = boundary_query
         boundary_query.add_done_callback(self._boundary_query_finished)
         self._submit_detail_query()
-        self.viewport_generation += 1
-        self._submit_viewport_query(self.viewport_generation)
+        self.document.add_timeout_callback(self._activate_client_tiles, 750)
+
+    def _activate_client_tiles(self) -> None:
+        """Replace the construction-time source after the browser session is connected."""
+        self.global_tile_renderer.tile_source = self._tile_source()
+        self._focus_global_plot(self.center_longitude, self.center_latitude)
+        self.document.add_timeout_callback(self._enable_viewport_sync, 250)
+
+    def _enable_viewport_sync(self) -> None:
+        """Subscribe only after the client has completed its initial range layout."""
+        self.global_plot.on_event(RangesUpdate, self._viewport_changed)
 
     def _boundary_query_finished(self, future: Future[dict[str, list[list[float]]]]) -> None:
         try:
@@ -444,7 +535,7 @@ class BiomassExplorer:
             self.document.add_next_tick_callback(partial(self._show_boundaries, data))
 
     def _show_boundaries(self, data: dict[str, list[list[float]]]) -> None:
-        self.boundary_source.data = cast(Any, data)
+        self.boundary_source.data = cast(Any, country_boundaries.project_boundaries(data))
 
     def _submit_detail_query(self) -> None:
         self.detail_generation += 1
@@ -454,7 +545,7 @@ class BiomassExplorer:
         if icechunk_source.configured():
             self.status.text = (
                 f"<p><strong>Icechunk detail running · {start_year} → {end_year}</strong><br>"
-                "Slicing native 100 m chunks from the subscribed Arraylake repository.</p>"
+                "Slicing the finest tile-aligned overview from the derived Arraylake repository.</p>"
             )
             query = icechunk_source.query_change
         else:
@@ -487,80 +578,6 @@ class BiomassExplorer:
             "Move the selection or year handles to retry automatically.</p>"
         )
 
-    def _submit_viewport_query(self, generation: int) -> None:
-        self.viewport_callback = None
-        start_year, end_year = self.year_pair
-        bounds = self._viewport_bounds()
-        self.viewport_status.text = (
-            f"<p><strong>Datashader rendering · {start_year} → {end_year}</strong><br>"
-            "Selecting native Icechunk chunks or a matching COG overview for this scale.</p>"
-        )
-        future = QUERY_EXECUTOR.submit(
-            query_viewport,
-            start_year,
-            end_year,
-            bounds,
-            plot_width=VIEWPORT_WIDTH,
-            plot_height=VIEWPORT_HEIGHT,
-        )
-        self.last_viewport_query = future
-        future.add_done_callback(
-            lambda completed: self._viewport_query_finished(generation, completed)
-        )
-
-    def _viewport_query_finished(self, generation: int, future: Future[ViewportQuery]) -> None:
-        try:
-            result = future.result()
-        except Exception:  # noqa: BLE001
-            callback = partial(self._show_viewport_error, generation)
-        else:
-            callback = partial(self._show_viewport_result, generation, result)
-        with suppress(RuntimeError):
-            self.document.add_next_tick_callback(callback)
-
-    def _show_viewport_error(self, generation: int) -> None:
-        if generation != self.viewport_generation:
-            return
-        self.viewport_status.text = (
-            "<p><strong>The live viewport did not render.</strong><br>"
-            "Pan, zoom, or change years to retry; the previous view remains visible.</p>"
-        )
-
-    def _show_viewport_result(self, generation: int, result: ViewportQuery) -> None:
-        if generation != self.viewport_generation:
-            return
-        self.performance.measure(self._apply_viewport_result, name="biomass-viewport-result")(
-            result
-        )
-
-    def _apply_viewport_result(self, result: ViewportQuery) -> None:
-        global_limit, _local_limit, _histogram_limit = color_limits(
-            result.start_year, result.end_year
-        )
-        image = rgba_image(result.delta, result.valid, limit=global_limit)
-        west, south, east, north = result.bounds
-        self.global_source.data = {
-            "image": [image],
-            "x": [west],
-            "y": [south],
-            "dw": [east - west],
-            "dh": [north - south],
-        }
-        self.global_title.text = (
-            f"Live Datashader · {result.start_year} → {result.end_year} · {result.backend}"
-        )
-        source_megabytes = result.source_bytes / 1_000_000
-        source_note = (
-            f"materializing a {source_megabytes:.1f} MB native slice"
-            if result.backend.startswith("Arraylake")
-            else f"decoding {source_megabytes:.1f} MB from overview {result.overview_level}"
-        )
-        self.viewport_status.text = (
-            f"<p><strong>Viewport rendered in {result.elapsed_seconds:.1f} s.</strong><br>"
-            f"Datashader aggregated {result.source_pixels:,} source pixels after "
-            f"{source_note} via {result.backend}.</p>"
-        )
-
     @staticmethod
     def _mean(values: np.ndarray, valid: np.ndarray) -> float:
         return float(np.mean(values[valid], dtype=np.float64) / 10)
@@ -589,8 +606,9 @@ class BiomassExplorer:
         self.local_plot.y_range.update(
             start=bounds[1], end=bounds[3], reset_start=bounds[1], reset_end=bounds[3]
         )
+        resolution = "z4 overview" if result.backend.startswith("Arraylake") else "100 m"
         self.local_title.text = (
-            f"Live 100 m change · {result.start_year} → {result.end_year} · "
+            f"Live {resolution} change · {result.start_year} → {result.end_year} · "
             f"{self.center_latitude:+.2f}°, {self.center_longitude:+.2f}°"
         )
         self.histogram_source.data = cast(
@@ -642,7 +660,7 @@ class BiomassExplorer:
         )
         source_megabytes = result.source_bytes / 1_000_000
         source_note = (
-            f"Materialized {source_megabytes:.1f} MB of native array data"
+            f"Read {source_megabytes:.1f} MB of tile-aligned overview values"
             if result.backend.startswith("Arraylake")
             else f"Decoded {source_megabytes:.1f} MB of compressed overview tiles"
         )
@@ -655,9 +673,10 @@ class BiomassExplorer:
         introduction = Div(
             text=(
                 "<h2>Zoom from planet to pixels</h2>"
-                "<p><strong>Pan or zoom</strong> to rerender from live cloud chunks. "
+                "<p><strong>Pan or zoom</strong> to stream cached Web Mercator tiles and move "
+                "the detail footprint to the settled viewport center. "
                 "<strong>Release either year handle</strong> to compare a new pair immediately. "
-                "<strong>Tap the map</strong> for native 100 m Icechunk detail.</p>"
+                "<strong>Tap the map</strong> to choose an exact detail point.</p>"
             ),
             styles={"background": WARM},
         )
@@ -680,18 +699,19 @@ class BiomassExplorer:
                 f"<strong style='color:{LOSS_HEX}'>orange · biomass loss</strong>"
                 f"<span style='width:min(340px,45vw);height:12px;background:linear-gradient(90deg,{LOSS_HEX} 0%,{LOSS_SOFT_HEX} 43%,{NEUTRAL_HEX} 49%,{NEUTRAL_HEX} 51%,{GAIN_SOFT_HEX} 57%,{GAIN_HEX} 100%)'></span>"
                 f"<strong style='color:{GAIN_HEX}'>cyan · biomass gain</strong></div>"
-                "<p style='text-align:center;color:#6f686c;margin:6px 0 0'>Gray marks change within ±2 Mg/ha. Color ranges adapt to the selected interval; geographic pixels retain a 2:1 world aspect.</p>"
+                "<p style='text-align:center;color:#6f686c;margin:6px 0 0'>Gray marks change within ±2 Mg/ha. Color ranges adapt to the selected interval; Web Mercator tiles retain equal x/y scale and are never stretched.</p>"
             )
         )
         note = Div(
             text=(
                 "<p><strong>Data and method:</strong> CTrees Global Aboveground Biomass, annual "
                 "100 m estimates for 2000-2025, scaled to Mg/ha (metric tonnes per hectare). "
-                "Native detail and close zooms slice "
-                "the subscribed Arraylake Icechunk/Zarr cube; broad views use the same dataset's "
-                "public COG overviews so a world pan never scans the 26 TB native array. Datashader "
-                "aggregates to exactly 900 × 450 pixels without stretching the geographic extent. "
-                "Country outlines use Natural Earth 1:110m administrative boundaries. "
+                "A one-time build distills the source COG overviews into z0-z4, 1024 px "
+                "WebMercatorQuad chunks in a dedicated Arraylake Icechunk repository. The live "
+                "service exposes standard 256 px z0-z6 tiles by slicing those storage chunks, then "
+                "subtracts, colors, and caches them by year pair and coordinate. Country "
+                "outlines use Natural Earth 1:110m administrative boundaries projected to the same "
+                "coordinate system. "
                 "<a href='https://app.earthmover.io/marketplace/69e00e1c21faca8bf36879d2' target='_blank' rel='noreferrer'>"
                 "Earthmover listing</a> · "
                 "<a href='https://registry.opendata.aws/ctrees-agb-100m-global/' target='_blank' rel='noreferrer'>"
@@ -729,4 +749,8 @@ def modify_document(document) -> None:
     explorer = BiomassExplorer(document, performance)
     document.add_root(explorer.layout())
     prepare_document(document, "/biomass-change")
+    document.template_variables["preload_images"] = [
+        f"/biomass-tiles/{BASELINE_YEAR}/{LATEST_YEAR}/{zoom}/{column}/{row}.webp?v={TILE_VERSION}"
+        for zoom, column, row in INITIAL_VISIBLE_TILES
+    ]
     document.add_next_tick_callback(explorer.start)
