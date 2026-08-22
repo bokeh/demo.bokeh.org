@@ -41,7 +41,14 @@ def test_deployment_builds_the_matching_arm64_image() -> None:
     assert "runs-on: ubuntu-24.04-arm" in workflow
     assert "docker/setup-qemu-action@v3" not in workflow
     assert "docker/setup-buildx-action@v3" in workflow
-    assert "docker buildx build --platform linux/arm64" in workflow
+    assert "docker buildx build \\" in workflow
+    assert "--platform linux/arm64" in workflow
+    assert (
+        "compression=zstd,compression-level=3,force-compression=true,oci-mediatypes=true"
+        in workflow
+    )
+    assert '--cache-from "type=registry,ref=$cache_ref"' in workflow
+    assert "mode=max,compression=zstd,oci-mediatypes=true,image-manifest=true" in workflow
 
 
 def test_container_builds_native_free_threaded_dependencies_off_image() -> None:
@@ -67,9 +74,11 @@ def test_deployment_smoke_checks_the_catalog_and_websocket() -> None:
     workflow = (ROOT / ".github" / "workflows" / "deploy.yml").read_text()
     smoke = (ROOT / "scripts" / "smoke_production.py").read_text()
 
-    assert "python scripts/smoke_production.py" in workflow
+    assert "python scripts/smoke_production.py --attempts 1" in workflow
+    assert "for observation in {1..6}" in workflow
     assert 'route = "/airport-access"' in smoke
     assert 'biomass_route = "/biomass-change"' in smoke
+    assert '"/biomass-tiles/2000/2025/0/0/0.webp"' in smoke
     assert "Sec-WebSocket-Protocol: bokeh" in smoke
     assert 'urljoin(base_url, "/sitemap.xml")' in smoke
 
@@ -81,6 +90,8 @@ def test_deployment_can_report_ecs_failures_without_mutating_the_service() -> No
     assert "aws ecs describe-services" in workflow
     assert "if: ${{ inputs.diagnose }}" in workflow
     assert "if: ${{ failure() && !inputs.diagnose }}" in workflow
+    assert "aws ecs list-tasks" in workflow
+    assert "aws ecs describe-tasks" in workflow
     mutating_steps = (
         "Log in to Amazon ECR",
         "Set up Docker Buildx",

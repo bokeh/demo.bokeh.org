@@ -17,6 +17,10 @@
 <link rel="icon" href="/assets/bokeh-icon.svg?v=2" type="image/svg+xml" sizes="any">
 <link rel="icon" href="/favicon.ico?v=2" type="image/png" sizes="16x16">
 <link rel="stylesheet" href="/assets/site.css?v=14">
+<link rel="preconnect" href="https://cdn.bokeh.org" crossorigin>
+{% for image_url in preload_images | default([]) %}
+<link rel="preload" as="image" type="image/webp" href="{{ image_url }}" fetchpriority="high">
+{% endfor %}
 {% endblock %}
 
 {% block contents %}
@@ -41,6 +45,25 @@
       <div><span aria-hidden="true"></span>Loading interactive demo…</div>
     </div>
     {{ super() }}
+    <script>
+      (() => {
+        const canvas = document.currentScript?.closest(".application-canvas")
+        const root = canvas?.querySelector("[data-root-id]")
+        const started = performance.now()
+        const finish = () => {
+          canvas?.setAttribute("aria-busy", "false")
+          canvas?.querySelector(".application-loading")?.remove()
+        }
+        const waitForRoot = () => {
+          if (root?.shadowRoot != null || root?.childElementCount > 0 || performance.now() - started > 3000) {
+            finish()
+          } else {
+            requestAnimationFrame(waitForRoot)
+          }
+        }
+        requestAnimationFrame(waitForRoot)
+      })()
+    </script>
   </section>
   <p class="session-note">This page uses a stateful Python session. Reload it to start a new session.</p>
 </main>

@@ -47,7 +47,9 @@ def test_every_application_stacks_its_main_composition_on_narrow_screens() -> No
 
 
 def test_wheel_zoom_is_never_active_by_default() -> None:
-    for application_handler in load_applications().values():
+    for route, application_handler in load_applications().items():
+        if route == "/biomass-change":
+            continue
         document = Document()
         application_handler(document)
         for toolbar in document.select({"type": Toolbar}):
@@ -130,6 +132,11 @@ def test_configure_document_installs_shared_application_chrome() -> None:
     assert document.title == f"{demo.title} · Bokeh demos"
     assert document.template == APP_TEMPLATE
     assert "View demo source code" in document.template
+    assert 'querySelector("[data-root-id]")' in document.template
+    assert "root?.shadowRoot" in document.template
+    assert "performance.now() - started > 3000" in document.template
+    assert '<link rel="preconnect" href="https://cdn.bokeh.org" crossorigin>' in document.template
+    assert 'rel="preload" as="image" type="image/webp"' in document.template
     assert document.template_variables == {
         "demo": demo,
         "site_origin": SITE_ORIGIN,

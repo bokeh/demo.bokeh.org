@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import json
 from functools import cache
+from itertools import pairwise
 from typing import Any
 from urllib.request import Request, urlopen
+
+import numpy as np
+
+from .shading import web_mercator
 
 NATURAL_EARTH_URL = (
     "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/"
@@ -34,6 +39,27 @@ def _extract_boundaries(collection: dict[str, Any]) -> dict[str, list[list[float
                     continue
                 xs.append([float(point[0]) for point in ring])
                 ys.append([float(point[1]) for point in ring])
+    return {"xs": xs, "ys": ys}
+
+
+def project_boundaries(boundaries: dict[str, list[list[float]]]) -> dict[str, list[list[float]]]:
+    """Project WGS84 rings to Web Mercator, splitting antimeridian crossings."""
+    xs: list[list[float]] = []
+    ys: list[list[float]] = []
+    for longitudes, latitudes in zip(boundaries["xs"], boundaries["ys"], strict=True):
+        starts = [0]
+        starts.extend(
+            index
+            for index in range(1, len(longitudes))
+            if abs(longitudes[index] - longitudes[index - 1]) > 180
+        )
+        starts.append(len(longitudes))
+        for start, end in pairwise(starts):
+            if end - start < 2:
+                continue
+            x, y = web_mercator(np.asarray(longitudes[start:end]), np.asarray(latitudes[start:end]))
+            xs.append(x.tolist())
+            ys.append(y.tolist())
     return {"xs": xs, "ys": ys}
 
 
