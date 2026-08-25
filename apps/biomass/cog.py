@@ -34,6 +34,7 @@ class Window:
 
     values: np.ndarray
     source_bytes: int
+    bounds: Bounds | None = None
 
 
 @dataclass(frozen=True)
@@ -122,6 +123,19 @@ def _pixel_window(page: tifffile.TiffPage, bounds: Bounds) -> tuple[int, int, in
     return row_start, row_end, column_start, column_end
 
 
+def _window_bounds(
+    page: tifffile.TiffPage, row_start: int, row_end: int, column_start: int, column_end: int
+) -> Bounds:
+    """Return the exact WGS84 extent of a pixel-aligned source window."""
+    scale_x = 360 / page.imagewidth
+    scale_y = 180 / page.imagelength
+    west = -180 + column_start * scale_x
+    east = -180 + column_end * scale_x
+    north = 90 - row_start * scale_y
+    south = 90 - row_end * scale_y
+    return (west, south, east, north)
+
+
 def _read_tiles(page: tifffile.TiffPage, bounds: Bounds) -> Window:
     if not page.is_tiled or page.tilewidth is None or page.tilelength is None:
         raise ValueError("CTrees source is expected to be a tiled GeoTIFF")
@@ -158,7 +172,11 @@ def _read_tiles(page: tifffile.TiffPage, bounds: Bounds) -> Window:
         ]
 
     result.setflags(write=False)
-    return Window(values=result, source_bytes=sum(bytecounts))
+    return Window(
+        values=result,
+        source_bytes=sum(bytecounts),
+        bounds=_window_bounds(page, row_start, row_end, column_start, column_end),
+    )
 
 
 @lru_cache(maxsize=48)
@@ -195,6 +213,8 @@ def query_change(
     current = current_window.values
     if baseline.shape != current.shape:
         raise ValueError("source windows do not have matching shapes")
+    if baseline_window.bounds != current_window.bounds:
+        raise ValueError("source windows do not have matching bounds")
     valid = (baseline != NO_DATA) & (current != NO_DATA)
     delta = np.full(baseline.shape, np.nan, dtype=np.float32)
     np.subtract(current, baseline, out=delta, where=valid, dtype=np.float32)
@@ -206,7 +226,7 @@ def query_change(
         current=current,
         delta=delta,
         valid=valid,
-        bounds=bounds,
+        bounds=baseline_window.bounds or bounds,
         start_year=start_year,
         end_year=end_year,
         overview_level=overview_level,
