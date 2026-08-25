@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from time import sleep
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -71,7 +72,7 @@ def test_biomass_application_constructs_without_network_access() -> None:
     assert fallback[0].args["renderer"] is tiles
     assert "for (const [key, tile] of this.tiles)" in fallback[0].code
     assert tiles.tile_source.url == (
-        "/biomass-tiles/2000/2025/{Z}/{X}/{Y}.webp?v=icechunk-z4-aligned-v6"
+        "/biomass-tiles/2000/2025/{Z}/{X}/{Y}.webp?v=icechunk-z4-pixel-aligned-v7"
     )
     assert tiles.tile_source.tile_size == shading.TILE_SIZE == 256
     assert tiles.tile_source.max_zoom == icechunk_source.DISPLAY_MAX_ZOOM == 12
@@ -89,7 +90,7 @@ def test_biomass_application_constructs_without_network_access() -> None:
     assert selection_halo.line_width == 7
     assert years.value == (2000, 2025)
     assert document.template_variables["preload_images"] == [
-        f"/biomass-tiles/2000/2025/{zoom}/{column}/{row}.webp?v=icechunk-z4-aligned-v6"
+        f"/biomass-tiles/2000/2025/{zoom}/{column}/{row}.webp?v=icechunk-z4-pixel-aligned-v7"
         for zoom, column, row in shading.INITIAL_VISIBLE_TILES
     ]
     assert local_image.data["image"][0].shape == (2, 2)
@@ -215,14 +216,82 @@ def test_overview_builder_accepts_resumable_year_ranges() -> None:
         build_biomass_overviews._parse_years("1999")
 
 
+def test_cog_window_bounds_report_the_pixel_aligned_source_extent() -> None:
+    page = SimpleNamespace(imagewidth=25_312, imagelength=12_656)
+    requested = shading.tile_bounds(4, 5, 8)
+    row_start, row_end, column_start, column_end = cog._pixel_window(page, requested)
+
+    snapped = cog._window_bounds(page, row_start, row_end, column_start, column_end)
+
+    assert snapped[0] == pytest.approx(requested[0])
+    assert snapped[2] == pytest.approx(requested[2])
+    assert snapped[1] <= requested[1]
+    assert snapped[3] >= requested[3]
+    assert requested[1] - snapped[1] < 180 / page.imagelength
+    assert snapped[3] - requested[3] < 180 / page.imagelength
+
+
+def test_overview_builder_projects_from_snapped_cog_bounds(monkeypatch) -> None:
+    requested = shading.tile_bounds(4, 5, 8)
+    snapped = (requested[0], requested[1] - 0.01, requested[2], requested[3] + 0.01)
+    source = Window(values=np.ones((2, 2), dtype=np.int16), source_bytes=8, bounds=snapped)
+    projected_from = []
+
+    monkeypatch.setattr(build_biomass_overviews.cog, "read_year_window", lambda *_args: source)
+
+    def rasterize(values, bounds, mercator_bounds, tile_size):
+        projected_from.append((bounds, mercator_bounds, tile_size))
+        return values.astype(np.float32), np.ones_like(values, dtype=bool)
+
+    monkeypatch.setattr(build_biomass_overviews.shading, "rasterize_values", rasterize)
+
+    tile = build_biomass_overviews._build_tile(2000, 4, 5, 8)
+
+    assert projected_from == [(snapped, shading._tile_mercator_bounds(4, 5, 8), 1024)]
+    np.testing.assert_array_equal(tile.values, source.values)
+
+
+def test_rasterize_values_samples_exact_web_mercator_pixel_centres() -> None:
+    page = SimpleNamespace(imagewidth=25_312, imagelength=12_656)
+    requested = shading.tile_bounds(4, 4, 7)
+    row_start, row_end, column_start, column_end = cog._pixel_window(page, requested)
+    source_bounds = cog._window_bounds(page, row_start, row_end, column_start, column_end)
+    rows = row_end - row_start
+    north = source_bounds[3]
+    south = source_bounds[1]
+    source_latitude = np.linspace(
+        north - (north - south) / (2 * rows), south + (north - south) / (2 * rows), rows
+    )
+    source = np.repeat((source_latitude >= 10).astype(np.float32)[:, None], 8, axis=1)
+
+    raster, valid = shading.rasterize_values(
+        source, source_bounds, shading._tile_mercator_bounds(4, 4, 7), tile_size=1024
+    )
+
+    mercator_north = shading._tile_mercator_bounds(4, 4, 7)[3]
+    mercator_south = shading._tile_mercator_bounds(4, 4, 7)[1]
+    target_y = np.linspace(
+        mercator_north - (mercator_north - mercator_south) / 2048,
+        mercator_south + (mercator_north - mercator_south) / 2048,
+        1024,
+    )
+    target_latitude = np.degrees(
+        2 * np.arctan(np.exp(target_y / shading.EARTH_RADIUS_M)) - np.pi / 2
+    )
+    expected = target_latitude >= 10
+    np.testing.assert_array_equal(raster[:, 0], expected.astype(np.float32))
+    assert valid.all()
+
+
 def test_query_change_compares_scaled_source_values(monkeypatch) -> None:
     bounds = bounds_around(0, 0, 0.5)
+    snapped_bounds = (-0.251, -0.252, 0.251, 0.252)
     baseline = np.array([[100, 200], [cog.NO_DATA, 400]], dtype=np.int16)
     current = np.array([[150, 170], [300, 400]], dtype=np.int16)
 
     def fake_window(year: int, _bounds, _overview_level: int) -> Window:
         values = baseline if year == 2000 else current
-        return Window(values=values, source_bytes=123)
+        return Window(values=values, source_bytes=123, bounds=snapped_bounds)
 
     monkeypatch.setattr(cog, "read_year_window", fake_window)
     result = cog.query_change(2000, 2025, bounds)
@@ -231,6 +300,7 @@ def test_query_change_compares_scaled_source_values(monkeypatch) -> None:
     np.testing.assert_allclose(result.delta[result.valid], [5, -3, 0])
     assert np.isnan(result.delta[1, 0])
     assert result.source_bytes == 246
+    assert result.bounds == snapped_bounds
 
 
 def test_result_updates_detail_metrics_and_histogram() -> None:
@@ -262,7 +332,7 @@ def test_result_updates_detail_metrics_and_histogram() -> None:
     assert "4.2 MB" in explorer.status.text
 
 
-def test_datashader_tile_returns_a_projected_png(monkeypatch) -> None:
+def test_fallback_tile_returns_a_projected_png(monkeypatch) -> None:
     delta = np.arange(32, dtype=np.float32).reshape(4, 8)
     valid = np.ones_like(delta, dtype=bool)
 

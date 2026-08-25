@@ -7,7 +7,6 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from threading import Lock
 from time import perf_counter
 from typing import Any
 
@@ -29,7 +28,6 @@ YEAR_COUNT = cog.LATEST_YEAR - cog.BASELINE_YEAR + 1
 FILL_VALUE = cog.NO_DATA
 CODEC = Blosc(cname="zstd", clevel=7, shuffle=Blosc.BITSHUFFLE)
 ZARR_CODEC = BloscCodec(cname="zstd", clevel=7, shuffle="bitshuffle")
-RASTERIZE_LOCK = Lock()
 
 
 @dataclass(frozen=True)
@@ -127,14 +125,13 @@ def _build_tile(year: int, zoom: int, column: int, row: int) -> BuiltTile:
     bounds = shading.tile_bounds(zoom, column, row)
     source_level = 8 - zoom
     source = cog.read_year_window(year, bounds, source_level)
+    if source.bounds is None:
+        raise ValueError("CTrees COG window did not report its pixel-aligned bounds")
     values = source.values.astype(np.float32)
     values[(values < VALID_MIN) | (values > VALID_MAX)] = np.nan
-    # Numba's default workqueue backend cannot enter Datashader concurrently.
-    # Keep the remote COG reads parallel and serialize only the projection kernel.
-    with RASTERIZE_LOCK:
-        raster, valid = shading.rasterize_values(
-            values, bounds, shading._tile_mercator_bounds(zoom, column, row), tile_size=TILE_SIZE
-        )
+    raster, valid = shading.rasterize_values(
+        values, source.bounds, shading._tile_mercator_bounds(zoom, column, row), tile_size=TILE_SIZE
+    )
     encoded = np.full(raster.shape, FILL_VALUE, dtype=np.int16)
     encoded[valid] = np.clip(np.rint(raster[valid]), VALID_MIN, VALID_MAX).astype(np.int16)
     encoded.setflags(write=False)
@@ -325,6 +322,57 @@ def _repair_coarse_year(repo: Any, year: int, workers: int) -> None:
     )
 
 
+def _repair_alignment_year(repo: Any, year: int, workers: int) -> None:
+    """Rebuild z4 from exact COG pixel bounds, then derive every coarser level."""
+    session = repo.writable_session("main")
+    root = zarr.open_group(session.store, mode="r+")
+    repaired = {int(value) for value in root.attrs.get("alignment_repaired_years", [])}
+    if year in repaired:
+        LOGGER.info("Skipping already alignment-repaired year %d", year)
+        return
+
+    tasks = _finest_tasks(year)
+    started = perf_counter()
+    source_bytes = 0
+    compressed_bytes = 0
+    year_index = year - cog.BASELINE_YEAR
+    with ThreadPoolExecutor(
+        max_workers=workers, thread_name_prefix="biomass-alignment-repair"
+    ) as pool:
+        futures = [pool.submit(_build_tile, *task) for task in tasks]
+        for done, future in enumerate(as_completed(futures), start=1):
+            tile = future.result()
+            y0 = tile.row * TILE_SIZE
+            x0 = tile.column * TILE_SIZE
+            root["agb"][f"z{tile.zoom}"][year_index, y0 : y0 + TILE_SIZE, x0 : x0 + TILE_SIZE] = (
+                tile.values
+            )
+            source_bytes += tile.source_bytes
+            compressed_bytes += tile.compressed_bytes
+            if done % 16 == 0 or done == len(tasks):
+                LOGGER.info(
+                    "Year %d alignment: wrote %d/%d z%d tiles", year, done, len(tasks), MAX_ZOOM
+                )
+
+    coarse_source_bytes, coarse_compressed_bytes = _write_coarse_levels(root, year, workers)
+    source_bytes += coarse_source_bytes
+    compressed_bytes += coarse_compressed_bytes
+    repaired.add(year)
+    root.attrs["alignment_repaired_years"] = sorted(repaired)
+    root.attrs["raster_alignment"] = "CTrees COG pixel bounds projected into WebMercatorQuad"
+    root.attrs["raster_alignment_source_zoom"] = MAX_ZOOM
+    snapshot = session.commit(f"Correct {year} Web Mercator alignment from COG pixel bounds")
+    LOGGER.info(
+        "Alignment-repaired %d at %s in %.1f s; source %.1f MiB, estimated compressed %.1f MiB",
+        year,
+        snapshot,
+        perf_counter() - started,
+        source_bytes / 1024**2,
+        compressed_bytes / 1024**2,
+    )
+    cog.read_year_window.cache_clear()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", default=DEFAULT_REPO)
@@ -335,6 +383,11 @@ def main() -> None:
         action="store_true",
         help="rebuild z0-z3 from the aligned z4 overview without rereading the source COGs",
     )
+    parser.add_argument(
+        "--repair-alignment",
+        action="store_true",
+        help="rebuild z4 from exact COG pixel bounds and derive z0-z3 from the result",
+    )
     args = parser.parse_args()
     if args.workers < 1 or args.workers > 16:
         parser.error("--workers must be between 1 and 16")
@@ -343,7 +396,9 @@ def main() -> None:
     repo = _client().get_repo(args.repo)
     _initialize(repo)
     for year in args.years:
-        if args.repair_coarse:
+        if args.repair_alignment:
+            _repair_alignment_year(repo, year, args.workers)
+        elif args.repair_coarse:
             _repair_coarse_year(repo, year, args.workers)
         else:
             _write_year(repo, year, args.workers)

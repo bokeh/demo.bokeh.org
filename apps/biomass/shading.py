@@ -1,4 +1,4 @@
-"""Datashader-backed Web Mercator tiles for CTrees biomass change."""
+"""Pixel-aligned Web Mercator tiles for CTrees biomass change."""
 
 from __future__ import annotations
 
@@ -8,10 +8,8 @@ from functools import lru_cache
 from math import atan, degrees, pi, sinh
 from time import perf_counter
 
-import datashader as ds
 import imagecodecs
 import numpy as np
-import xarray as xr
 
 from . import cog, icechunk_source
 from .cog import BASELINE_YEAR, LATEST_YEAR, Bounds, overview_level_for
@@ -21,7 +19,7 @@ EARTH_RADIUS_M = 6_378_137.0
 WEB_MERCATOR_LIMIT = EARTH_RADIUS_M * pi
 WEB_MERCATOR_MAX_LATITUDE = 85.0511287798066
 TILE_SIZE = icechunk_source.DISPLAY_TILE_SIZE
-TILE_VERSION = "icechunk-z4-aligned-v6"
+TILE_VERSION = "icechunk-z4-pixel-aligned-v7"
 MAX_TILE_ZOOM = icechunk_source.DISPLAY_MAX_ZOOM
 TILE_CACHE_SIZE = 512
 INITIAL_VISIBLE_TILES = tuple((6, column, row) for row in range(32, 35) for column in range(21, 24))
@@ -93,28 +91,30 @@ def _tile_mercator_bounds(zoom: int, column: int, row: int) -> Bounds:
 def rasterize_values(
     values: np.ndarray, bounds: Bounds, mercator_bounds: Bounds, tile_size: int = TILE_SIZE
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Project a WGS84 raster into one north-up Web Mercator tile."""
+    """Sample a WGS84 pixel grid at Web Mercator output-pixel centres."""
     west, south, east, north = bounds
     rows, columns = values.shape
-    x_step = (east - west) / columns
-    y_step = (north - south) / rows
-    longitude = np.linspace(west + x_step / 2, east - x_step / 2, columns)
-    latitude = np.linspace(north - y_step / 2, south + y_step / 2, rows)
-    x, _ = web_mercator(longitude, np.zeros_like(longitude))
-    _, y = web_mercator(np.zeros_like(latitude), latitude)
-    source = xr.DataArray(values, coords={"y": y, "x": x}, dims=("y", "x"), name="biomass")
+    if rows == 0 or columns == 0 or east <= west or north <= south:
+        raise ValueError("source raster must have nonempty values and positive bounds")
     mercator_west, mercator_south, mercator_east, mercator_north = mercator_bounds
-    canvas = ds.Canvas(
-        plot_width=tile_size,
-        plot_height=tile_size,
-        x_range=(mercator_west, mercator_east),
-        y_range=(mercator_south, mercator_north),
-    )
-    raster = canvas.raster(source, agg="mean", interpolate="nearest")
-    delta = np.asarray(raster.values, dtype=np.float32)
-    raster_y = np.asarray(raster.coords["y"].values)
-    if raster_y[0] < raster_y[-1]:
-        delta = np.flipud(delta)
+    if mercator_east <= mercator_west or mercator_north <= mercator_south:
+        raise ValueError("Web Mercator bounds must be positive")
+
+    x_step = (mercator_east - mercator_west) / tile_size
+    y_step = (mercator_north - mercator_south) / tile_size
+    target_x = np.linspace(mercator_west + x_step / 2, mercator_east - x_step / 2, tile_size)
+    target_y = np.linspace(mercator_north - y_step / 2, mercator_south + y_step / 2, tile_size)
+    longitude = np.degrees(target_x / EARTH_RADIUS_M)
+    latitude = np.degrees(2 * np.arctan(np.exp(target_y / EARTH_RADIUS_M)) - pi / 2)
+    source_columns = np.floor((longitude - west) / (east - west) * columns).astype(np.int64)
+    source_rows = np.floor((north - latitude) / (north - south) * rows).astype(np.int64)
+    columns_inside = (source_columns >= 0) & (source_columns < columns)
+    rows_inside = (source_rows >= 0) & (source_rows < rows)
+    source_columns = np.clip(source_columns, 0, columns - 1)
+    source_rows = np.clip(source_rows, 0, rows - 1)
+    delta = np.asarray(values[np.ix_(source_rows, source_columns)], dtype=np.float32)
+    delta[~rows_inside, :] = np.nan
+    delta[:, ~columns_inside] = np.nan
     delta = np.ascontiguousarray(delta)
     return delta, np.isfinite(delta)
 
@@ -177,19 +177,19 @@ def query_tile(
 
 
 def warm_renderer() -> float:
-    """Compile the tile raster and PNG encoding paths before readiness succeeds."""
+    """Warm the tile reprojection and WebP encoding paths before readiness."""
     started = perf_counter()
-    source = xr.DataArray(
-        np.array([[0.0, 1.0], [2.0, 3.0]], dtype=np.float32),
-        coords={"y": [0.5, -0.5], "x": [-0.5, 0.5]},
-        dims=("y", "x"),
-    )
-    raster = ds.Canvas(plot_width=2, plot_height=2, x_range=(-1, 1), y_range=(-1, 1)).raster(
-        source, agg="mean", interpolate="nearest"
+    source = np.array([[0.0, 1.0], [2.0, 3.0]], dtype=np.float32)
+    x, y = web_mercator(np.array([-1.0, 1.0]), np.array([-1.0, 1.0]))
+    raster, valid = rasterize_values(
+        source,
+        (-1.0, -1.0, 1.0, 1.0),
+        (float(x[0]), float(y[0]), float(x[1]), float(y[1])),
+        tile_size=2,
     )
     if raster.shape != (2, 2):
-        raise RuntimeError("Datashader warmup returned an unexpected shape")
-    pixels = rgba_pixels(np.asarray(raster), np.isfinite(raster), limit=5)
+        raise RuntimeError("Biomass raster warmup returned an unexpected shape")
+    pixels = rgba_pixels(raster, valid, limit=5)
     webp = bytes(imagecodecs.webp_encode(pixels, lossless=True, method=2))
     if not (webp.startswith(b"RIFF") and webp[8:12] == b"WEBP"):
         raise RuntimeError("WebP warmup returned an unexpected payload")
