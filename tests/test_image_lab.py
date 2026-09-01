@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 from bokeh.document import Document
+from bokeh.events import ButtonClick
 from bokeh.models import BoxAnnotation, Button, ColumnDataSource, Div, PanTool, Select, Slider
 
 from catalog import load_applications
@@ -56,6 +57,10 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
     assert not strength.syncable
     assert "change:value" in strength.js_property_callbacks
     assert "change:value_throttled" in strength.js_property_callbacks
+    assert set(crop_request.js_property_callbacks) == {"change:data"}
+    crop_sync = crop_request.js_property_callbacks["change:data"][0]
+    assert "box.update" in crop_sync.code
+    assert "handles.change.emit()" in crop_sync.code
     results = []
     for option in operation.options:
         operation.value = option
@@ -68,9 +73,17 @@ def test_hubble_filters_and_editable_crop_update_the_result() -> None:
     operation.value = "Sobel edges"
     edges = processed.data["image"][0].copy()
     strength_request.data = {"value": [3.0]}
+    assert strength.value == 2.2
     assert not np.array_equal(edges, processed.data["image"][0])
 
-    crop_box.update(left=0, right=0.48, bottom=1 - 480 / 872, top=1)
     crop_request.data = {"left": [0], "right": [0.48], "bottom": [1 - 480 / 872], "top": [1]}
     assert "x=0:480" in report.text
     assert "y=0:480" in report.text
+
+    reset_crop._trigger_event(ButtonClick(reset_crop))
+    assert crop_request.data == {
+        "left": [260 / 1000],
+        "right": [740 / 1000],
+        "bottom": [1 - 676 / 872],
+        "top": [1 - 196 / 872],
+    }
