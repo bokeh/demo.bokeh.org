@@ -231,6 +231,13 @@ def modify_document(document) -> None:
         line_color="#fffdf9",
         line_width=1.5,
     )
+    crop_request.js_on_change(
+        "data",
+        CustomJS(
+            args={"box": crop_box, "handles": crop_handles},
+            code=load_javascript(__file__, "sync_crop_box.js"),
+        ),
+    )
 
     start_crop = CustomJS(
         args={"box": crop_box, "state": crop_interaction},
@@ -279,7 +286,8 @@ def modify_document(document) -> None:
         image = np.ascontiguousarray(selection.values)
         image_filter = FILTERS[operation.value]
         started = perf_counter()
-        result = image_filter.processor(image, strength.value)
+        amount = float(cast(float, strength_request.data["value"][0]))
+        result = image_filter.processor(image, amount)
         elapsed = 1000 * (perf_counter() - started)
         height, width, _ = image.shape
         processed_source.patch({"image": [(0, rgba_view(result))]})
@@ -310,8 +318,6 @@ def modify_document(document) -> None:
     def restore_crop() -> None:
         crop["x"] = (260, 740)
         crop["y"] = (196, 676)
-        crop_box.update(**initial_crop_box)
-        crop_handles.data = dict(initial_crop_handles)
         crop_request.data = {name: [value] for name, value in initial_crop_box.items()}
 
     @performance.measure
@@ -335,7 +341,6 @@ def modify_document(document) -> None:
     @performance.measure
     def update_strength(_attr: str, _old: object, _new: object) -> None:
         if not configuring["operation"]:
-            strength.value = float(cast(float, strength_request.data["value"][0]))
             calculate()
 
     operation.on_change("value", configure_filter)
