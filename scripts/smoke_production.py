@@ -110,13 +110,13 @@ def check(base_url: str) -> None:
     _index_response, index = fetch(urljoin(base_url, "/"))
     if b"Bokeh in action" not in index:
         raise RuntimeError("catalog marker was not present")
-    if b"/biomass-change" in index:
-        raise RuntimeError("unlisted biomass application appeared in the catalog")
+    if b"/biomass-change" not in index:
+        raise RuntimeError("biomass application was missing from the catalog")
 
     _sitemap_response, sitemap = fetch(urljoin(base_url, "/sitemap.xml"))
     ElementTree.fromstring(sitemap)
-    if b"/biomass-change" in sitemap:
-        raise RuntimeError("unlisted biomass application appeared in the sitemap")
+    if b"/biomass-change" not in sitemap:
+        raise RuntimeError("biomass application was missing from the sitemap")
 
     route = "/airport-access"
     app_response, app_page = fetch(urljoin(base_url, route))
