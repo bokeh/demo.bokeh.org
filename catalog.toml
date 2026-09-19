@@ -24,7 +24,6 @@ runtime = "Python / ASGI"
 tags = ["Icechunk", "Arraylake", "COG overviews", "deep zoom", "server callbacks", "Earthmover", "real data"]
 accent = "coral"
 preview = "biomass-preview.jpg"
-listed = false
 wide = true
 
 [[demos]]

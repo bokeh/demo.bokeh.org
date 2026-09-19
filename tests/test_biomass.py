@@ -98,8 +98,8 @@ def test_biomass_application_constructs_without_network_access() -> None:
     assert any(callback.callback.__name__ == "start" for callback in document.session_callbacks)
 
 
-def test_biomass_application_is_not_listed() -> None:
-    assert "/biomass-change" not in {demo.route for demo in LISTED_DEMOS}
+def test_biomass_application_is_listed() -> None:
+    assert "/biomass-change" in {demo.route for demo in LISTED_DEMOS}
 
 
 def test_biomass_application_uses_wide_page_layout() -> None:
