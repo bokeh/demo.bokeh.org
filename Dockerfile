@@ -1,3 +1,18 @@
+FROM node:24-bookworm-slim AS framework-build
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN npm install --global pnpm@11.25.0
+
+WORKDIR /app/framework-demos
+
+COPY framework-demos/package.json framework-demos/pnpm-lock.yaml framework-demos/pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY framework-demos ./
+COPY site/header.html.jinja site/footer.html.jinja site/site.css /app/site/
+RUN pnpm run build
+
 FROM python:3.14-slim-trixie AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.12.1 /uv /uvx /bin/
@@ -39,6 +54,7 @@ COPY --from=build /app/.venv /app/.venv
 
 COPY apps ./apps
 COPY site ./site
+COPY --from=framework-build /app/site/frameworks ./site/frameworks
 COPY asgi.py catalog.py catalog.toml presentation.py ./
 
 RUN chown -R bokeh:bokeh /app

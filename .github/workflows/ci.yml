@@ -9,6 +9,29 @@ permissions:
   contents: read
 
 jobs:
+  frameworks:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: framework-demos
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install pnpm
+        run: npm install --global pnpm@11.25.0
+      - name: Install framework dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Check framework code
+        run: pnpm check
+      - name: Build static framework demos
+        run: pnpm build
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Test framework demos
+        run: pnpm test
+
   test:
     runs-on: ubuntu-latest
     env:

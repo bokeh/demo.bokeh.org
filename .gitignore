@@ -5,3 +5,13 @@ __pycache__/
 .ruff_cache/
 .venv/
 outputs/
+work/
+framework-demos/node_modules/
+framework-demos/next/.next/
+framework-demos/next/out/
+site/frameworks/
+framework-demos/work/
+framework-demos/next/next-env.d.ts
+framework-demos/next/tsconfig.tsbuildinfo
+framework-demos/test-results/
+framework-demos/playwright-report/
