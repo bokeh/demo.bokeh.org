@@ -6,28 +6,31 @@ own; it does not import files from the demo site or another example.
 
 ## Run
 
-Install Node.js 24 or newer and pnpm 11.25.0, then run from this directory:
+Install Node.js 24 or newer (which includes npm), then run from this directory:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm dev
+npm ci
+npm run dev
 ```
 
-Open the local URL printed by Vite. To check, build, and preview the production
-files:
+Open the local URL printed by Vite, normally <http://127.0.0.1:5173>. To check,
+build, and preview the production files:
 
 ```sh
-pnpm check
-pnpm build
-pnpm preview
+npm run check
+npm run build
+npm run preview
 ```
+
+The preview is served at <http://127.0.0.1:4173>. To use another port, run
+`npm run preview -- --port 4180`.
 
 The static application is written to `dist/`. Deploy its contents to any static
 web server. For a deployment below a URL prefix, set the asset base at build
 time, including its trailing slash:
 
 ```sh
-BOKEH_DEMO_BASE=/react/ pnpm build
+BOKEH_DEMO_BASE=/react/ npm run build
 ```
 
 ## Embedding
@@ -54,6 +57,6 @@ import {BokehDocument, BokehRoot} from "@bokeh/react"
 - `public/assets/`: the included site styles and icon.
 
 BokehJS and its adapter are pinned to the same `4.0.0-dev.5` release. The included
-pnpm configuration permits those development packages and the esbuild install
-script. No Python server is required. The site navigation and external brand
-logo retain the links used on demo.bokeh.org.
+`package-lock.json` lets `npm ci` reproduce the dependency versions. No Python
+server is required. The site navigation and external brand logo retain the links
+used on demo.bokeh.org.

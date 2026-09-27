@@ -22,9 +22,9 @@ try {
     const directory = resolve(temporary, "work", app)
     await cp(resolve(root, app), directory, {recursive: true, filter: (path) => !ignored.has(basename(path))})
     console.log(`Checking independent ${app} copy: ${directory}`)
-    run("pnpm", ["install", "--frozen-lockfile"], directory)
-    run("pnpm", ["run", "check"], directory)
-    run("pnpm", ["run", "build"], directory)
+    run("npm", ["ci"], directory)
+    run("npm", ["run", "check"], directory)
+    run("npm", ["run", "build"], directory)
 
     run(process.execPath, [resolve(root, "node_modules/@playwright/test/cli.js"), "test"], root, {
       ...env,

@@ -10,24 +10,25 @@ Python, a Bokeh server, or any files from the rest of the demo repository.
 
 ## Run locally
 
-Use Node.js 24 or newer and pnpm 11.25.0. From this directory:
+Use Node.js 24 or newer (which includes npm). From this directory:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm dev
+npm ci
+npm run dev
 ```
 
-Open <http://127.0.0.1:3000>. To validate and preview the static export:
+Open the local URL printed by Next.js, normally <http://127.0.0.1:3000>. To
+validate and preview the static export:
 
 ```sh
-pnpm check
-pnpm build
-pnpm preview
+npm run check
+npm run build
+npm run preview
 ```
 
 The preview is served at <http://127.0.0.1:4173>. Set another port with
-`pnpm preview --port 4180`. The check command generates Next.js route types before
-running TypeScript, so it also works before the first build.
+`npm run preview -- --port 4180`. The check command generates Next.js route types
+before running TypeScript, so it also works before the first build.
 
 ## How embedding works
 
@@ -52,15 +53,15 @@ example. Styles and the favicon are included in `public/assets/`.
 
 ## Deploy
 
-`pnpm build` exports the application to `out/`. Publish that directory with a static
-web server; no Next.js or Node.js server is required in production.
+`npm run build` exports the application to `out/`. Publish that directory with a
+static web server; no Next.js or Node.js server is required in production.
 
 By default, assets are served from the site's root. The Bokeh demo site's build sets
 `BOKEH_DEMO_BASE=/assets/frameworks/nextjs` to put this app's assets under a dedicated
 prefix while serving its HTML at `/nextjs`. If you use this option, your host must
 serve the exported assets at the chosen prefix. Use the same environment variable
-with `pnpm preview` to preview that build locally.
+with `npm run preview` to preview that build locally.
 
 BokehJS and the React adapter are pinned to the matching `4.0.0-dev.5` npm release.
-The local pnpm configuration allows those prereleases through pnpm's release-age
-check. Update both direct Bokeh packages together when changing versions.
+The included `package-lock.json` lets `npm ci` reproduce the dependency versions.
+Update both direct Bokeh packages together when changing versions.

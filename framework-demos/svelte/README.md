@@ -8,22 +8,26 @@ Svelte runes drive the controls and readouts. The `bokehDocument` action shares 
 
 Copy this directory on its own. It includes the plotting code, page, styles,
 configuration, and dependency lockfile; no files from the parent repository are
-needed. Install Node.js 24 or later and pnpm 11.25.0, then run in this directory:
+needed. Install Node.js 24 or later (which includes npm), then run in this
+directory:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm dev
+npm ci
+npm run dev
 ```
 
-Open the local URL printed by Vite.
+Open the local URL printed by Vite, normally <http://127.0.0.1:5173>.
 
 ## Check and build
 
 ```sh
-pnpm check
-pnpm build
-pnpm preview
+npm run check
+npm run build
+npm run preview
 ```
+
+The preview is served at <http://127.0.0.1:4173>. To use another port, run
+`npm run preview -- --port 4180`.
 
 The production build is written to `dist/`. Serve that directory with any
 static web server. No Python or Bokeh server is required.
@@ -31,7 +35,7 @@ static web server. No Python or Bokeh server is required.
 For deployment below a URL prefix, set `BOKEH_DEMO_BASE` when building:
 
 ```sh
-BOKEH_DEMO_BASE=/examples/svelte/ pnpm build
+BOKEH_DEMO_BASE=/examples/svelte/ npm run build
 ```
 
 The page and `public/assets/` contain a snapshot of the Bokeh demo site's
@@ -46,4 +50,5 @@ prefix; the app has no build-time dependency on that site.
 - `index.html` contains the page shell, source link, and short adapter example.
 
 The npm Bokeh packages are pinned to `4.0.0-dev.5`. Update the BokehJS and
-adapter versions together when moving to a newer release.
+adapter versions together when moving to a newer release. The included
+`package-lock.json` lets `npm ci` reproduce the dependency versions.

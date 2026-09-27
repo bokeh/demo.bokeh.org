@@ -1,3 +1,0 @@
-# Each example is an independent pnpm project with its own lockfile.
-# This package contains only site-level build orchestration and browser tests.
-packages: []

@@ -19,20 +19,18 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-      - name: Install pnpm
-        run: npm install --global pnpm@11.25.0
       - name: Install browser test dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
       - name: Install browser
-        run: pnpm exec playwright install --with-deps chromium
+        run: npm exec -- playwright install --with-deps chromium
       - name: Verify independently copied apps
-        run: pnpm test:standalone
+        run: npm run test:standalone
       - name: Install framework dependencies
-        run: pnpm install:apps
+        run: npm run install:apps
       - name: Build static framework demos
-        run: pnpm build
+        run: npm run build
       - name: Test framework demos
-        run: pnpm test
+        run: npm test
 
   test:
     runs-on: ubuntu-latest
