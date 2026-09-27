@@ -1,0 +1,92 @@
+<!doctype html><html lang="en">
+<head>
+<meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Where waves meet · Vue · Bokeh demos</title>
+  <meta name="description" content="Two sources, one interference field. Tune their rhythm and watch bands of constructive and destructive interference take shape.">
+  <link rel="icon" href="%BASE_URL%assets/bokeh-icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="%BASE_URL%assets/site.css">
+  <link rel="stylesheet" href="%BASE_URL%assets/frameworks.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="/" aria-label="Bokeh demos home">
+      <img src="https://static.bokeh.org/logos/logotype.svg" alt="Bokeh" width="490" height="141">
+    </a>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <a href="https://bokeh.org/#why-bokeh">Why Bokeh</a>
+      <a href="https://docs.bokeh.org/en/latest/docs/gallery.html">Examples</a>
+      <a href="https://docs.bokeh.org/en/latest/">Docs</a>
+      <details class="nav-more">
+        <summary>More</summary>
+        <div>
+          <a href="https://discourse.bokeh.org/">Community</a>
+          <a href="https://github.com/bokeh/bokeh">GitHub</a>
+        </div>
+      </details>
+    </nav>
+    <a class="header-cta" href="/#demos">All demos <span aria-hidden="true">↓</span></a>
+    <details class="mobile-nav">
+      <summary aria-label="Open navigation"><span></span><span></span></summary>
+      <nav aria-label="Mobile navigation">
+        <a href="https://bokeh.org/#why-bokeh">Why Bokeh</a>
+        <a href="https://docs.bokeh.org/en/latest/docs/gallery.html">Examples</a>
+        <a href="https://docs.bokeh.org/en/latest/">Docs</a>
+        <a href="https://discourse.bokeh.org/">Community</a>
+        <a href="https://github.com/bokeh/bokeh">GitHub</a>
+        <a href="/#demos">All demos</a>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<main class="application-page framework-page" id="main-content"><section class="application-intro"><div><p class="section-kicker"><span></span>Vue + Bokeh</p><h1>Where waves meet</h1><p>Two sources, one interference field. Tune their rhythm and watch bands of constructive and destructive interference take shape.</p></div><div class="application-meta"><p>Waves · images · animation<br><span>Standalone BokehJS · 4.0.0-dev.5</span></p><span class="framework-tag">Vue reactivity & Teleport</span><div class="application-links"><a href="https://github.com/bokeh/demo.bokeh.org/tree/main/framework-demos/vue">View full app source <span aria-hidden="true">↗</span></a></div></div></section><div id="framework-app"><p class="framework-loading" role="status">Loading interactive demo…</p></div><noscript><p>Enable JavaScript to explore this interactive demo.</p></noscript><section class="embed-example" aria-label="Framework embedding example"><div><p class="eyebrow">Framework adapter</p><h2>Embed Bokeh in Vue</h2><p>Mount two Bokeh plots or tables in separate page elements. See the full app source for model creation, data and controls.</p></div><pre><code>import {BokehDocument, BokehRoot} from "@bokeh/vue"
+
+&lt;BokehDocument :models="dashboard.models"&gt;
+  &lt;section&gt;&lt;BokehRoot :model="dashboard.field" /&gt;&lt;/section&gt;
+  &lt;aside&gt;&lt;BokehRoot :model="dashboard.profile" /&gt;&lt;/aside&gt;
+&lt;/BokehDocument&gt;</code></pre></section><p class="session-note">Computed, synthetic data. All interactions run in your browser.</p></main>
+<footer>
+  <div class="footer-links">
+    <div class="footer-grid">
+      <div>
+        <h3>Project</h3>
+        <a href="https://github.com/bokeh/bokeh/wiki/BEP-4:-Project-Roles">Team</a>
+        <a href="https://bokeh.org/branding/">Branding</a>
+        <a href="https://github.com/bokeh/bokeh/wiki/Citing-Bokeh">Citation</a>
+      </div>
+      <div>
+        <h3>Documentation</h3>
+        <a href="https://docs.bokeh.org/en/latest/docs/user_guide.html">User guide</a>
+        <a href="https://docs.bokeh.org/en/latest/docs/gallery.html">Gallery</a>
+        <a href="https://docs.bokeh.org/en/latest/docs/reference.html">Reference guide</a>
+      </div>
+      <div>
+        <h3>Hands on</h3>
+        <a href="https://github.com/bokeh/tutorial">Tutorials</a>
+        <a href="/">Demos</a>
+        <a href="https://bokeh.org/community/">Support</a>
+      </div>
+      <div>
+        <h3>Contribute</h3>
+        <a href="https://github.com/bokeh/bokeh">GitHub</a>
+        <a href="https://docs.bokeh.org/en/latest/docs/dev_guide.html">Contributor guide</a>
+        <a href="https://github.com/bokeh/bokeh#support">Sponsor</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-copy">
+    <div>
+      <p>Bokeh is a fiscally sponsored project of <a href="https://numfocus.org/">NumFOCUS</a>, a nonprofit dedicated to supporting the open-source scientific computing community.</p>
+      <p>©2026 Bokeh contributors. Website content uses the <a href="https://github.com/bokeh/bokeh.org/blob/main/LICENSE.txt">BSD License</a> and is covered by the <a href="https://github.com/bokeh/bokeh/blob/main/docs/CODE_OF_CONDUCT.md">Bokeh Code of Conduct</a>.</p>
+    </div>
+    <a class="donate-button" href="https://numfocus.org/donate-to-bokeh">Donate</a>
+  </div>
+</footer>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

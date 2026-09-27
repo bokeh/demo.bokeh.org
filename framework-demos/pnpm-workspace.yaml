@@ -1,11 +1,3 @@
-allowBuilds:
-  '@parcel/watcher': true
-  sharp: true
-  esbuild: true
-minimumReleaseAgeExclude:
-  - '@bokeh/bokehjs@4.0.0-dev.5'
-  - '@bokeh/framework@4.0.0-dev.5'
-  - '@bokeh/react@4.0.0-dev.5'
-  - '@bokeh/svelte@4.0.0-dev.5'
-  - '@bokeh/vue@4.0.0-dev.5'
-  - '@bokeh/web-component@4.0.0-dev.5'
+# Each example is an independent pnpm project with its own lockfile.
+# This package contains only site-level build orchestration and browser tests.
+packages: []

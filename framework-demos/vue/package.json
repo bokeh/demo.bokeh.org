@@ -1,0 +1,27 @@
+{
+  "name": "bokeh-vue-waves",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "check": "vue-tsc --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/vue": "4.0.0-dev.5",
+    "vue": "3.5.40"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.5",
+    "vue-tsc": "3.2.6",
+    "@types/node": "24.13.6",
+    "typescript": "5.9.2",
+    "vite": "8.2.0"
+  }
+}

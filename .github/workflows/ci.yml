@@ -21,14 +21,16 @@ jobs:
           node-version: 24
       - name: Install pnpm
         run: npm install --global pnpm@11.25.0
-      - name: Install framework dependencies
+      - name: Install browser test dependencies
         run: pnpm install --frozen-lockfile
-      - name: Check framework code
-        run: pnpm check
-      - name: Build static framework demos
-        run: pnpm build
       - name: Install browser
         run: pnpm exec playwright install --with-deps chromium
+      - name: Verify independently copied apps
+        run: pnpm test:standalone
+      - name: Install framework dependencies
+        run: pnpm install:apps
+      - name: Build static framework demos
+        run: pnpm build
       - name: Test framework demos
         run: pnpm test
 

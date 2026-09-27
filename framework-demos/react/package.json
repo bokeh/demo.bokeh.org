@@ -1,0 +1,28 @@
+{
+  "name": "bokeh-react-waves",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/react": "4.0.0-dev.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "typescript": "5.9.2",
+    "vite": "8.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4"
+  }
+}

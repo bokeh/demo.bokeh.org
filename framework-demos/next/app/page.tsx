@@ -1,4 +1,4 @@
-import chrome from "../../work/chrome.json"
+import chrome from "./chrome.json"
 import WaveLab from "./WaveLab"
 
 // The server component supplies serializable parameters at static export time.

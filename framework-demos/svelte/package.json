@@ -1,0 +1,27 @@
+{
+  "name": "bokeh-svelte-waves",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/svelte": "4.0.0-dev.5",
+    "svelte": "5.56.8"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.2.0",
+    "svelte-check": "4.7.6",
+    "@types/node": "24.13.6",
+    "typescript": "5.9.2",
+    "vite": "8.2.0"
+  }
+}

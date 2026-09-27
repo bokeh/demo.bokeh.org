@@ -1,33 +1,22 @@
-import {cp, mkdir, rm, writeFile} from "node:fs/promises"
+import {cp, mkdir, rm} from "node:fs/promises"
 import {spawnSync} from "node:child_process"
+import {fileURLToPath} from "node:url"
 import {resolve} from "node:path"
-import {build} from "vite"
-import vue from "@vitejs/plugin-vue"
-import {svelte} from "@sveltejs/vite-plugin-svelte"
-import {html, root, header, footer, intro, embedExample} from "./shell.mjs"
 
+const root = fileURLToPath(new URL("../", import.meta.url))
 const output = resolve(root, "../site/frameworks")
 await rm(output, {recursive: true, force: true})
-const inputs = {}
-for (const name of ["react", "vue", "svelte", "components"]) {
-  const directory = resolve(root, "work", name)
-  await mkdir(directory, {recursive: true})
-  const entry = name === "react" ? "main.tsx" : "main.ts"
-  const file = resolve(directory, "index.html")
-  await writeFile(file, html(name, `../../src/${name}/${entry}`))
-  inputs[name] = file
+await mkdir(output, {recursive: true})
+
+for (const app of ["react", "vue", "svelte", "components", "next"]) {
+  const route = app === "next" ? "nextjs" : app
+  const result = spawnSync("pnpm", ["run", "build"], {
+    cwd: resolve(root, app),
+    stdio: "inherit",
+    env: {...process.env, BOKEH_DEMO_BASE: `/assets/frameworks/${route}/`, NEXT_TELEMETRY_DISABLED: "1"},
+  })
+  if (result.error) throw result.error
+  if (result.status !== 0) process.exit(result.status ?? 1)
+  await cp(resolve(root, app, app === "next" ? "out" : "dist"), resolve(output, route), {recursive: true})
 }
-await build({
-  root: resolve(root, "work"), base: "/assets/frameworks/",
-  plugins: [vue(), svelte({configFile: false})],
-  esbuild: {jsx: "automatic"},
-  build: {outDir: output, emptyOutDir: true, rollupOptions: {input: inputs}},
-})
-await cp(resolve(root, "src/shared/frameworks.css"), resolve(output, "frameworks.css"))
-await writeFile(resolve(root, "work/chrome.json"), JSON.stringify({header, footer, intro: intro("nextjs"), embedExample: embedExample("nextjs")}))
-const next = spawnSync(process.execPath, [resolve(root, "node_modules/next/dist/bin/next"), "build", "--webpack"], {
-  cwd: resolve(root, "next"), stdio: "inherit", env: {...process.env, NEXT_TELEMETRY_DISABLED: "1"},
-})
-if (next.status !== 0) process.exit(next.status ?? 1)
-await cp(resolve(root, "next/out"), resolve(output, "nextjs"), {recursive: true})
-console.log("Built five isolated framework demos in site/frameworks/.")
+console.log("Built five standalone framework apps in site/frameworks/.")

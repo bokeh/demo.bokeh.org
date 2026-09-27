@@ -185,16 +185,25 @@ The unlisted pages at `/react`, `/vue`, `/svelte`, `/components`, and `/nextjs`
 show the same wave interference lab through the BokehJS framework adapters. `/next.js` is an alias for `/nextjs`.
 They share the site's header, footer, and visual styles, but run entirely in
 the browser. Each page links to its full source directory and shows a short
-adapter embedding snippet. Their BokehJS 4.0 development package comes from npm and is pinned
-in the separate pnpm lockfile. The existing Python applications continue to
+adapter embedding snippet. Each source link opens a complete, independently
+runnable app: [React](framework-demos/react/), [Vue](framework-demos/vue/),
+[Svelte](framework-demos/svelte/), [Web Components](framework-demos/components/),
+and [Next.js](framework-demos/next/). Every app includes its own dependencies,
+lockfile, build configuration, plotting code, styles, and README. Its BokehJS
+4.0 development packages are pinned independently. The existing Python applications continue to
 use Bokeh 3.10.0 and its matching CDN resources.
 
-With Node.js 24 and pnpm 11.25.0 installed, build the pages from the repository
-root:
+With Node.js 24 and pnpm 11.25.0 installed, copy any one app directory and run
+`pnpm install --frozen-lockfile` followed by `pnpm dev` there. It does not need
+the parent project or another example. Each app also provides `check`, `build`,
+and `preview` scripts; see its README for details.
+
+To build all five pages for the demo site, run from the repository root:
 
 ```sh
 cd framework-demos
 pnpm install --frozen-lockfile
+pnpm install:apps
 pnpm build
 pnpm preview
 ```
@@ -206,7 +215,11 @@ Without a frontend build, the Python gallery still works and framework routes
 return the shared 404 page. Docker builds the framework pages automatically;
 Node.js is only used in the build stage.
 
-Generated files live in `site/frameworks/` and are not committed. Framework
+The site build sets each app's `BOKEH_DEMO_BASE` asset prefix and copies its
+output into `site/frameworks/`. The app directories include snapshots of the
+site chrome and styles so they remain independently runnable; keep these
+snapshots in sync when changing the demo site's visual design. Generated files
+are not committed. Framework
 pages are omitted from the gallery and sitemap. The Next.js example uses a
 static export with browser-side interactive components, so it needs no Node.js
 server at runtime.
@@ -218,7 +231,12 @@ pnpm check
 pnpm build
 pnpm exec playwright install chromium
 pnpm test
+pnpm test:standalone
 ```
+
+The standalone check copies each app outside the repository, installs from
+its own lockfile, checks types, builds it, and runs the same browser interactions
+against its local preview. CI verifies both these copies and the combined site.
 
 ## Test
 

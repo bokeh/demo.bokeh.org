@@ -1,6 +1,10 @@
 import {test, expect} from "@playwright/test"
 import type {Locator, Page} from "@playwright/test"
 
+const standalone = process.env.BOKEH_STANDALONE
+const frameworks = standalone ? [standalone] : ["react", "vue", "svelte", "components", "nextjs"]
+const demoPath = (framework: string) => standalone ? "/" : `/${framework}`
+
 async function painted(canvas: Locator) {
   await expect(canvas).toBeVisible()
   // A mounted toolbar alone is insufficient: wait for a real rendered plot.
@@ -28,17 +32,17 @@ test.beforeEach(async ({page}) => {
   await page.route("https://static.bokeh.org/**", (route) => route.fulfill({contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="108" height="32"><text y="24">bokeh</text></svg>'}))
 })
 
-for (const route of ["react", "vue", "svelte", "components", "nextjs"]) {
+for (const route of frameworks) {
   test(`${route}: two independent roots, tools, isolated assets and mobile layout`, async ({page}) => {
     const errors: string[] = [], sockets: string[] = [], requests: string[] = []
     page.on("pageerror", (error) => errors.push(error.message))
     page.on("websocket", (socket) => sockets.push(socket.url()))
     page.on("request", (request) => requests.push(request.url()))
-    await page.goto(`/${route}`)
+    await page.goto(demoPath(route))
     await expect(page.getByRole("heading", {level: 1})).toBeVisible()
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/)
     await expect(page.locator(".site-header .brand")).toHaveAttribute("href", "/")
-    await expect(page.getByRole("link", {name: "View full app source"})).toHaveAttribute("href", new RegExp(`/framework-demos/${route === "nextjs" ? "next" : `src/${route}`}$`))
+    await expect(page.getByRole("link", {name: "View full app source"})).toHaveAttribute("href", new RegExp(`/framework-demos/${route === "nextjs" ? "next" : route}$`))
     await expect(page.locator(".embed-example code")).toContainText(route === "components" ? "bokeh-root" : route === "svelte" ? "bokehRoot" : "BokehRoot")
     await painted(page.locator("canvas").first())
     await painted(page.locator(".plot-host").nth(1).locator("canvas").first())
@@ -52,11 +56,11 @@ for (const route of ["react", "vue", "svelte", "components", "nextjs"]) {
   })
 }
 
-for (const route of ["react", "vue", "svelte", "components", "nextjs"]) {
+for (const route of frameworks) {
   test(`${route}: native controls, animation and independent profile lifecycle`, async ({page}) => {
     const errors: string[] = []
     page.on("pageerror", (error) => errors.push(error.message))
-    await page.goto(`/${route}`)
+    await page.goto(demoPath(route))
     await expect(page.getByRole("heading", {level: 1})).toHaveText("Where waves meet")
     const field = page.locator("canvas").first()
     await painted(field)
@@ -82,8 +86,8 @@ for (const route of ["react", "vue", "svelte", "components", "nextjs"]) {
   })
 }
 
-test("Vue Teleport keeps wave notes live and restores keyboard focus", async ({page}) => {
-  await page.goto("/vue")
+if (!standalone || standalone === "vue") test("Vue Teleport keeps wave notes live and restores keyboard focus", async ({page}) => {
+  await page.goto(demoPath("vue"))
   await painted(page.locator("canvas").first())
   await page.getByRole("button", {name: "Wave notes"}).click()
   await expect(page.locator("body > #wave-inspector")).toBeVisible()
@@ -94,11 +98,11 @@ test("Vue Teleport keeps wave notes live and restores keyboard focus", async ({p
   await expect(page.getByRole("button", {name: "Wave notes"})).toBeFocused()
 })
 
-test("Next.js exports its page and initial controls as static HTML", async ({request}) => {
-  const response = await request.get("/nextjs")
+if (!standalone || standalone === "nextjs") test("Next.js exports its page and initial controls as static HTML", async ({request}) => {
+  const response = await request.get(demoPath("nextjs"))
   const html = await response.text()
   expect(html).toContain("Where waves meet")
   expect(html).toContain('id="wave-frequency"')
   expect(html).toContain("Embed Bokeh in Next.js")
-  expect(html).toContain("/assets/frameworks/nextjs/_next/")
+  expect(html).toContain(standalone ? "/_next/" : "/assets/frameworks/nextjs/_next/")
 })
