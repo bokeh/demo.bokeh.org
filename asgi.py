@@ -35,6 +35,14 @@ type Scope = dict[str, Any]
 type Send = Callable[[Message], Awaitable[None]]
 
 ASSET_ROOT = ROOT / "site"
+FRAMEWORK_PAGES = {
+    "/react": "react",
+    "/vue": "vue",
+    "/svelte": "svelte",
+    "/components": "components",
+    "/nextjs": "nextjs",
+    "/next.js": "nextjs",
+}
 LEGACY_DEMO_ROUTES = frozenset(
     {
         "/crossfilter",
@@ -74,6 +82,8 @@ PUBLIC_PAGE_ROUTES = frozenset(
         "/",
         "/index.html",
         *LEGACY_DEMO_ROUTES,
+        *FRAMEWORK_PAGES,
+        *(f"{route}/" for route in FRAMEWORK_PAGES),
         *(demo.route for demo in DEMOS if demo.route != "/monitor"),
     }
 )
@@ -179,6 +189,11 @@ class DemoApplication:
             await self._biomass_tile(scope, send, path)
         elif scope_type == "http" and path.startswith("/assets/"):
             await self._asset(scope, send, path.removeprefix("/assets/"))
+        elif scope_type == "http" and path.rstrip("/") in FRAMEWORK_PAGES:
+            framework = FRAMEWORK_PAGES[path.rstrip("/")]
+            await self._asset(
+                scope, send, f"frameworks/{framework}/index.html", cache_control="no-cache"
+            )
         elif scope_type == "http":
             await self._bokeh_or_not_found(scope, receive, send)
         else:
@@ -203,14 +218,21 @@ class DemoApplication:
         if not_found:
             await self._not_found_response(scope, send)
 
-    async def _asset(self, scope: Scope, send: Send, relative: str) -> None:
+    async def _asset(
+        self,
+        scope: Scope,
+        send: Send,
+        relative: str,
+        *,
+        cache_control: str = "public, max-age=3600",
+    ) -> None:
         candidate = (ASSET_ROOT / relative).resolve()
         if ASSET_ROOT.resolve() not in candidate.parents or not candidate.is_file():
             await self._not_found_response(scope, send)
             return
         content_type = mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
         await self._response(
-            scope, send, candidate.read_bytes(), content_type, cache_control="public, max-age=3600"
+            scope, send, candidate.read_bytes(), content_type, cache_control=cache_control
         )
 
     async def _not_found_response(self, scope: Scope, send: Send) -> None:

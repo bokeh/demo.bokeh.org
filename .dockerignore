@@ -8,3 +8,8 @@ __pycache__
 .venv
 outputs
 tests
+work
+**/node_modules
+**/.next
+**/out
+site/frameworks

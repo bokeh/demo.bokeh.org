@@ -36,6 +36,8 @@ are grouped by use case and domain, and the catalog records how each one runs.
   labeled computed data.
 - `site/` contains the shared visual system, landing-page template, Bokeh
   document template, and deployed error page.
+- `framework-demos/` builds the unlisted BokehJS framework examples as static
+  pages, independently of the Python applications.
 - `asgi.py` serves the landing page, assets, health endpoint, and Bokeh routes.
 - `deploy/ecs-task-definition.json` is the application-owned deployment
   template.
@@ -175,6 +177,47 @@ Run the same hooks across the checkout at any time:
 
 ```sh
 uv run --locked pre-commit run --all-files
+```
+
+### Static framework demos
+
+The unlisted pages at `/react`, `/vue`, `/svelte`, `/components`, and `/nextjs`
+show the same wave interference lab through the BokehJS framework adapters. `/next.js` is an alias for `/nextjs`.
+They share the site's header, footer, and visual styles, but run entirely in
+the browser. Each page links to its full source directory and shows a short
+adapter embedding snippet. Their BokehJS 4.0 development package comes from npm and is pinned
+in the separate pnpm lockfile. The existing Python applications continue to
+use Bokeh 3.10.0 and its matching CDN resources.
+
+With Node.js 24 and pnpm 11.25.0 installed, build the pages from the repository
+root:
+
+```sh
+cd framework-demos
+pnpm install --frozen-lockfile
+pnpm build
+pnpm preview
+```
+
+Open `http://localhost:4173/react` (or another framework route). To serve the
+pages alongside the Python gallery, build them first, then run the usual
+`uv run --locked uvicorn asgi:application` command from the repository root.
+Without a frontend build, the Python gallery still works and framework routes
+return the shared 404 page. Docker builds the framework pages automatically;
+Node.js is only used in the build stage.
+
+Generated files live in `site/frameworks/` and are not committed. Framework
+pages are omitted from the gallery and sitemap. The Next.js example uses a
+static export with browser-side interactive components, so it needs no Node.js
+server at runtime.
+
+Check types and run the browser tests from `framework-demos/`:
+
+```sh
+pnpm check
+pnpm build
+pnpm exec playwright install chromium
+pnpm test
 ```
 
 ## Test
