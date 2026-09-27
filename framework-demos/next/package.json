@@ -1,1 +1,26 @@
-{"name":"bokeh-next-observatory","private":true,"type":"module"}
+{
+  "name": "bokeh-next-waves",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {"node": ">=24"},
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1",
+    "check": "next typegen && tsc --noEmit",
+    "build": "next build --webpack",
+    "preview": "node scripts/preview.mjs"
+  },
+  "dependencies": {
+    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/react": "4.0.0-dev.5",
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
+    "typescript": "5.9.2"
+  }
+}

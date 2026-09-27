@@ -6,12 +6,17 @@ RUN npm install --global pnpm@11.25.0
 
 WORKDIR /app/framework-demos
 
-COPY framework-demos/package.json framework-demos/pnpm-lock.yaml framework-demos/pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+COPY framework-demos/react/package.json framework-demos/react/pnpm-lock.yaml framework-demos/react/pnpm-workspace.yaml ./react/
+COPY framework-demos/vue/package.json framework-demos/vue/pnpm-lock.yaml framework-demos/vue/pnpm-workspace.yaml ./vue/
+COPY framework-demos/svelte/package.json framework-demos/svelte/pnpm-lock.yaml framework-demos/svelte/pnpm-workspace.yaml ./svelte/
+COPY framework-demos/components/package.json framework-demos/components/pnpm-lock.yaml framework-demos/components/pnpm-workspace.yaml ./components/
+COPY framework-demos/next/package.json framework-demos/next/pnpm-lock.yaml framework-demos/next/pnpm-workspace.yaml ./next/
+RUN for app in react vue svelte components next; do \
+      pnpm --dir "$app" install --frozen-lockfile || exit 1; \
+    done
 
 COPY framework-demos ./
-COPY site/header.html.jinja site/footer.html.jinja site/site.css /app/site/
-RUN pnpm run build
+RUN node scripts/build.mjs
 
 FROM python:3.14-slim-trixie AS build
 

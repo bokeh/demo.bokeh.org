@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from "react"
 import {BokehDocument, BokehRoot} from "@bokeh/react"
-import {createInterference} from "../../src/shared/waves"
+import {createInterference} from "../src/waves"
 
 type Parameters = {frequency: number, separation: number, phase: number, sliceY: number}
 

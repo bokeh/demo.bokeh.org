@@ -12,4 +12,7 @@ work
 **/node_modules
 **/.next
 **/out
+**/dist
+**/tsconfig.tsbuildinfo
+**/next-env.d.ts
 site/frameworks

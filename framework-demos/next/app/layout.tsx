@@ -1,6 +1,8 @@
 import type {Metadata} from "next"
 import type {ReactNode} from "react"
-import chrome from "../../work/chrome.json"
+import chrome from "./chrome.json"
+
+const assetPrefix = (process.env.BOKEH_DEMO_BASE ?? "").replace(/\/+$/, "")
 
 export const metadata: Metadata = {
   title: "Where waves meet · Next.js · Bokeh demos",
@@ -10,9 +12,9 @@ export const metadata: Metadata = {
 
 export default function Layout({children}: {children: ReactNode}) {
   return <html lang="en"><head>
-    <link rel="icon" href="/assets/bokeh-icon.svg?v=2" type="image/svg+xml"/>
-    <link rel="stylesheet" href="/assets/site.css?v=14"/>
-    <link rel="stylesheet" href="/assets/frameworks/frameworks.css"/>
+    <link rel="icon" href={`${assetPrefix}/assets/bokeh-icon.svg?v=2`} type="image/svg+xml"/>
+    <link rel="stylesheet" href={`${assetPrefix}/assets/site.css?v=14`}/>
+    <link rel="stylesheet" href={`${assetPrefix}/assets/frameworks.css`}/>
   </head><body>
     <div style={{display: "contents"}} dangerouslySetInnerHTML={{__html: chrome.header}}/>
     {children}

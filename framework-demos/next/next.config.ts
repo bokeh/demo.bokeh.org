@@ -2,7 +2,8 @@ import type {NextConfig} from "next"
 
 const config: NextConfig = {
   output: "export",
-  assetPrefix: "/assets/frameworks/nextjs",
+  agentRules: false,
+  assetPrefix: (process.env.BOKEH_DEMO_BASE ?? "").replace(/\/+$/, ""),
   trailingSlash: true,
   poweredByHeader: false,
 }
