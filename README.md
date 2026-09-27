@@ -193,8 +193,8 @@ lockfile, build configuration, plotting code, styles, and README. Its BokehJS
 4.0 development packages are pinned independently. The existing Python applications continue to
 use Bokeh 3.10.0 and its matching CDN resources.
 
-With Node.js 24 and pnpm 11.25.0 installed, copy any one app directory and run
-`pnpm install --frozen-lockfile` followed by `pnpm dev` there. It does not need
+With Node.js 24 or newer (which includes npm), copy any one app directory and run
+`npm ci` followed by `npm run dev` there. It does not need
 the parent project or another example. Each app also provides `check`, `build`,
 and `preview` scripts; see its README for details.
 
@@ -202,10 +202,10 @@ To build all five pages for the demo site, run from the repository root:
 
 ```sh
 cd framework-demos
-pnpm install --frozen-lockfile
-pnpm install:apps
-pnpm build
-pnpm preview
+npm ci
+npm run install:apps
+npm run build
+npm run preview
 ```
 
 Open `http://localhost:4173/react` (or another framework route). To serve the
@@ -227,11 +227,11 @@ server at runtime.
 Check types and run the browser tests from `framework-demos/`:
 
 ```sh
-pnpm check
-pnpm build
-pnpm exec playwright install chromium
-pnpm test
-pnpm test:standalone
+npm run check
+npm run build
+npm exec -- playwright install chromium
+npm test
+npm run test:standalone
 ```
 
 The standalone check copies each app outside the repository, installs from

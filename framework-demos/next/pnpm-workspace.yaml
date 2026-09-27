@@ -1,7 +1,0 @@
-allowBuilds:
-  sharp: true
-
-minimumReleaseAgeExclude:
-  - '@bokeh/bokehjs@4.0.0-dev.5'
-  - '@bokeh/framework@4.0.0-dev.5'
-  - '@bokeh/react@4.0.0-dev.5'

@@ -10,7 +10,7 @@ await mkdir(output, {recursive: true})
 
 for (const app of ["react", "vue", "svelte", "components", "next"]) {
   const route = app === "next" ? "nextjs" : app
-  const result = spawnSync("pnpm", ["run", "build"], {
+  const result = spawnSync("npm", ["run", "build"], {
     cwd: resolve(root, app),
     stdio: "inherit",
     env: {...process.env, BOKEH_DEMO_BASE: `/assets/frameworks/${route}/`, NEXT_TELEMETRY_DISABLED: "1"},

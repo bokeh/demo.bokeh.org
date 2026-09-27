@@ -10,7 +10,7 @@ export default defineConfig({
   timeout: 30_000,
   use: {baseURL: testURL, viewport: {width: 1440, height: 1100}, trace: "retain-on-failure"},
   webServer: standaloneDirectory ? {
-    command: `pnpm run preview --port ${new URL(testURL).port}${process.env.BOKEH_STANDALONE === "nextjs" ? "" : " --strictPort"}`,
+    command: `npm run preview -- --port ${new URL(testURL).port}${process.env.BOKEH_STANDALONE === "nextjs" ? "" : " --strictPort"}`,
     cwd: standaloneDirectory,
     url: testURL,
     reuseExistingServer: false,

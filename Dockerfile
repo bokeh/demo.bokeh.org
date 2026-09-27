@@ -2,17 +2,15 @@ FROM node:24-bookworm-slim AS framework-build
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN npm install --global pnpm@11.25.0
-
 WORKDIR /app/framework-demos
 
-COPY framework-demos/react/package.json framework-demos/react/pnpm-lock.yaml framework-demos/react/pnpm-workspace.yaml ./react/
-COPY framework-demos/vue/package.json framework-demos/vue/pnpm-lock.yaml framework-demos/vue/pnpm-workspace.yaml ./vue/
-COPY framework-demos/svelte/package.json framework-demos/svelte/pnpm-lock.yaml framework-demos/svelte/pnpm-workspace.yaml ./svelte/
-COPY framework-demos/components/package.json framework-demos/components/pnpm-lock.yaml framework-demos/components/pnpm-workspace.yaml ./components/
-COPY framework-demos/next/package.json framework-demos/next/pnpm-lock.yaml framework-demos/next/pnpm-workspace.yaml ./next/
+COPY framework-demos/react/package.json framework-demos/react/package-lock.json ./react/
+COPY framework-demos/vue/package.json framework-demos/vue/package-lock.json ./vue/
+COPY framework-demos/svelte/package.json framework-demos/svelte/package-lock.json ./svelte/
+COPY framework-demos/components/package.json framework-demos/components/package-lock.json ./components/
+COPY framework-demos/next/package.json framework-demos/next/package-lock.json ./next/
 RUN for app in react vue svelte components next; do \
-      pnpm --dir "$app" install --frozen-lockfile || exit 1; \
+      npm --prefix "$app" ci || exit 1; \
     done
 
 COPY framework-demos ./
