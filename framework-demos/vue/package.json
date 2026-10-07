@@ -14,7 +14,7 @@
   "dependencies": {
     "@bokeh/bokehjs": "4.0.0-dev.5",
     "@bokeh/vue": "4.0.0-dev.5",
-    "vue": "3.5.40"
+    "vue": "3.5.43"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "6.0.5",
