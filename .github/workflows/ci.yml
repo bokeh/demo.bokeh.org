@@ -15,8 +15,8 @@ jobs:
       run:
         working-directory: framework-demos
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Install browser test dependencies
@@ -38,9 +38,9 @@ jobs:
       PYTHON_GIL: "0"
       UV_PYTHON: 3.14t
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.13.4"
           enable-cache: true
@@ -65,7 +65,7 @@ jobs:
   container:
     runs-on: ubuntu-24.04-arm
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Build container
         run: docker build --tag bokeh-demo:test .
       - name: Start container
