@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.42,<2",
-    "bokeh[extra,sampledata]==3.10.0",
+    "bokeh[extra,sampledata]==3.10.1",
     "fsspec[http]>=2026,<2027",
     "imagecodecs>=2026,<2027",
     "networkx>=3.5,<4",
