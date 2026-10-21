@@ -10,16 +10,16 @@
     "preview": "node scripts/preview.mjs"
   },
   "dependencies": {
-    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/bokehjs": "4.0.0-dev.8",
     "@bokeh/react": "4.0.0-dev.5",
-    "next": "16.3.8",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "next": "16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
-    "@types/node": "24.13.6",
-    "@types/react": "19.2.18",
-    "@types/react-dom": "19.2.4",
-    "typescript": "5.9.2"
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "7.0.2"
   }
 }

@@ -12,15 +12,15 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@bokeh/bokehjs": "4.0.0-dev.5",
+    "@bokeh/bokehjs": "4.0.0-dev.8",
     "@bokeh/svelte": "4.0.0-dev.5",
-    "svelte": "5.56.8"
+    "svelte": "5.57.2"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "7.2.0",
-    "svelte-check": "4.7.6",
-    "@types/node": "24.13.6",
-    "typescript": "5.9.2",
+    "@sveltejs/vite-plugin-svelte": "7.3.1",
+    "svelte-check": "4.7.7",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
     "vite": "8.3.4"
   }
 }

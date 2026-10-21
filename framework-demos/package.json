@@ -12,6 +12,6 @@
     "test:standalone": "node scripts/test-standalone.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.64.1"
   }
 }
