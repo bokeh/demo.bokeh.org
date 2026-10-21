@@ -1,4 +1,4 @@
-FROM node:24-bookworm-slim AS framework-build
+FROM node:25-bookworm-slim AS framework-build
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
