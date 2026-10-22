@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@bokeh/bokehjs": "4.0.0-dev.8",
-    "@bokeh/react": "4.0.0-dev.5",
+    "@bokeh/react": "4.0.0-dev.8",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },

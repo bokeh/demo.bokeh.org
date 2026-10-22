@@ -67,7 +67,7 @@ profileRoot.model = dashboard.profile
 - `index.html`: page layout, navigation, source link, and short embed example.
 - `public/assets/`: the included site styles and icon.
 
-BokehJS and its adapter are pinned to the same `4.0.0-dev.5` release. The included
+BokehJS and its adapter are pinned to the same `4.0.0-dev.8` release. The included
 `package-lock.json` lets `npm ci` reproduce the dependency versions. No Python
 server or UI framework is required. The site navigation and external brand logo
 retain the links used on demo.bokeh.org.

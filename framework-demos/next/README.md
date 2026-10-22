@@ -62,6 +62,6 @@ prefix while serving its HTML at `/nextjs`. If you use this option, your host mu
 serve the exported assets at the chosen prefix. Use the same environment variable
 with `npm run preview` to preview that build locally.
 
-BokehJS and the React adapter are pinned to the matching `4.0.0-dev.5` npm release.
+BokehJS and the React adapter are pinned to the matching `4.0.0-dev.8` npm release.
 The included `package-lock.json` lets `npm ci` reproduce the dependency versions.
 Update both direct Bokeh packages together when changing versions.

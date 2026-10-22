@@ -49,6 +49,6 @@ prefix; the app has no build-time dependency on that site.
 - `src/core.ts` defines the plot styling.
 - `index.html` contains the page shell, source link, and short adapter example.
 
-The npm Bokeh packages are pinned to `4.0.0-dev.5`. Update the BokehJS and
+The npm Bokeh packages are pinned to `4.0.0-dev.8`. Update the BokehJS and
 adapter versions together when moving to a newer release. The included
 `package-lock.json` lets `npm ci` reproduce the dependency versions.
