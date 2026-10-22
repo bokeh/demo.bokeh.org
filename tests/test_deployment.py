@@ -40,7 +40,7 @@ def test_deployment_builds_the_matching_arm64_image() -> None:
 
     assert "runs-on: ubuntu-24.04-arm" in workflow
     assert "docker/setup-qemu-action@v3" not in workflow
-    assert "docker/setup-buildx-action@v3" in workflow
+    assert "docker/setup-buildx-action@v4" in workflow
     assert "docker buildx build \\" in workflow
     assert "--platform linux/arm64" in workflow
     assert (
