@@ -27,6 +27,10 @@ updates:
       npm-security:
         applies-to: security-updates
         patterns: ["*"]
+    ignore:
+      # svelte-check doesn't support TypeScript 7 yet: sveltejs/language-tools#3063
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: docker
     directory: /
