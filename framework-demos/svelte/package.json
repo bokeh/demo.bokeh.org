@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@bokeh/bokehjs": "4.0.0-dev.8",
-    "@bokeh/svelte": "4.0.0-dev.5",
+    "@bokeh/svelte": "4.0.0-dev.8",
     "svelte": "5.57.2"
   },
   "devDependencies": {
