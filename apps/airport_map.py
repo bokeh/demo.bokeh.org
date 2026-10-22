@@ -18,9 +18,7 @@ from bokeh.models import (
     Title,
 )
 from bokeh.plotting import figure
-from bokeh.sampledata.us_states import (
-    data as _US_STATES,  # pyright: ignore[reportAttributeAccessIssue]
-)
+from bokeh.sampledata.us_states import data as _US_STATES  # pyright: ignore[reportAttributeAccessIssue]
 from vega_datasets import local_data
 
 from apps._common import (
