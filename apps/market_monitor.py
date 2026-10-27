@@ -292,9 +292,9 @@ def modify_document(document) -> None:
             "date": shown["date"].to_list(),
             "macd": macd_values.to_numpy(dtype=np.float32),
             "signal": signal_values.to_numpy(dtype=np.float32),
-            "positive_macd": np.maximum(macd_values, signal_values).to_numpy(dtype=np.float32),
+            "positive_macd": np.asarray(np.maximum(macd_values, signal_values), dtype=np.float32),
             "positive_signal": signal_values.to_numpy(dtype=np.float32),
-            "negative_macd": np.minimum(macd_values, signal_values).to_numpy(dtype=np.float32),
+            "negative_macd": np.asarray(np.minimum(macd_values, signal_values), dtype=np.float32),
             "negative_signal": signal_values.to_numpy(dtype=np.float32),
         }
         state["fast_ema"] = float(fast_average.iloc[-1])
