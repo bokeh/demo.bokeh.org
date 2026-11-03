@@ -14,12 +14,12 @@
   "dependencies": {
     "@bokeh/bokehjs": "4.0.0-dev.8",
     "@bokeh/svelte": "4.0.0-dev.8",
-    "svelte": "5.57.2"
+    "svelte": "5.57.3"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "7.3.1",
     "svelte-check": "4.7.7",
-    "@types/node": "26.6.5",
+    "@types/node": "26.6.6",
     "typescript": "5.9.3",
     "vite": "8.3.5"
   }
