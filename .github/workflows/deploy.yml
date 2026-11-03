@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     environment: production
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Require Arraylake access token
         env:
@@ -39,7 +39,7 @@ jobs:
         run: test -n "$ARRAYLAKE_API_TOKEN"
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v6
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::562605262404:role/demo-bokeh-org-github-deploy
           aws-region: ${{ env.AWS_REGION }}
@@ -49,11 +49,11 @@ jobs:
       - name: Log in to Amazon ECR
         if: ${{ !inputs.diagnose }}
         id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd # v2.1.7
 
       - name: Set up Docker Buildx
         if: ${{ !inputs.diagnose }}
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - name: Build or reuse immutable image
         if: ${{ !inputs.diagnose }}
@@ -95,7 +95,7 @@ jobs:
       - name: Render ECS task definition
         if: ${{ !inputs.diagnose }}
         id: task-definition
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        uses: aws-actions/amazon-ecs-render-task-definition@8d79160660ad39c402a16e5fc7cd2a32e8f7d6b7 # v1.9.1
         with:
           task-definition: deploy/ecs-task-definition.json
           container-name: ${{ env.ECS_CONTAINER }}
@@ -105,7 +105,7 @@ jobs:
 
       - name: Deploy to ECS
         if: ${{ !inputs.diagnose }}
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        uses: aws-actions/amazon-ecs-deploy-task-definition@a00d4d57ac0de1a99b39fe469f3d898d38717c2b # v2.6.4
         with:
           task-definition: ${{ steps.task-definition.outputs.task-definition }}
           cluster: ${{ env.ECS_CLUSTER }}
