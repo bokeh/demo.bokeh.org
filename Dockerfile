@@ -16,7 +16,7 @@ RUN for app in react vue svelte components next; do \
 COPY framework-demos ./
 RUN node scripts/build.mjs
 
-FROM python:3.14-slim-trixie AS build
+FROM python:3.15-slim-trixie AS build
 
 COPY --from=ghcr.io/astral-sh/uv:0.13.4 /uv /uvx /bin/
 
@@ -37,7 +37,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     && UV_PYTHON_DOWNLOADS=never uv sync --locked \
     && rm -rf /var/lib/apt/lists/*
 
-FROM python:3.14-slim-trixie
+FROM python:3.15-slim-trixie
 
 LABEL org.opencontainers.image.authors="Bokeh <info@bokeh.org>"
 LABEL org.opencontainers.image.source="https://github.com/bokeh/demo.bokeh.org"
