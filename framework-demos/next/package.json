@@ -10,9 +10,9 @@
     "preview": "node scripts/preview.mjs"
   },
   "dependencies": {
-    "@bokeh/bokehjs": "4.0.0-dev.8",
-    "@bokeh/react": "4.0.0-dev.8",
-    "next": "16.4.5",
+    "@bokeh/bokehjs": "4.0.0-dev.10",
+    "@bokeh/react": "4.0.0-dev.10",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
